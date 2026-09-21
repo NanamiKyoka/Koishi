@@ -1,0 +1,126 @@
+<resources>
+    <string name="app_name">Koishi</string>
+
+    <!-- Navigation -->
+    <string name="nav_toolbox">工具箱</string>
+    <string name="nav_favorites">收藏</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- Home / Toolbox -->
+    <string name="search_tools_placeholder">搜索工具（如：图片混淆、番茄混淆...）</string>
+    <string name="search_icon_desc">搜索</string>
+    <string name="clear_search_desc">清除搜索</string>
+    <string name="search_history">搜索历史</string>
+    <string name="clear_history">清空</string>
+    <string name="no_search_history">暂无搜索历史</string>
+    <string name="category_all">全部</string>
+    <string name="category_common">常用</string>
+    <string name="category_calc_convert">换算计算</string>
+    <string name="category_dev_code">开发编码</string>
+    <string name="category_hardware">硬件设备</string>
+    <string name="category_text_image">文本媒体</string>
+    <string name="tools_count_summary">共 %1$d 个工具</string>
+    <string name="empty_search_title">未找到与 \"%1$s\" 相关的工具</string>
+    <string name="empty_category_title">当前分类暂无工具</string>
+    <string name="empty_search_tip">尝试更换关键词或在其他分类中浏览</string>
+    <string name="add_favorite">加入收藏</string>
+    <string name="remove_favorite">取消收藏</string>
+
+    <!-- Tools -->
+    <string name="tool_image_obfuscation_name">图片混淆与反混淆</string>
+    <string name="tool_image_obfuscation_desc">番茄混淆、PicEncrypt 混沌映射与 MD5 置乱打乱及无损还原</string>
+
+    <!-- Favorites Tab -->
+    <string name="favorites_title">我的收藏</string>
+    <string name="favorites_empty_title">暂无收藏工具</string>
+    <string name="favorites_empty_desc">在工具箱中点击工具卡片右上角的爱心即可加入收藏</string>
+
+    <!-- Settings Tab -->
+    <string name="settings_title">设置</string>
+    <string name="settings_category_appearance">外观</string>
+    <string name="settings_theme_mode">主题模式</string>
+    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_light">浅色模式</string>
+    <string name="settings_theme_dark">深色模式</string>
+    <string name="settings_dynamic_color">动态色彩</string>
+    <string name="settings_dynamic_color_desc">基于壁纸色彩自定义界面色调 (Android 12+)</string>
+    <string name="settings_category_language">语言</string>
+    <string name="settings_language">应用语言</string>
+    <string name="settings_lang_system">跟随系统</string>
+    <string name="settings_lang_zh">简体中文</string>
+    <string name="settings_lang_en">English</string>
+    <string name="settings_category_about">关于</string>
+    <string name="settings_version">版本</string>
+    <string name="settings_about_desc">轻量、优雅的现代 Material 3 工具箱</string>
+    <string name="settings_developer">开发者</string>
+    <string name="dialog_cancel">取消</string>
+
+    <!-- Image Obfuscation Screen -->
+    <string name="image_obfuscation_title">番茄图片混淆</string>
+    <string name="btn_back">返回</string>
+    <string name="rotate_90">旋转90度</string>
+    <string name="help">帮助</string>
+    <string name="selected_images_count">已选择 %1$d 张图片</string>
+    <string name="no_images_selected">尚未选择图片</string>
+    <string name="resolution_format">分辨率: %1$d × %2$d</string>
+    <string name="tap_to_pick_images">点击选取图片 (支持批量多选)</string>
+    <string name="supported_algorithms_hint">支持番茄空间曲线、Logistic混沌及MD5置乱</string>
+    <string name="calculating">正在高效计算中...</string>
+    <string name="add_more_images">添加更多图片</string>
+    <string name="mode_prefix">模式: </string>
+    <string name="select_mode">选择模式</string>
+    <string name="preview_image">预览图片</string>
+    <string name="btn_obfuscate">混淆</string>
+    <string name="btn_deobfuscate">解混淆</string>
+    <string name="btn_remove">移除</string>
+    <string name="btn_restore">还原</string>
+    <string name="btn_save">存本图</string>
+    <string name="btn_all">全部</string>
+
+    <!-- Help Dialog -->
+    <string name="dialog_help_title">番茄图片混淆使用帮助</string>
+    <string name="dialog_help_1">• 混淆与解混淆：操作互为严格反函数。混淆一次后再次点击解混淆即可精确恢复原图；若连续混淆多次，则需等次数解混淆还原。</string>
+    <string name="dialog_help_2">• 空间曲线混淆 (番茄图)：基于广义希尔伯特曲线遍历与黄金分割移位，完全免密、无损且具备极高撕裂感。</string>
+    <string name="dialog_help_3">• PicEncrypt / MD5：使用混沌映射或密码学洗牌置乱。解混淆时必须选择相同算法与完全一致的密钥。</string>
+    <string name="dialog_help_4">• 还原：随时重置为刚导入应用时的初始原始状态。</string>
+    <string name="dialog_help_5">• 重要提示：请使用原图格式（PNG 无损存储至 Pictures/Koishi 相册）分享传输。若经过第三方软件的有损二次压缩（如微信非原图发送），将破坏像素矩阵导致无法还原。</string>
+    <string name="dialog_got_it">我知道了</string>
+
+    <!-- Modes & Key hints -->
+    <string name="mode_tomato_title">空间曲线混淆 (番茄图)</string>
+    <string name="mode_tomato_desc">基于广义希尔伯特曲线与黄金分割移位，完全无损可逆</string>
+    <string name="mode_tomato_hint">无需密钥（默认系数 1.0）</string>
+    <string name="mode_block_title">块混淆 (Block)</string>
+    <string name="mode_block_desc">按网格分块切片，通过 MD5 伪随机洗牌置乱</string>
+    <string name="mode_row_title">行像素混淆 (Row)</string>
+    <string name="mode_row_desc">保持行结构不变，仅在行内进行 MD5 伪随机置换</string>
+    <string name="mode_pixel_title">逐像素混淆 (Pixel)</string>
+    <string name="mode_pixel_desc">全图二维逐像素坐标通过 MD5 伪随机置换</string>
+    <string name="mode_pic_row_title">PicEncrypt 行模式</string>
+    <string name="mode_pic_row_desc">一维 Logistic 混沌映射，兼容经典贴吧加密模式</string>
+    <string name="mode_pic_row_col_title">PicEncrypt 行+列模式</string>
+    <string name="mode_pic_row_col_desc">双向 Logistic 混沌映射，高离散度像素打乱</string>
+    <string name="hint_custom_text_key">输入自定义文本密钥</string>
+    <string name="hint_decimal_key">输入 0 到 1 之间的小数（如 0.666）</string>
+
+    <!-- ViewModel Messages -->
+    <string name="msg_loading_images">正在载入 %1$d 张图片...</string>
+    <string name="msg_loaded_images">成功载入 %1$d 张图片</string>
+    <string name="msg_select_images_first">请先选择或添加图片</string>
+    <string name="msg_invalid_decimal_key">请输入 0 到 1 之间的小数密钥（如 0.666）</string>
+    <string name="msg_invalid_text_key">请输入有效文本密钥</string>
+    <string name="msg_action_completed">%1$s完成！</string>
+    <string name="msg_all_action_completed">全部图片%1$s完成！</string>
+    <string name="msg_removed_current">已移除当前图片</string>
+    <string name="msg_removed_all">已清空全部图片</string>
+    <string name="msg_restored_current">已还原为导入时的原始图片</string>
+    <string name="msg_restored_all">已还原全部图片</string>
+    <string name="msg_no_image_to_save">无图片可保存</string>
+    <string name="msg_saved_to_gallery">无损 PNG 已保存至相册 (Pictures/Koishi)</string>
+    <string name="msg_save_failed">保存失败</string>
+    <string name="msg_saved_all_to_gallery">已将全部 %1$d 张图片保存至相册！</string>
+    <string name="msg_oom_error">内存不足，图片分辨率过高</string>
+    <string name="msg_process_failed">处理失败: %1$s</string>
+    <string name="file_not_found">文件未找到或已被移除</string>
+    <string name="msg_batch_failed">批量处理异常: %1$s</string>
+</resources>

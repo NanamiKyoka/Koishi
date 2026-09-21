@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name">Koishi</string>
+
+    <!-- Navigation -->
+    <string name="nav_toolbox">Toolbox</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home / Toolbox -->
+    <string name="search_tools_placeholder">Search tools (e.g. Image Obfuscation...)</string>
+    <string name="search_icon_desc">Search</string>
+    <string name="clear_search_desc">Clear search</string>
+    <string name="search_history">Search History</string>
+    <string name="clear_history">Clear</string>
+    <string name="no_search_history">No search history</string>
+    <string name="category_all">All</string>
+    <string name="category_common">Common</string>
+    <string name="category_calc_convert">Convert &amp; Calc</string>
+    <string name="category_dev_code">Dev &amp; Code</string>
+    <string name="category_hardware">Hardware</string>
+    <string name="category_text_image">Text &amp; Media</string>
+    <string name="tools_count_summary">%1$d tools</string>
+    <string name="empty_search_title">No tools found for \"%1$s\"</string>
+    <string name="empty_category_title">No tools in this category</string>
+    <string name="empty_search_tip">Try searching with other keywords or browse other categories</string>
+    <string name="add_favorite">Add to favorites</string>
+    <string name="remove_favorite">Remove from favorites</string>
+
+    <!-- Tools -->
+    <string name="tool_image_obfuscation_name">Image Obfuscation</string>
+    <string name="tool_image_obfuscation_desc">Lossless scramble and restore images with Tomato Hilbert, Logistic map, and MD5</string>
+
+    <!-- Favorites Tab -->
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_title">No favorite tools yet</string>
+    <string name="favorites_empty_desc">Tap the heart icon on any tool card in the toolbox to add it here</string>
+
+    <!-- Settings Tab -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_category_appearance">Appearance</string>
+    <string name="settings_theme_mode">Theme Mode</string>
+    <string name="settings_theme_system">System Default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic Color</string>
+    <string name="settings_dynamic_color_desc">Extract colors from wallpaper (Android 12+)</string>
+    <string name="settings_category_language">Language</string>
+    <string name="settings_language">App Language</string>
+    <string name="settings_lang_system">System Default</string>
+    <string name="settings_lang_zh">Simplified Chinese</string>
+    <string name="settings_lang_en">English</string>
+    <string name="settings_category_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_about_desc">A lightweight, elegant Modern Material 3 Toolbox</string>
+    <string name="settings_developer">Developer</string>
+    <string name="dialog_cancel">Cancel</string>
+
+    <!-- Image Obfuscation Screen -->
+    <string name="image_obfuscation_title">Tomato Image Obfuscation</string>
+    <string name="btn_back">Back</string>
+    <string name="rotate_90">Rotate 90°</string>
+    <string name="help">Help</string>
+    <string name="selected_images_count">%1$d images selected</string>
+    <string name="no_images_selected">No images selected</string>
+    <string name="resolution_format">Resolution: %1$d × %2$d</string>
+    <string name="tap_to_pick_images">Tap to pick images (Supports multi-select)</string>
+    <string name="supported_algorithms_hint">Supports Tomato Hilbert curve, Logistic chaos, and MD5 shuffling</string>
+    <string name="calculating">Processing...</string>
+    <string name="add_more_images">Add more images</string>
+    <string name="mode_prefix">Mode: </string>
+    <string name="select_mode">Select mode</string>
+    <string name="preview_image">Preview</string>
+    <string name="btn_obfuscate">Obfuscate</string>
+    <string name="btn_deobfuscate">Deobfuscate</string>
+    <string name="btn_remove">Remove</string>
+    <string name="btn_restore">Restore</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_all">All</string>
+
+    <!-- Help Dialog -->
+    <string name="dialog_help_title">Image Obfuscation Help</string>
+    <string name="dialog_help_1">• Obfuscation &amp; Deobfuscation: These are inverse operations. Deobfuscating once reverses one round of obfuscation.</string>
+    <string name="dialog_help_2">• Space-filling Curve (Tomato): Based on generalized Hilbert curves and golden-ratio shift, keyless and lossless.</string>
+    <string name="dialog_help_3">• PicEncrypt / MD5: Uses chaotic maps or MD5 shuffling. The exact same mode and key must be used to deobfuscate.</string>
+    <string name="dialog_help_4">• Restore: Revert to the original image state when imported.</string>
+    <string name="dialog_help_5">• Note: Always share the original PNG files. Lossy compression (e.g. non-original image sending in chat apps) will corrupt pixel data and prevent restoration.</string>
+    <string name="dialog_got_it">Got it</string>
+
+    <!-- Modes & Key hints -->
+    <string name="mode_tomato_title">Space-filling Curve (Tomato)</string>
+    <string name="mode_tomato_desc">Lossless and reversible via generalized Hilbert curve &amp; golden ratio shift</string>
+    <string name="mode_tomato_hint">Keyless (Default ratio 1.0)</string>
+    <string name="mode_block_title">Block Obfuscation</string>
+    <string name="mode_block_desc">Sliced into grid blocks and shuffled by MD5 PRNG</string>
+    <string name="mode_row_title">Row Pixel Obfuscation</string>
+    <string name="mode_row_desc">Preserves row structure, permuting within rows via MD5</string>
+    <string name="mode_pixel_title">Per-pixel Obfuscation</string>
+    <string name="mode_pixel_desc">Permutes 2D pixel coordinates via MD5 PRNG</string>
+    <string name="mode_pic_row_title">PicEncrypt Row Mode</string>
+    <string name="mode_pic_row_desc">1D Logistic chaotic map, compatible with classic PicEncrypt</string>
+    <string name="mode_pic_row_col_title">PicEncrypt Row &amp; Column</string>
+    <string name="mode_pic_row_col_desc">2D Logistic chaotic map with high dispersion</string>
+    <string name="hint_custom_text_key">Enter custom text key</string>
+    <string name="hint_decimal_key">Enter a decimal between 0 and 1 (e.g. 0.666)</string>
+
+    <!-- ViewModel Messages -->
+    <string name="msg_loading_images">Loading %1$d images...</string>
+    <string name="msg_loaded_images">Successfully loaded %1$d images</string>
+    <string name="msg_select_images_first">Please select or add images first</string>
+    <string name="msg_invalid_decimal_key">Please enter a decimal key between 0 and 1 (e.g. 0.666)</string>
+    <string name="msg_invalid_text_key">Please enter a valid text key</string>
+    <string name="msg_action_completed">%1$s completed!</string>
+    <string name="msg_all_action_completed">All images %1$s completed!</string>
+    <string name="msg_removed_current">Current image removed</string>
+    <string name="msg_removed_all">All images removed</string>
+    <string name="msg_restored_current">Restored to original image</string>
+    <string name="msg_restored_all">Restored all images</string>
+    <string name="msg_no_image_to_save">No image to save</string>
+    <string name="msg_saved_to_gallery">Lossless PNG saved to gallery (Pictures/Koishi)</string>
+    <string name="msg_save_failed">Failed to save</string>
+    <string name="msg_saved_all_to_gallery">Saved all %1$d images to gallery!</string>
+    <string name="msg_oom_error">Out of memory: image resolution too high</string>
+    <string name="msg_process_failed">Processing failed: %1$s</string>
+    <string name="msg_batch_failed">Batch processing failed: %1$s</string>
+</resources>
