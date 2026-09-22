@@ -80,6 +80,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -425,6 +426,14 @@ fun ScanOverlayView(modifier: Modifier = Modifier) {
                     val boxSize = size.width
                     val cornerLen = 28.dp.toPx()
                     val cornerStroke = 4.dp.toPx()
+
+                    // 取景框微透明主题色轮廓线
+                    drawRect(
+                        color = primaryColor.copy(alpha = 0.35f),
+                        topLeft = Offset.Zero,
+                        size = Size(boxSize, boxSize),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5.dp.toPx())
+                    )
 
                     // 4 个高亮角标
                     // 左上

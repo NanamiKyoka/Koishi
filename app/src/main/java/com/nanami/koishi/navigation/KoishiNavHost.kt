@@ -53,6 +53,7 @@ fun KoishiNavHost(
                 settingsViewModel = settingsViewModel,
                 onNavigateToTool = { tool ->
                     when (tool.id) {
+                        "image_stitching" -> navController.navigate(ImageStitchingRoute)
                         "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
                         "qr_code" -> navController.navigate(QrToolRoute)
                         else -> {
@@ -65,6 +66,14 @@ fun KoishiNavHost(
                         }
                     }
                 }
+            )
+        }
+
+        composable<ImageStitchingRoute> {
+            val stitchingViewModel: com.nanami.koishi.feature.tools.image_stitching.ImageStitchingViewModel = viewModel()
+            com.nanami.koishi.feature.tools.image_stitching.ImageStitchingRoute(
+                viewModel = stitchingViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 

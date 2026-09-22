@@ -130,19 +130,22 @@ class RepositoryCrudTest {
     }
 
     @Test
-    fun testToolRepositoryFollowsOneByOnePrinciple() = runBlocking {
+    fun testToolRepositoryAvailableTools() = runBlocking {
         val repo = InMemoryToolRepository()
         val tools = repo.availableTools.first()
 
-        // 贯彻“做一个放一个”原则：上架已完整实现的图片混淆与二维码工具
-        assertEquals(2, tools.size)
-        assertEquals("image_obfuscation", tools[0].id)
+        assertEquals(3, tools.size)
+        assertEquals("image_stitching", tools[0].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[0].category)
-        assertFalse("默认未收藏", tools[0].isFavorite)
+        assertFalse(tools[0].isFavorite)
+        assertTrue(tools[0].hasDot)
 
-        assertEquals("qr_code", tools[1].id)
+        assertEquals("image_obfuscation", tools[1].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[1].category)
-        assertFalse("默认未收藏", tools[1].isFavorite)
-        assertTrue("有新功能提示点", tools[1].hasDot)
+        assertFalse(tools[1].isFavorite)
+
+        assertEquals("qr_code", tools[2].id)
+        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[2].category)
+        assertFalse(tools[2].isFavorite)
     }
 }

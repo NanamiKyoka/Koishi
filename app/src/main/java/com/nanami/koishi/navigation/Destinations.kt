@@ -32,6 +32,9 @@ data object ImageObfuscationRoute
 @Serializable
 data object QrToolRoute
 
+@Serializable
+data object ImageStitchingRoute
+
 /**
  * 工具详情或独立小工具通用强类型路由
  *

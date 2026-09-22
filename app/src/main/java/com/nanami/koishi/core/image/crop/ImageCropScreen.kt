@@ -157,7 +157,7 @@ fun ImageCropScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                IconButton(
+                androidx.compose.material3.FilledIconButton(
                     onClick = {
                         onConfirm(
                             cropRectPx,
@@ -171,12 +171,15 @@ fun ImageCropScreen(
                             contrast,
                             saturation
                         )
-                    }
+                    },
+                    colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Check,
-                        contentDescription = stringResource(R.string.crop_confirm),
-                        tint = MaterialTheme.colorScheme.primary
+                        contentDescription = stringResource(R.string.crop_confirm)
                     )
                 }
             }
