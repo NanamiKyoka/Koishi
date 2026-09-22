@@ -109,6 +109,22 @@ object ImageAdjustmentEngine {
     }
 
     /**
+     * 计算底图适配裁剪框的基础缩放比 (center-crop 铺满裁剪框，避免四周留黑边或透明)
+     */
+    fun calculateBaseScale(
+        sourceWidth: Float,
+        sourceHeight: Float,
+        cropBoxWidth: Float,
+        cropBoxHeight: Float
+    ): Float {
+        return if (sourceWidth > 0f && sourceHeight > 0f && cropBoxWidth > 0f && cropBoxHeight > 0f) {
+            maxOf(cropBoxWidth / sourceWidth, cropBoxHeight / sourceHeight)
+        } else {
+            1f
+        }
+    }
+
+    /**
      * 根据视口变换参数与裁剪区域，执行高保真最终位图渲染
      */
     fun renderCroppedBitmap(
@@ -143,6 +159,15 @@ object ImageAdjustmentEngine {
         // 视口屏幕坐标 -> 输出画布坐标的缩放比
         val screenToCanvasScale = targetWidth.toFloat() / cropRectOnScreen.width()
 
+        // 计算底图适配裁剪框的基础缩放比 (与 ImageCropScreen 中 baseScale 保持一致)
+        val baseScale = calculateBaseScale(
+            sourceWidth = source.width.toFloat(),
+            sourceHeight = source.height.toFloat(),
+            cropBoxWidth = cropRectOnScreen.width(),
+            cropBoxHeight = cropRectOnScreen.height()
+        )
+        val effectiveScale = scale * baseScale
+
         // 变换矩阵：将裁剪框左上角平移至 (0, 0)，再缩放到画布尺寸
         val matrix = Matrix()
 
@@ -153,7 +178,7 @@ object ImageAdjustmentEngine {
         val viewCenterY = viewportHeight / 2f + panY
 
         matrix.postTranslate(-srcCenterX, -srcCenterY)
-        matrix.postScale(scale, scale)
+        matrix.postScale(effectiveScale, effectiveScale)
         matrix.postRotate(rotationDegrees)
         matrix.postTranslate(viewCenterX, viewCenterY)
 

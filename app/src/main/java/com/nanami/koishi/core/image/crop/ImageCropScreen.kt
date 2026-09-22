@@ -226,9 +226,14 @@ fun ImageCropScreen(
             ) {
                 val srcW = sourceBitmap.width.toFloat()
                 val srcH = sourceBitmap.height.toFloat()
-                val fitScale = min(viewWidth / srcW, viewHeight / srcH)
-                val drawW = srcW * fitScale
-                val drawH = srcH * fitScale
+                val baseScale = ImageAdjustmentEngine.calculateBaseScale(
+                    sourceWidth = srcW,
+                    sourceHeight = srcH,
+                    cropBoxWidth = cropBoxSide,
+                    cropBoxHeight = cropBoxSide
+                )
+                val drawW = srcW * baseScale
+                val drawH = srcH * baseScale
                 val topLeft = Offset((viewWidth - drawW) / 2f, (viewHeight - drawH) / 2f)
 
                 drawImage(

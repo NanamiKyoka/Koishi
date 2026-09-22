@@ -155,7 +155,7 @@ fun QrToolRoute(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            val intent = ImageCropActivity.createIntent(context, uri, isSquare = false, target = "bg")
+            val intent = ImageCropActivity.createIntent(context, uri, isSquare = true, target = "bg")
             cropLauncher.launch(intent)
         }
     }

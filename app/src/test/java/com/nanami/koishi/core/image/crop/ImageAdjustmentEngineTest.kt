@@ -42,4 +42,40 @@ class ImageAdjustmentEngineTest {
             assertEquals(custom[i], result[i], 0.001f)
         }
     }
+
+    @Test
+    fun testCalculateBaseScaleCoversCropBox() {
+        val cropSide = 800f
+
+        // 1. 正方形图片
+        val squareScale = ImageAdjustmentEngine.calculateBaseScale(
+            sourceWidth = 1000f,
+            sourceHeight = 1000f,
+            cropBoxWidth = cropSide,
+            cropBoxHeight = cropSide
+        )
+        assertEquals(0.8f, squareScale, 0.001f)
+
+        // 2. 竖屏图片 (宽较窄)：应按宽度缩放，保证宽度填满裁剪框，高度溢出
+        val portraitScale = ImageAdjustmentEngine.calculateBaseScale(
+            sourceWidth = 500f,
+            sourceHeight = 1000f,
+            cropBoxWidth = cropSide,
+            cropBoxHeight = cropSide
+        )
+        assertEquals(1.6f, portraitScale, 0.001f)
+        assertEquals(800f, 500f * portraitScale, 0.001f) // 宽度刚好为 800
+        assertEquals(1600f, 1000f * portraitScale, 0.001f) // 高度溢出裁剪框
+
+        // 3. 横屏图片 (高较矮)：应按高度缩放，保证高度填满裁剪框，宽度溢出
+        val landscapeScale = ImageAdjustmentEngine.calculateBaseScale(
+            sourceWidth = 1200f,
+            sourceHeight = 600f,
+            cropBoxWidth = cropSide,
+            cropBoxHeight = cropSide
+        )
+        assertEquals(1.3333f, landscapeScale, 0.001f)
+        assertEquals(800f, 600f * landscapeScale, 0.001f) // 高度刚好为 800
+        assertEquals(1600f, 1200f * landscapeScale, 0.001f) // 宽度溢出裁剪框
+    }
 }
