@@ -1,6 +1,7 @@
 package com.nanami.koishi.core.data.repository
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.ViewCarousel
@@ -25,6 +26,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_image_stitching_name,
                 descriptionRes = R.string.tool_image_stitching_desc,
                 icon = Icons.Rounded.ViewCarousel,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "grid_split",
+                nameRes = R.string.tool_grid_split_name,
+                descriptionRes = R.string.tool_grid_split_desc,
+                icon = Icons.Rounded.GridView,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true

@@ -6,8 +6,12 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.RectF
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter as ComposeColorFilter
 import androidx.compose.ui.graphics.ColorMatrix as ComposeColorMatrix
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 object ImageAdjustmentEngine {
 
@@ -195,5 +199,78 @@ object ImageAdjustmentEngine {
 
         canvas.drawBitmap(source, matrix, paint)
         return outBitmap
+    }
+
+    /**
+     * 计算限制在图片范围内的有效缩放与平移偏移量
+     *
+     * @param pan 当前屏幕坐标系中的平移偏移量
+     * @param scale 当前缩放倍数
+     * @param rotationDegrees 当前旋转角度 (度数)
+     * @param sourceWidth 原图宽
+     * @param sourceHeight 原图高
+     * @param cropBoxWidth 裁剪框宽
+     * @param cropBoxHeight 裁剪框高
+     * @param constrainToImage 是否开启限定在图片范围内
+     * @return 经几何截断后的合法 (Offset, Scale)
+     */
+    fun clampPanAndScale(
+        pan: Offset,
+        scale: Float,
+        rotationDegrees: Float,
+        sourceWidth: Float,
+        sourceHeight: Float,
+        cropBoxWidth: Float,
+        cropBoxHeight: Float,
+        constrainToImage: Boolean
+    ): Pair<Offset, Float> {
+        if (!constrainToImage) {
+            // 未开启限定：允许自由缩小至 0.5f，允许自由平移
+            return Pair(pan, scale.coerceIn(0.5f, 4.0f))
+        }
+
+        val baseScale = calculateBaseScale(sourceWidth, sourceHeight, cropBoxWidth, cropBoxHeight)
+        val rad = Math.toRadians(rotationDegrees.toDouble())
+        val cosA = abs(cos(rad)).toFloat()
+        val sinA = abs(sin(rad)).toFloat()
+
+        // 裁剪框在旋转后图片局部坐标系下的半宽与半高投影
+        val halfCropW = cropBoxWidth / 2f
+        val halfCropH = cropBoxHeight / 2f
+        val projHalfW = halfCropW * cosA + halfCropH * sinA
+        val projHalfH = halfCropW * sinA + halfCropH * cosA
+
+        // 图片经 baseScale 适配后的基础渲染宽高
+        val drawW = sourceWidth * baseScale
+        val drawH = sourceHeight * baseScale
+
+        // 为保证旋转后的图片能完全包裹裁剪框所需的最小缩放比
+        val minScaleW = if (drawW > 0f) (projHalfW * 2f) / drawW else 1f
+        val minScaleH = if (drawH > 0f) (projHalfH * 2f) / drawH else 1f
+        val minRequiredScale = maxOf(minScaleW, minScaleH, 1.0f)
+
+        val clampedScale = scale.coerceIn(minRequiredScale, 4.0f)
+
+        // 在 clampedScale 下，图片局部坐标系中允许的平移量最大值
+        val currentLocalHalfW = (drawW * clampedScale) / 2f
+        val currentLocalHalfH = (drawH * clampedScale) / 2f
+
+        val maxLocalPanX = maxOf(0f, currentLocalHalfW - projHalfW)
+        val maxLocalPanY = maxOf(0f, currentLocalHalfH - projHalfH)
+
+        // 将屏幕平移向量旋转到图片局部坐标系 (-rotationDegrees)
+        val negRad = -rad
+        val localPanX = (pan.x * cos(negRad) - pan.y * sin(negRad)).toFloat()
+        val localPanY = (pan.x * sin(negRad) + pan.y * cos(negRad)).toFloat()
+
+        // 在图片自身坐标系中截断限制平移
+        val clampedLocalPanX = localPanX.coerceIn(-maxLocalPanX, maxLocalPanX)
+        val clampedLocalPanY = localPanY.coerceIn(-maxLocalPanY, maxLocalPanY)
+
+        // 旋转回屏幕坐标系
+        val screenPanX = (clampedLocalPanX * cos(rad) - clampedLocalPanY * sin(rad)).toFloat()
+        val screenPanY = (clampedLocalPanX * sin(rad) + clampedLocalPanY * cos(rad)).toFloat()
+
+        return Pair(Offset(screenPanX, screenPanY), clampedScale)
     }
 }

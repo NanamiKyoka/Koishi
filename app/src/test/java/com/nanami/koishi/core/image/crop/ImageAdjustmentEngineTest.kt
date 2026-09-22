@@ -78,4 +78,69 @@ class ImageAdjustmentEngineTest {
         assertEquals(800f, 600f * landscapeScale, 0.001f) // 高度刚好为 800
         assertEquals(1600f, 1200f * landscapeScale, 0.001f) // 宽度溢出裁剪框
     }
+
+    @Test
+    fun testClampPanAndScale_whenUnconstrained_allowsFreePanAndScale() {
+        val (pan, scale) = ImageAdjustmentEngine.clampPanAndScale(
+            pan = androidx.compose.ui.geometry.Offset(500f, -800f),
+            scale = 0.6f,
+            rotationDegrees = 0f,
+            sourceWidth = 1000f,
+            sourceHeight = 1000f,
+            cropBoxWidth = 800f,
+            cropBoxHeight = 800f,
+            constrainToImage = false
+        )
+        assertEquals(0.6f, scale, 0.001f)
+        assertEquals(500f, pan.x, 0.001f)
+        assertEquals(-800f, pan.y, 0.001f)
+    }
+
+    @Test
+    fun testClampPanAndScale_whenConstrained_clampsScaleAndPan() {
+        // 1. 缩放比例小于 1.0 时强制纠正为至少 1.0 (0度无旋转)
+        val (pan1, scale1) = ImageAdjustmentEngine.clampPanAndScale(
+            pan = androidx.compose.ui.geometry.Offset(0f, 0f),
+            scale = 0.7f,
+            rotationDegrees = 0f,
+            sourceWidth = 1000f,
+            sourceHeight = 1000f,
+            cropBoxWidth = 800f,
+            cropBoxHeight = 800f,
+            constrainToImage = true
+        )
+        assertEquals(1.0f, scale1, 0.001f)
+        assertEquals(0f, pan1.x, 0.001f)
+        assertEquals(0f, pan1.y, 0.001f)
+
+        // 2. 缩放到 1.5 倍时，drawW = 800 * 1.5 = 1200，允许的最大平移为 (1200 - 800) / 2 = 200
+        val (pan2, scale2) = ImageAdjustmentEngine.clampPanAndScale(
+            pan = androidx.compose.ui.geometry.Offset(450f, -350f),
+            scale = 1.5f,
+            rotationDegrees = 0f,
+            sourceWidth = 1000f,
+            sourceHeight = 1000f,
+            cropBoxWidth = 800f,
+            cropBoxHeight = 800f,
+            constrainToImage = true
+        )
+        assertEquals(1.5f, scale2, 0.001f)
+        assertEquals(200f, pan2.x, 0.001f)
+        assertEquals(-200f, pan2.y, 0.001f)
+
+        // 3. 旋转 90 度时，竖屏图片 500x1000，基础宽高 drawW=800, drawH=1600
+        // 旋转 90 度后，原图的宽(800)转到了纵向，高(1600)转到了横向
+        // 缩放 1.0 倍时依然全覆盖裁剪框 (800x800)
+        val (pan3, scale3) = ImageAdjustmentEngine.clampPanAndScale(
+            pan = androidx.compose.ui.geometry.Offset(0f, 0f),
+            scale = 1.0f,
+            rotationDegrees = 90f,
+            sourceWidth = 500f,
+            sourceHeight = 1000f,
+            cropBoxWidth = 800f,
+            cropBoxHeight = 800f,
+            constrainToImage = true
+        )
+        assertEquals(1.0f, scale3, 0.001f)
+    }
 }

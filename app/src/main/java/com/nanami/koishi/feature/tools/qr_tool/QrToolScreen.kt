@@ -87,6 +87,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.image.crop.ImageCropActivity
+import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
 import com.nanami.koishi.feature.tools.qr_tool.components.ColorPickerDialog
 import com.nanami.koishi.feature.tools.qr_tool.components.ThemePickerBottomSheet
 import com.nanami.koishi.feature.tools.qr_tool.engine.QrDotStyle
@@ -122,42 +123,12 @@ fun QrToolRoute(
         }
     }
 
-    // 裁剪 Activity 启动器
-    val cropLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val outputUriStr = result.data?.getStringExtra(ImageCropActivity.EXTRA_OUTPUT_URI)
-            val targetType = result.data?.getStringExtra(ImageCropActivity.EXTRA_TARGET)
-            if (!outputUriStr.isNullOrBlank()) {
-                val outputUri = Uri.parse(outputUriStr)
-                if (targetType == "logo") {
-                    viewModel.onEvent(QrToolUiEvent.OnLogoSelected(outputUri))
-                } else if (targetType == "bg") {
-                    viewModel.onEvent(QrToolUiEvent.OnBgSelected(outputUri))
-                }
-            }
-        }
+    // 通用裁剪启动器 (Logo 与 背景图)
+    val logoCropLauncher = rememberCropImageLauncher { uri ->
+        viewModel.onEvent(QrToolUiEvent.OnLogoSelected(uri))
     }
-
-    // Logo 选择启动器 (选取图片后启动专业裁剪)
-    val logoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            val intent = ImageCropActivity.createIntent(context, uri, isSquare = true, target = "logo")
-            cropLauncher.launch(intent)
-        }
-    }
-
-    // 背景图选择启动器 (选取图片后启动专业裁剪)
-    val bgPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            val intent = ImageCropActivity.createIntent(context, uri, isSquare = true, target = "bg")
-            cropLauncher.launch(intent)
-        }
+    val bgCropLauncher = rememberCropImageLauncher { uri ->
+        viewModel.onEvent(QrToolUiEvent.OnBgSelected(uri))
     }
 
     Scaffold(
@@ -542,7 +513,7 @@ fun QrToolRoute(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 FilledTonalButton(
-                    onClick = { logoPickerLauncher.launch("image/*") },
+                    onClick = { logoCropLauncher.launch(isSquare = true, target = "logo") },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -561,7 +532,7 @@ fun QrToolRoute(
                 }
 
                 FilledTonalButton(
-                    onClick = { bgPickerLauncher.launch("image/*") },
+                    onClick = { bgCropLauncher.launch(isSquare = true, target = "bg") },
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,

@@ -36,6 +36,12 @@ data object QrToolRoute
 data object ImageStitchingRoute
 
 /**
+ * 多格切图小工具强类型路由
+ */
+@Serializable
+data object GridSplitRoute
+
+/**
  * 工具详情或独立小工具通用强类型路由
  *
  * @property toolId 工具唯一ID

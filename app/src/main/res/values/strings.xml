@@ -200,6 +200,9 @@
     <string name="crop_read_failed">无法读取图片文件</string>
     <string name="crop_load_error">加载图片异常: %1$s</string>
     <string name="crop_save_failed">保存裁剪图像失败</string>
+    <string name="crop_constrain_to_image">限定在图片范围内</string>
+    <string name="crop_constrain_desc_on">裁剪框始终保持在图片以内</string>
+    <string name="crop_constrain_desc_off">允许自由缩放平移超出图片</string>
 
     <!-- Image Stitching Tool -->
     <string name="tool_image_stitching_name">图片拼接</string>
@@ -244,4 +247,27 @@
     <string name="stitching_processing">正在处理与合成...</string>
     <string name="stitching_need_at_least_two">请至少选择 2 张图片进行拼接</string>
     <string name="stitching_need_at_least_one">请先选择图片</string>
+
+    <!-- Grid Split Tool -->
+    <string name="tool_grid_split_name">多格切图</string>
+    <string name="tool_grid_split_desc">支持切方格与自定义行列切割，轻松制作九宫格与拼图</string>
+    <string name="grid_split_title">多格切图</string>
+    <string name="grid_split_tab_square">切方格</string>
+    <string name="grid_split_tab_custom">自定义切</string>
+    <string name="grid_split_select_image">选择图片</string>
+    <string name="grid_split_change_image">更换图片</string>
+    <string name="grid_split_clear_image">清除图片</string>
+    <string name="grid_split_empty_title">尚未选择图片</string>
+    <string name="grid_split_empty_desc">点击下方按钮从相册选取一张图片进行多格切分</string>
+    <string name="grid_split_square_n_label">网格规格</string>
+    <string name="grid_split_custom_rows_label">行数量</string>
+    <string name="grid_split_custom_cols_label">列数量</string>
+    <string name="grid_split_square_summary">%1$dx%1$d 均切为 %2$d 格</string>
+    <string name="grid_split_custom_summary">%1$dx%2$d 切为 %3$d 个图片</string>
+    <string name="grid_split_btn_crop">裁剪</string>
+    <string name="grid_split_processing">正在切图并保存至相册...</string>
+    <string name="grid_split_saved_success">已成功切分并保存 %1$d 张图片至相册 (Pictures/Koishi)</string>
+    <string name="grid_split_saved_failed">切图保存失败: %1$s</string>
+    <string name="grid_split_load_failed">加载图片失败: %1$s</string>
+    <string name="grid_split_no_image">请先选择需要切分的图片</string>
 </resources>

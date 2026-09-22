@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.Crop
+import androidx.compose.material.icons.rounded.FitScreen
 import androidx.compose.material.icons.rounded.Rotate90DegreesCw
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +37,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,6 +55,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -100,8 +104,12 @@ fun ImageCropScreen(
         return
     }
 
+    val context = LocalContext.current
     val primaryColor = MaterialTheme.colorScheme.primary
     var activeTab by remember { mutableStateOf(CropToolTab.ROTATE) }
+
+    // 持久化存储记忆的“限定在图片范围内”设置
+    var constrainToImage by remember { mutableStateOf(CropPreferences.isConstrainToImage(context)) }
 
     // 变换参数状态
     var baseRotateSteps by remember { mutableFloatStateOf(0f) } // 0, 90, 180, 270
@@ -185,16 +193,95 @@ fun ImageCropScreen(
             }
         }
 
+        // 1.5 范围约束开关栏 (持久化记忆)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surfaceContainerLow
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.FitScreen,
+                        contentDescription = null,
+                        tint = if (constrainToImage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Column {
+                        Text(
+                            text = stringResource(R.string.crop_constrain_to_image),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(
+                                if (constrainToImage) R.string.crop_constrain_desc_on else R.string.crop_constrain_desc_off
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Switch(
+                    checked = constrainToImage,
+                    onCheckedChange = { checked ->
+                        constrainToImage = checked
+                        CropPreferences.setConstrainToImage(context, checked)
+                        if (checked && cropRectPx.width() > 0f) {
+                            val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
+                                pan = panOffset,
+                                scale = scaleFactor,
+                                rotationDegrees = totalRotation,
+                                sourceWidth = sourceBitmap.width.toFloat(),
+                                sourceHeight = sourceBitmap.height.toFloat(),
+                                cropBoxWidth = cropRectPx.width(),
+                                cropBoxHeight = cropRectPx.height(),
+                                constrainToImage = true
+                            )
+                            panOffset = clampedPan
+                            scaleFactor = clampedScale
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+        }
+
         // 2. 核心九宫格裁剪视口
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
                 .clipToBounds()
-                .pointerInput(Unit) {
+                .pointerInput(constrainToImage, totalRotation, sourceBitmap) {
+                    val viewW = size.width.toFloat()
+                    val viewH = size.height.toFloat()
+                    val boxSide = min(viewW, viewH) * 0.82f
                     detectTransformGestures { _, pan, zoom, _ ->
-                        scaleFactor = (scaleFactor * zoom).coerceIn(0.5f, 4.0f)
-                        panOffset += pan
+                        val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
+                            pan = panOffset + pan,
+                            scale = scaleFactor * zoom,
+                            rotationDegrees = totalRotation,
+                            sourceWidth = sourceBitmap.width.toFloat(),
+                            sourceHeight = sourceBitmap.height.toFloat(),
+                            cropBoxWidth = boxSide,
+                            cropBoxHeight = boxSide,
+                            constrainToImage = constrainToImage
+                        )
+                        scaleFactor = clampedScale
+                        panOffset = clampedPan
                     }
                 },
             contentAlignment = Alignment.Center
@@ -356,7 +443,22 @@ fun ImageCropScreen(
                     // 90° 旋转快捷键
                     IconButton(
                         onClick = {
-                            baseRotateSteps = (baseRotateSteps + 90f) % 360f
+                            val newRotate = (baseRotateSteps + 90f) % 360f
+                            baseRotateSteps = newRotate
+                            if (constrainToImage && cropRectPx.width() > 0f) {
+                                val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
+                                    pan = panOffset,
+                                    scale = scaleFactor,
+                                    rotationDegrees = newRotate + fineAngle,
+                                    sourceWidth = sourceBitmap.width.toFloat(),
+                                    sourceHeight = sourceBitmap.height.toFloat(),
+                                    cropBoxWidth = cropRectPx.width(),
+                                    cropBoxHeight = cropRectPx.height(),
+                                    constrainToImage = true
+                                )
+                                panOffset = clampedPan
+                                scaleFactor = clampedScale
+                            }
                         },
                         modifier = Modifier.size(36.dp)
                     ) {
@@ -376,17 +478,52 @@ fun ImageCropScreen(
                     CropToolTab.ROTATE -> {
                         RulerSlider(
                             value = fineAngle,
-                            onValueChange = { fineAngle = it },
+                            onValueChange = { angle ->
+                                fineAngle = angle
+                                if (constrainToImage && cropRectPx.width() > 0f) {
+                                    val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
+                                        pan = panOffset,
+                                        scale = scaleFactor,
+                                        rotationDegrees = baseRotateSteps + angle,
+                                        sourceWidth = sourceBitmap.width.toFloat(),
+                                        sourceHeight = sourceBitmap.height.toFloat(),
+                                        cropBoxWidth = cropRectPx.width(),
+                                        cropBoxHeight = cropRectPx.height(),
+                                        constrainToImage = true
+                                    )
+                                    panOffset = clampedPan
+                                    scaleFactor = clampedScale
+                                }
+                            },
                             valueRange = -45f..45f,
                             step = 0.5f,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
                     CropToolTab.SCALE -> {
+                        val minSliderScale = if (constrainToImage) 100f else 50f
                         RulerSlider(
-                            value = scaleFactor * 100f,
-                            onValueChange = { scaleFactor = it / 100f },
-                            valueRange = 100f..300f,
+                            value = (scaleFactor * 100f).coerceIn(minSliderScale, 300f),
+                            onValueChange = { targetVal ->
+                                val targetScale = targetVal / 100f
+                                if (cropRectPx.width() > 0f) {
+                                    val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
+                                        pan = panOffset,
+                                        scale = targetScale,
+                                        rotationDegrees = totalRotation,
+                                        sourceWidth = sourceBitmap.width.toFloat(),
+                                        sourceHeight = sourceBitmap.height.toFloat(),
+                                        cropBoxWidth = cropRectPx.width(),
+                                        cropBoxHeight = cropRectPx.height(),
+                                        constrainToImage = constrainToImage
+                                    )
+                                    panOffset = clampedPan
+                                    scaleFactor = clampedScale
+                                } else {
+                                    scaleFactor = targetScale
+                                }
+                            },
+                            valueRange = minSliderScale..300f,
                             step = 2f,
                             modifier = Modifier.fillMaxWidth()
                         )

@@ -28,6 +28,8 @@ import com.nanami.koishi.R
 import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
+import com.nanami.koishi.feature.tools.grid_split.GridSplitRoute
+import com.nanami.koishi.feature.tools.grid_split.GridSplitViewModel
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationRoute
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
@@ -54,6 +56,7 @@ fun KoishiNavHost(
                 onNavigateToTool = { tool ->
                     when (tool.id) {
                         "image_stitching" -> navController.navigate(ImageStitchingRoute)
+                        "grid_split" -> navController.navigate(GridSplitRoute)
                         "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
                         "qr_code" -> navController.navigate(QrToolRoute)
                         else -> {
@@ -73,6 +76,14 @@ fun KoishiNavHost(
             val stitchingViewModel: com.nanami.koishi.feature.tools.image_stitching.ImageStitchingViewModel = viewModel()
             com.nanami.koishi.feature.tools.image_stitching.ImageStitchingRoute(
                 viewModel = stitchingViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<GridSplitRoute> {
+            val gridSplitViewModel: GridSplitViewModel = viewModel()
+            GridSplitRoute(
+                viewModel = gridSplitViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
