@@ -1,49 +1,59 @@
 package com.nanami.koishi.feature.home
 
 import android.app.Application
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Image
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.R
+import com.nanami.koishi.core.data.repository.InMemoryToolRepository
+import com.nanami.koishi.core.data.repository.SearchHistoryRepository
+import com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepository
+import com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository
+import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
+import com.nanami.koishi.core.data.repository.ToolRepository
 import com.nanami.koishi.core.model.ToolCategory
 import com.nanami.koishi.core.model.ToolItem
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
+class HomeViewModel @JvmOverloads constructor(
+    application: Application,
+    private val toolRepository: ToolRepository = InMemoryToolRepository(),
+    private val favoritesRepository: ToolFavoritesRepository = SharedPreferencesToolFavoritesRepository(application),
+    private val searchHistoryRepository: SearchHistoryRepository = SharedPreferencesSearchHistoryRepository(application)
+) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(MainTab.TOOLBOX)
     private val _searchQuery = MutableStateFlow("")
     private val _isSearchActive = MutableStateFlow(false)
     private val _selectedCategory = MutableStateFlow(ToolCategory.ALL)
-    private val _searchHistory = MutableStateFlow(listOf("图片混淆", "番茄混淆"))
-
-    private val _initialTools = listOf(
-        ToolItem(
-            id = "image_obfuscation",
-            nameRes = R.string.tool_image_obfuscation_name,
-            descriptionRes = R.string.tool_image_obfuscation_desc,
-            icon = Icons.Rounded.Image,
-            category = ToolCategory.TEXT_IMAGE,
-            isFavorite = true,
-            badge = null
-        )
+    private val _expandedCategories = MutableStateFlow<Set<ToolCategory>>(
+        ToolCategory.entries.filter { it != ToolCategory.ALL }.toSet()
     )
 
-    private val _tools = MutableStateFlow(_initialTools)
+    // 动态将持久化的收藏 ID 注入到可用工具流中
+    private val _toolsWithFavoriteState: Flow<List<ToolItem>> = combine(
+        toolRepository.availableTools,
+        favoritesRepository.favoriteToolIds
+    ) { tools, favIds ->
+        tools.map { tool ->
+            tool.copy(isFavorite = favIds.contains(tool.id))
+        }
+    }
 
     val uiState: StateFlow<HomeUiState> = combine(
-        _currentTab,
-        _searchQuery,
-        _isSearchActive,
+        combine(_currentTab, _searchQuery, _isSearchActive) { tab, query, active ->
+            Triple(tab, query, active)
+        },
         _selectedCategory,
-        _tools
-    ) { tab: MainTab, query: String, active: Boolean, category: ToolCategory, tools: List<ToolItem> ->
+        _expandedCategories,
+        _toolsWithFavoriteState,
+        searchHistoryRepository.searchHistory
+    ) { (tab, query, active), category, expanded, tools, history ->
         val app = getApplication<Application>()
         val filtered = tools.filter { tool ->
             val matchesCategory = (category == ToolCategory.ALL) || (tool.category == category)
@@ -60,19 +70,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             searchQuery = query,
             isSearchActive = active,
             selectedCategory = category,
+            categories = ToolCategory.entries.filter { it != ToolCategory.ALL },
             allTools = tools,
             filteredTools = filtered,
-            favoriteTools = tools.filter { it.isFavorite }
+            favoriteTools = tools.filter { it.isFavorite },
+            expandedCategories = expanded,
+            searchHistory = history
         )
-    }.combine(_searchHistory) { state: HomeUiState, history: List<String> ->
-        state.copy(searchHistory = history)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState(
-            allTools = _initialTools,
-            filteredTools = _initialTools,
-            favoriteTools = _initialTools.filter { it.isFavorite }
+            categories = ToolCategory.entries.filter { it != ToolCategory.ALL },
+            allTools = toolRepository.getToolById("image_obfuscation")?.let { listOf(it) } ?: emptyList(),
+            filteredTools = toolRepository.getToolById("image_obfuscation")?.let { listOf(it) } ?: emptyList(),
+            expandedCategories = ToolCategory.entries.filter { it != ToolCategory.ALL }.toSet()
         )
     )
 
@@ -86,6 +98,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
             is HomeUiEvent.OnSearchActiveChange -> {
                 _isSearchActive.value = event.active
+                if (!event.active && _searchQuery.value.isNotBlank()) {
+                    recordSearchHistory(_searchQuery.value)
+                }
             }
             is HomeUiEvent.OnClearSearch -> {
                 _searchQuery.value = ""
@@ -93,19 +108,42 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             is HomeUiEvent.OnSelectCategory -> {
                 _selectedCategory.value = event.category
             }
-            is HomeUiEvent.OnToggleFavorite -> {
-                _tools.update { list ->
-                    list.map {
-                        if (it.id == event.toolId) it.copy(isFavorite = !it.isFavorite) else it
+            is HomeUiEvent.OnToggleCategoryExpanded -> {
+                _expandedCategories.update { current ->
+                    if (current.contains(event.category)) {
+                        current - event.category
+                    } else {
+                        current + event.category
                     }
+                }
+            }
+            is HomeUiEvent.OnToggleFavorite -> {
+                viewModelScope.launch {
+                    favoritesRepository.toggleFavorite(event.toolId)
                 }
             }
             is HomeUiEvent.OnSearchHistoryClick -> {
                 _searchQuery.value = event.keyword
                 _isSearchActive.value = false
+                recordSearchHistory(event.keyword)
+            }
+            is HomeUiEvent.OnDeleteSearchHistoryItem -> {
+                viewModelScope.launch {
+                    searchHistoryRepository.deleteSearchHistoryItem(event.keyword)
+                }
             }
             is HomeUiEvent.OnClearHistory -> {
-                _searchHistory.value = emptyList()
+                viewModelScope.launch {
+                    searchHistoryRepository.clearAllSearchHistory()
+                }
+            }
+        }
+    }
+
+    fun recordSearchHistory(keyword: String) {
+        if (keyword.isNotBlank()) {
+            viewModelScope.launch {
+                searchHistoryRepository.addSearchHistory(keyword)
             }
         }
     }

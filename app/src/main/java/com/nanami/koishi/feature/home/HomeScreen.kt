@@ -1,12 +1,17 @@
 package com.nanami.koishi.feature.home
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,19 +19,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.History
-import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,21 +43,26 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.model.ToolItem
 import com.nanami.koishi.feature.favorites.FavoritesScreen
-import com.nanami.koishi.feature.home.components.CategoryChips
-import com.nanami.koishi.feature.home.components.ToolCard
+import com.nanami.koishi.feature.home.components.CategorySectionCard
+import com.nanami.koishi.feature.home.components.ToolChip
 import com.nanami.koishi.feature.settings.SettingsScreen
 import com.nanami.koishi.feature.settings.SettingsViewModel
 
@@ -91,29 +102,23 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 tonalElevation = 0.dp
             ) {
-                NavigationBarItem(
-                    selected = uiState.currentTab == MainTab.TOOLBOX,
-                    onClick = { onEvent(HomeUiEvent.OnSelectTab(MainTab.TOOLBOX)) },
-                    icon = { Icon(Icons.Rounded.Home, contentDescription = stringResource(R.string.nav_toolbox)) },
-                    label = { Text(stringResource(R.string.nav_toolbox), fontWeight = if (uiState.currentTab == MainTab.TOOLBOX) FontWeight.Bold else FontWeight.Normal) },
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
+                // 左：收藏 (FAVORITES)
                 NavigationBarItem(
                     selected = uiState.currentTab == MainTab.FAVORITES,
                     onClick = { onEvent(HomeUiEvent.OnSelectTab(MainTab.FAVORITES)) },
                     icon = { Icon(Icons.Rounded.Favorite, contentDescription = stringResource(R.string.nav_favorites)) },
-                    label = { Text(stringResource(R.string.nav_favorites), fontWeight = if (uiState.currentTab == MainTab.FAVORITES) FontWeight.Bold else FontWeight.Normal) },
+                    label = {
+                        Text(
+                            stringResource(R.string.nav_favorites),
+                            fontWeight = if (uiState.currentTab == MainTab.FAVORITES) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                         selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -122,11 +127,38 @@ fun HomeScreen(
                         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
+
+                // 中：工具箱 (TOOLBOX)
+                NavigationBarItem(
+                    selected = uiState.currentTab == MainTab.TOOLBOX,
+                    onClick = { onEvent(HomeUiEvent.OnSelectTab(MainTab.TOOLBOX)) },
+                    icon = { Icon(Icons.Rounded.Widgets, contentDescription = stringResource(R.string.nav_toolbox)) },
+                    label = {
+                        Text(
+                            stringResource(R.string.nav_toolbox),
+                            fontWeight = if (uiState.currentTab == MainTab.TOOLBOX) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+
+                // 右：设置 (SETTINGS)
                 NavigationBarItem(
                     selected = uiState.currentTab == MainTab.SETTINGS,
                     onClick = { onEvent(HomeUiEvent.OnSelectTab(MainTab.SETTINGS)) },
                     icon = { Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.nav_settings)) },
-                    label = { Text(stringResource(R.string.nav_settings), fontWeight = if (uiState.currentTab == MainTab.SETTINGS) FontWeight.Bold else FontWeight.Normal) },
+                    label = {
+                        Text(
+                            stringResource(R.string.nav_settings),
+                            fontWeight = if (uiState.currentTab == MainTab.SETTINGS) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                         selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -144,18 +176,19 @@ fun HomeScreen(
                 .padding(innerPadding)
         ) {
             when (uiState.currentTab) {
+                MainTab.FAVORITES -> {
+                    FavoritesScreen(
+                        favoriteTools = uiState.favoriteTools,
+                        onToolClick = onToolClick,
+                        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) },
+                        onNavigateToToolbox = { onEvent(HomeUiEvent.OnSelectTab(MainTab.TOOLBOX)) }
+                    )
+                }
                 MainTab.TOOLBOX -> {
                     ToolboxTabContent(
                         uiState = uiState,
                         onEvent = onEvent,
                         onToolClick = onToolClick
-                    )
-                }
-                MainTab.FAVORITES -> {
-                    FavoritesScreen(
-                        favoriteTools = uiState.favoriteTools,
-                        onToolClick = onToolClick,
-                        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) }
                     )
                 }
                 MainTab.SETTINGS -> {
@@ -166,7 +199,7 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun ToolboxTabContent(
     uiState: HomeUiState,
@@ -174,17 +207,13 @@ private fun ToolboxTabContent(
     onToolClick: (ToolItem) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            contentAlignment = Alignment.TopCenter
-        ) {
+        // 搜索激活状态下的搜索界面
+        if (uiState.isSearchActive) {
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = { onEvent(HomeUiEvent.OnSearchQueryChange(it)) },
-                onSearch = { onEvent(HomeUiEvent.OnSearchActiveChange(false)) },
-                active = uiState.isSearchActive,
+                onSearch = { /* 实时过滤，输入内容会在点击工具或退出时记录 */ },
+                active = true,
                 onActiveChange = { onEvent(HomeUiEvent.OnSearchActiveChange(it)) },
                 placeholder = {
                     Text(
@@ -194,11 +223,13 @@ private fun ToolboxTabContent(
                     )
                 },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Search,
-                        contentDescription = stringResource(R.string.search_icon_desc),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    IconButton(onClick = { onEvent(HomeUiEvent.OnSearchActiveChange(false)) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = stringResource(R.string.btn_back),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 },
                 trailingIcon = {
                     if (uiState.searchQuery.isNotEmpty()) {
@@ -212,101 +243,179 @@ private fun ToolboxTabContent(
                     }
                 },
                 colors = SearchBarDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                SearchSuggestions(
-                    history = uiState.searchHistory,
-                    onHistoryItemClick = { onEvent(HomeUiEvent.OnSearchHistoryClick(it)) },
-                    onClearHistory = { onEvent(HomeUiEvent.OnClearHistory) }
-                )
-            }
-        }
-
-        if (!uiState.isSearchActive) {
-            Spacer(modifier = Modifier.height(4.dp))
-            CategoryChips(
-                categories = uiState.categories,
-                selectedCategory = uiState.selectedCategory,
-                onCategorySelected = { onEvent(HomeUiEvent.OnSelectCategory(it)) }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (uiState.filteredTools.isEmpty()) {
-                EmptySearchResult(
-                    query = uiState.searchQuery,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    item(span = { GridItemSpan(2) }) {
-                        Row(
+                if (uiState.searchQuery.isBlank()) {
+                    SearchSuggestions(
+                        history = uiState.searchHistory,
+                        onHistoryItemClick = { onEvent(HomeUiEvent.OnSearchHistoryClick(it)) },
+                        onDeleteItem = { onEvent(HomeUiEvent.OnDeleteSearchHistoryItem(it)) },
+                        onClearHistory = { onEvent(HomeUiEvent.OnClearHistory) }
+                    )
+                } else {
+                    if (uiState.filteredTools.isEmpty()) {
+                        EmptySearchResult(
+                            query = uiState.searchQuery,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
                         ) {
-                            Text(
-                                text = stringResource(uiState.selectedCategory.titleRes),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = stringResource(R.string.tools_count_summary, uiState.filteredTools.size),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.search_results_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Surface(
+                                    shape = PillShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.tools_count_summary, uiState.filteredTools.size),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                uiState.filteredTools.forEach { tool ->
+                                    ToolChip(
+                                        tool = tool,
+                                        onClick = {
+                                            onEvent(HomeUiEvent.OnSearchActiveChange(false))
+                                            onToolClick(tool)
+                                        },
+                                        onLongClick = { onEvent(HomeUiEvent.OnToggleFavorite(tool.id)) }
+                                    )
+                                }
+                            }
                         }
                     }
-
-                    items(
-                        items = uiState.filteredTools,
-                        key = { it.id }
-                    ) { tool ->
-                        ToolCard(
-                            tool = tool,
-                            onClick = { onToolClick(tool) },
-                            onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(tool.id)) }
+                }
+            }
+        } else {
+            // 常规状态：顶部标准 TopAppBar（与详情页保持完全一致的高度、留白与背景配色）
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                actions = {
+                    IconButton(onClick = { onEvent(HomeUiEvent.OnSearchActiveChange(true)) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Search,
+                            contentDescription = stringResource(R.string.search_icon_desc),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                )
+            )
+
+            // 分类卡片列表（遵循“做一个放一个”原则，仅展示有真实工具的分类）
+            val categoriesToDisplay = uiState.categories.filter { category ->
+                uiState.allTools.any { it.category == category }
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                items(
+                    items = categoriesToDisplay,
+                    key = { it.name }
+                ) { category ->
+                    val toolsInCategory = uiState.allTools.filter { it.category == category }
+                    CategorySectionCard(
+                        category = category,
+                        tools = toolsInCategory,
+                        isExpanded = uiState.expandedCategories.contains(category),
+                        onToggleExpand = { onEvent(HomeUiEvent.OnToggleCategoryExpanded(category)) },
+                        onToolClick = onToolClick,
+                        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) }
+                    )
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SearchSuggestions(
     history: List<String>,
     onHistoryItemClick: (String) -> Unit,
+    onDeleteItem: (String) -> Unit,
     onClearHistory: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+    ) {
         if (history.isNotEmpty()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stringResource(R.string.search_history),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                TextButton(onClick = onClearHistory) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.History,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.search_history),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                TextButton(
+                    onClick = onClearHistory,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.DeleteOutline,
+                        contentDescription = stringResource(R.string.clear_history),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = stringResource(R.string.clear_history),
                         style = MaterialTheme.typography.labelMedium,
@@ -315,37 +424,76 @@ private fun SearchSuggestions(
                 }
             }
 
-            LazyColumn {
-                items(history) { item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onHistoryItemClick(item) }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+            // 精美流式胶囊样式的搜索历史，支持点击搜索与小叉删除
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                history.forEach { item ->
+                    Surface(
+                        shape = PillShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                        tonalElevation = 1.dp
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = item,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(PillShape)
+                                .clickable { onHistoryItemClick(item) }
+                                .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp)
+                        ) {
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(CircleShape)
+                                    .clickable { onDeleteItem(item) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = stringResource(R.string.delete_history_item),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
         } else {
-            Box(
+            // 优雅的空搜索历史占位
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
+                    .padding(vertical = 48.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ManageSearch,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = stringResource(R.string.no_search_history),
                     style = MaterialTheme.typography.bodyMedium,

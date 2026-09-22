@@ -11,5 +11,6 @@ data class ToolItem(
     val category: ToolCategory,
     val isFavorite: Boolean = false,
     val isNew: Boolean = false,
-    val badge: String? = null
+    val badge: String? = null,
+    val hasDot: Boolean = false
 )

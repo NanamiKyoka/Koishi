@@ -13,6 +13,8 @@
     <string name="search_history">搜索历史</string>
     <string name="clear_history">清空</string>
     <string name="no_search_history">暂无搜索历史</string>
+    <string name="delete_history_item">删除</string>
+    <string name="search_results_title">搜索结果</string>
     <string name="category_all">全部</string>
     <string name="category_common">常用</string>
     <string name="category_calc_convert">换算计算</string>
@@ -27,13 +29,31 @@
     <string name="remove_favorite">取消收藏</string>
 
     <!-- Tools -->
-    <string name="tool_image_obfuscation_name">图片混淆与反混淆</string>
+    <string name="tool_image_obfuscation_name">图片混淆</string>
     <string name="tool_image_obfuscation_desc">番茄混淆、PicEncrypt 混沌映射与 MD5 置乱打乱及无损还原</string>
+    <string name="tool_palette_assistant_name">配色助手</string>
+    <string name="tool_palette_assistant_desc">色彩搭配与取色转换小工具</string>
+    <string name="tool_barrage_name">手持弹幕</string>
+    <string name="tool_barrage_desc">全屏滚动大字提示与打 Call 神器</string>
+    <string name="tool_time_screen_name">时间屏幕</string>
+    <string name="tool_time_screen_desc">全屏翻页时钟与极简熄屏时钟</string>
+    <string name="tool_ruler_name">便携尺子</string>
+    <string name="tool_ruler_desc">屏幕物理尺寸测量与刻度工具</string>
+    <string name="tool_decision_maker_name">做个决定</string>
+    <string name="tool_decision_maker_desc">纠结终结者与转盘随机选择器</string>
+    <string name="tool_base64_name">Base64 编解码</string>
+    <string name="tool_base64_desc">文本与媒体 Base64 快速编解码</string>
+    <string name="tool_device_info_name">设备信息</string>
+    <string name="tool_device_info_desc">屏幕参数、系统版本与硬件传感器指标</string>
+    <string name="tool_unit_convert_name">单位换算</string>
+    <string name="tool_unit_convert_desc">长度、面积、质量与数据进制换算</string>
 
     <!-- Favorites Tab -->
-    <string name="favorites_title">我的收藏</string>
-    <string name="favorites_empty_title">暂无收藏工具</string>
-    <string name="favorites_empty_desc">在工具箱中点击工具卡片右上角的爱心即可加入收藏</string>
+    <string name="favorites_title">收藏</string>
+    <string name="favorites_empty_title">暂无收藏</string>
+    <string name="favorites_empty_desc">长按或点击工具即可加入您的专属快捷收藏夹</string>
+    <string name="favorites_add_guide">暂无收藏</string>
+    <string name="go_to_toolbox">前往工具箱浏览</string>
 
     <!-- Settings Tab -->
     <string name="settings_title">设置</string>
@@ -56,7 +76,7 @@
     <string name="dialog_cancel">取消</string>
 
     <!-- Image Obfuscation Screen -->
-    <string name="image_obfuscation_title">番茄图片混淆</string>
+    <string name="image_obfuscation_title">图片混淆</string>
     <string name="btn_back">返回</string>
     <string name="rotate_90">旋转90度</string>
     <string name="help">帮助</string>
@@ -78,7 +98,7 @@
     <string name="btn_all">全部</string>
 
     <!-- Help Dialog -->
-    <string name="dialog_help_title">番茄图片混淆使用帮助</string>
+    <string name="dialog_help_title">图片混淆使用帮助</string>
     <string name="dialog_help_1">• 混淆与解混淆：操作互为严格反函数。混淆一次后再次点击解混淆即可精确恢复原图；若连续混淆多次，则需等次数解混淆还原。</string>
     <string name="dialog_help_2">• 空间曲线混淆 (番茄图)：基于广义希尔伯特曲线遍历与黄金分割移位，完全免密、无损且具备极高撕裂感。</string>
     <string name="dialog_help_3">• PicEncrypt / MD5：使用混沌映射或密码学洗牌置乱。解混淆时必须选择相同算法与完全一致的密钥。</string>
