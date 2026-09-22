@@ -16,6 +16,9 @@ kotlinx-serialization = "1.11.0"
 junit = "4.13.2"
 androidx-test-junit = "1.3.0"
 androidx-test-espresso = "3.7.0"
+qrcode-kotlin = "4.5.0"
+mlkit-barcode-scanning = "17.3.0"
+androidx-camera = "1.4.1"
 
 [libraries]
 android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "android-desugar" }
@@ -36,6 +39,14 @@ androidx-compose-materialIcons = { module = "androidx.compose.material:material-
 # Coroutines & Serialization
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+# QR Code & Scanning
+qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin-android", version.ref = "qrcode-kotlin" }
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode-scanning" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "androidx-camera" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidx-camera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidx-camera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
 
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }

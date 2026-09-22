@@ -20,7 +20,7 @@
     <string name="category_calc_convert">换算计算</string>
     <string name="category_dev_code">开发编码</string>
     <string name="category_hardware">硬件设备</string>
-    <string name="category_text_image">文本媒体</string>
+    <string name="category_text_image">图片应用</string>
     <string name="tools_count_summary">共 %1$d 个工具</string>
     <string name="empty_search_title">未找到与 \"%1$s\" 相关的工具</string>
     <string name="empty_category_title">当前分类暂无工具</string>
@@ -143,4 +143,61 @@
     <string name="msg_process_failed">处理失败: %1$s</string>
     <string name="file_not_found">文件未找到或已被移除</string>
     <string name="msg_batch_failed">批量处理异常: %1$s</string>
+
+    <!-- QR Code Tool -->
+    <string name="tool_qr_code_name">二维码工具</string>
+    <string name="tool_qr_code_desc">全能二维码生成与个性化美化，支持相机实时与相册图片扫描识别</string>
+    <string name="qr_content_label">二维码内容</string>
+    <string name="qr_content_placeholder">输入网址或文字内容...</string>
+    <string name="qr_color_dark">深色</string>
+    <string name="qr_color_light">浅色</string>
+    <string name="qr_color_bg">背景色</string>
+    <string name="qr_extract_from_bg">从背景图取色</string>
+    <string name="qr_select_theme">选择主题</string>
+    <string name="qr_theme_title">选择主题</string>
+    <string name="qr_dot_style">数据点样式</string>
+    <string name="qr_style_square">方形</string>
+    <string name="qr_style_circle">圆形</string>
+    <string name="qr_dot_scale">数据点比例</string>
+    <string name="qr_btn_set_logo">设置Logo</string>
+    <string name="qr_btn_set_bg">设置背景图</string>
+    <string name="qr_bg_alpha">背景图透明度</string>
+    <string name="qr_margin">边框宽度</string>
+    <string name="qr_btn_scan">扫一扫</string>
+    <string name="qr_btn_save">保存图片</string>
+    <string name="qr_btn_more">更多</string>
+    <string name="qr_menu_reset">重置为默认</string>
+    <string name="qr_menu_clear_logo">清除 Logo</string>
+    <string name="qr_menu_clear_bg">清除背景图</string>
+    <string name="qr_saved_success">二维码已保存至相册 (Pictures/Koishi)</string>
+    <string name="qr_empty_content_warning">二维码内容不能为空</string>
+
+    <!-- QR Scan Activity -->
+    <string name="qr_scan_title">扫描二维码</string>
+    <string name="qr_scan_tip">将二维码放入框内即可自动扫描</string>
+    <string name="qr_scan_gallery">相册</string>
+    <string name="qr_scan_flashlight">手电筒</string>
+    <string name="qr_scan_result_title">扫描结果</string>
+    <string name="qr_scan_btn_copy">复制内容</string>
+    <string name="qr_scan_btn_open_url">打开链接</string>
+    <string name="qr_scan_btn_fill_tool">填入二维码工具</string>
+    <string name="qr_scan_copied">已复制到剪贴板</string>
+    <string name="qr_scan_no_qr_in_image">未在选中的图片中识别到二维码</string>
+    <string name="qr_scan_permission_denied">需要相机权限才能使用扫码功能</string>
+    <string name="qr_scan_grant_permission">去授权</string>
+
+    <!-- Image Crop & Adjustment -->
+    <string name="crop_title">裁剪</string>
+    <string name="crop_confirm">完成</string>
+    <string name="crop_reset">重置</string>
+    <string name="crop_rotate_90">顺时针90度</string>
+    <string name="crop_tab_rotate">旋转</string>
+    <string name="crop_tab_scale">缩放</string>
+    <string name="crop_tab_brightness">亮度</string>
+    <string name="crop_tab_contrast">对比度</string>
+    <string name="crop_tab_saturation">饱和度</string>
+    <string name="crop_invalid_source">无效的图片来源</string>
+    <string name="crop_read_failed">无法读取图片文件</string>
+    <string name="crop_load_error">加载图片异常: %1$s</string>
+    <string name="crop_save_failed">保存裁剪图像失败</string>
 </resources>

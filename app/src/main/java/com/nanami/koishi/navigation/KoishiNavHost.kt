@@ -30,6 +30,8 @@ import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationRoute
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewModel
+import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
+import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 
 @Composable
 fun KoishiNavHost(
@@ -50,15 +52,17 @@ fun KoishiNavHost(
                 viewModel = homeViewModel,
                 settingsViewModel = settingsViewModel,
                 onNavigateToTool = { tool ->
-                    if (tool.id == "image_obfuscation") {
-                        navController.navigate(ImageObfuscationRoute)
-                    } else {
-                        navController.navigate(
-                            ToolDetailRoute(
-                                toolId = tool.id,
-                                toolTitle = context.getString(tool.nameRes)
+                    when (tool.id) {
+                        "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
+                        "qr_code" -> navController.navigate(QrToolRoute)
+                        else -> {
+                            navController.navigate(
+                                ToolDetailRoute(
+                                    toolId = tool.id,
+                                    toolTitle = context.getString(tool.nameRes)
+                                )
                             )
-                        )
+                        }
                     }
                 }
             )
@@ -68,6 +72,14 @@ fun KoishiNavHost(
             val obfuscationViewModel: ImageObfuscationViewModel = viewModel()
             ImageObfuscationRoute(
                 viewModel = obfuscationViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<QrToolRoute> {
+            val qrToolViewModel: QrToolViewModel = viewModel()
+            QrToolRoute(
+                viewModel = qrToolViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -2,6 +2,7 @@ package com.nanami.koishi.core.data.repository
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.QrCode2
 import com.nanami.koishi.R
 import com.nanami.koishi.core.model.ToolCategory
 import com.nanami.koishi.core.model.ToolItem
@@ -25,7 +26,7 @@ class InMemoryToolRepository : ToolRepository {
 
     /**
      * 遵循“做一个放一个”准则：
-     * 仅注册目前已完整实现并经过算法与无损验证的图片混淆工具。
+     * 注册目前已完整实现的图片混淆与二维码工具。
      * 默认未收藏（收藏状态由 ToolFavoritesRepository 动态注入）。
      */
     private val _registeredTools = MutableStateFlow(
@@ -35,9 +36,18 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_image_obfuscation_name,
                 descriptionRes = R.string.tool_image_obfuscation_desc,
                 icon = Icons.Rounded.Image,
-                category = ToolCategory.TEXT_IMAGE,
+                category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = false
+            ),
+            ToolItem(
+                id = "qr_code",
+                nameRes = R.string.tool_qr_code_name,
+                descriptionRes = R.string.tool_qr_code_desc,
+                icon = Icons.Rounded.QrCode2,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
             )
         )
     )

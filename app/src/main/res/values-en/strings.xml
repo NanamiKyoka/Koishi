@@ -18,7 +18,7 @@
     <string name="category_calc_convert">Convert &amp; Calc</string>
     <string name="category_dev_code">Dev &amp; Code</string>
     <string name="category_hardware">Hardware</string>
-    <string name="category_text_image">Text &amp; Media</string>
+    <string name="category_text_image">Image Apps</string>
     <string name="tools_count_summary">%1$d tools</string>
     <string name="empty_search_title">No tools found for \"%1$s\"</string>
     <string name="empty_category_title">No tools in this category</string>
@@ -122,4 +122,61 @@
     <string name="msg_oom_error">Out of memory: image resolution too high</string>
     <string name="msg_process_failed">Processing failed: %1$s</string>
     <string name="msg_batch_failed">Batch processing failed: %1$s</string>
+
+    <!-- QR Code Tool -->
+    <string name="tool_qr_code_name">QR Code Tool</string>
+    <string name="tool_qr_code_desc">Versatile QR code generator &amp; styler with real-time camera &amp; gallery scanning</string>
+    <string name="qr_content_label">QR Code Content</string>
+    <string name="qr_content_placeholder">Enter URL or text content...</string>
+    <string name="qr_color_dark">Dark</string>
+    <string name="qr_color_light">Light</string>
+    <string name="qr_color_bg">Background</string>
+    <string name="qr_extract_from_bg">Pick from BG</string>
+    <string name="qr_select_theme">Select Theme</string>
+    <string name="qr_theme_title">Select Theme</string>
+    <string name="qr_dot_style">Dot Style</string>
+    <string name="qr_style_square">Square</string>
+    <string name="qr_style_circle">Circle</string>
+    <string name="qr_dot_scale">Dot Scale</string>
+    <string name="qr_btn_set_logo">Set Logo</string>
+    <string name="qr_btn_set_bg">Set Background</string>
+    <string name="qr_bg_alpha">BG Opacity</string>
+    <string name="qr_margin">Margin</string>
+    <string name="qr_btn_scan">Scan</string>
+    <string name="qr_btn_save">Save Image</string>
+    <string name="qr_btn_more">More</string>
+    <string name="qr_menu_reset">Reset to Defaults</string>
+    <string name="qr_menu_clear_logo">Clear Logo</string>
+    <string name="qr_menu_clear_bg">Clear Background</string>
+    <string name="qr_saved_success">QR Code saved to gallery (Pictures/Koishi)</string>
+    <string name="qr_empty_content_warning">QR code content cannot be empty</string>
+
+    <!-- QR Scan Activity -->
+    <string name="qr_scan_title">Scan QR Code</string>
+    <string name="qr_scan_tip">Point camera at a QR code to scan</string>
+    <string name="qr_scan_gallery">Gallery</string>
+    <string name="qr_scan_flashlight">Flashlight</string>
+    <string name="qr_scan_result_title">Scan Result</string>
+    <string name="qr_scan_btn_copy">Copy Content</string>
+    <string name="qr_scan_btn_open_url">Open URL</string>
+    <string name="qr_scan_btn_fill_tool">Fill into Generator</string>
+    <string name="qr_scan_copied">Copied to clipboard</string>
+    <string name="qr_scan_no_qr_in_image">No QR code found in selected image</string>
+    <string name="qr_scan_permission_denied">Camera permission is required for scanning</string>
+    <string name="qr_scan_grant_permission">Grant</string>
+
+    <!-- Image Crop & Adjustment -->
+    <string name="crop_title">Crop</string>
+    <string name="crop_confirm">Done</string>
+    <string name="crop_reset">Reset</string>
+    <string name="crop_rotate_90">Rotate 90°</string>
+    <string name="crop_tab_rotate">Rotate</string>
+    <string name="crop_tab_scale">Scale</string>
+    <string name="crop_tab_brightness">Brightness</string>
+    <string name="crop_tab_contrast">Contrast</string>
+    <string name="crop_tab_saturation">Saturation</string>
+    <string name="crop_invalid_source">Invalid image source</string>
+    <string name="crop_read_failed">Cannot read image file</string>
+    <string name="crop_load_error">Failed to load image: %1$s</string>
+    <string name="crop_save_failed">Failed to save cropped image</string>
 </resources>

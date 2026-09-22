@@ -27,6 +27,12 @@ data object SettingsRoute
 data object ImageObfuscationRoute
 
 /**
+ * 二维码工具独立小工具强类型路由
+ */
+@Serializable
+data object QrToolRoute
+
+/**
  * 工具详情或独立小工具通用强类型路由
  *
  * @property toolId 工具唯一ID

@@ -96,6 +96,14 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 
+    // QR Code Generation & Scanning
+    implementation(libs.qrcode.kotlin)
+    implementation(libs.mlkit.barcode.scanning)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.junit)
