@@ -1,6 +1,7 @@
 package com.nanami.koishi.core.data.repository
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Image
@@ -73,6 +74,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_image_search_name,
                 descriptionRes = R.string.tool_image_search_desc,
                 icon = Icons.Rounded.ImageSearch,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "watermark",
+                nameRes = R.string.tool_watermark_name,
+                descriptionRes = R.string.tool_watermark_desc,
+                icon = Icons.AutoMirrored.Rounded.BrandingWatermark,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true

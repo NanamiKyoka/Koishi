@@ -41,6 +41,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SaveAlt
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +50,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +60,9 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -161,7 +166,8 @@ fun MirageTankScreen(
                         IconButton(onClick = { onEvent(MirageTankUiEvent.OnSwapImages) }) {
                             Icon(
                                 imageVector = Icons.Rounded.SwapHoriz,
-                                contentDescription = stringResource(R.string.mirage_tank_swap_images)
+                                contentDescription = stringResource(R.string.mirage_tank_swap_images),
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -237,7 +243,10 @@ fun MirageTankScreen(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        TextButton(onClick = { onEvent(MirageTankUiEvent.OnResetParams) }) {
+                        TextButton(
+                            onClick = { onEvent(MirageTankUiEvent.OnResetParams) },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                        ) {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,
                                 contentDescription = null,
@@ -253,17 +262,33 @@ fun MirageTankScreen(
                         selectedTabIndex = if (state.params.mode == MirageTankMode.GRAYSCALE) 0 else 1,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(PillShape)
+                            .clip(PillShape),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.primary
                     ) {
                         Tab(
                             selected = state.params.mode == MirageTankMode.GRAYSCALE,
                             onClick = { onEvent(MirageTankUiEvent.OnModeChanged(MirageTankMode.GRAYSCALE)) },
-                            text = { Text(stringResource(R.string.mirage_tank_mode_grayscale)) }
+                            text = {
+                                Text(
+                                    stringResource(R.string.mirage_tank_mode_grayscale),
+                                    fontWeight = if (state.params.mode == MirageTankMode.GRAYSCALE) FontWeight.Bold else FontWeight.Normal
+                                )
+                            },
+                            selectedContentColor = MaterialTheme.colorScheme.primary,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Tab(
                             selected = state.params.mode == MirageTankMode.COLOR,
                             onClick = { onEvent(MirageTankUiEvent.OnModeChanged(MirageTankMode.COLOR)) },
-                            text = { Text(stringResource(R.string.mirage_tank_mode_color)) }
+                            text = {
+                                Text(
+                                    stringResource(R.string.mirage_tank_mode_color),
+                                    fontWeight = if (state.params.mode == MirageTankMode.COLOR) FontWeight.Bold else FontWeight.Normal
+                                )
+                            },
+                            selectedContentColor = MaterialTheme.colorScheme.primary,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -319,7 +344,13 @@ fun MirageTankScreen(
                         }
                         Switch(
                             checked = state.params.enableCheckerboard,
-                            onCheckedChange = { onEvent(MirageTankUiEvent.OnCheckerboardToggled(it)) }
+                            onCheckedChange = { onEvent(MirageTankUiEvent.OnCheckerboardToggled(it)) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            )
                         )
                     }
 
@@ -380,29 +411,48 @@ fun MirageTankScreen(
 
                     // 无极调节滑块
                     AnimatedVisibility(visible = state.previewBackgroundMode == PreviewBackgroundMode.CUSTOM) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                .padding(horizontal = 14.dp, vertical = 12.dp)
+                        ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = stringResource(R.string.mirage_tank_bg_ratio_label),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Text(
-                                    text = String.format(Locale.US, "%d%%", (state.customBackgroundRatio * 100).toInt()),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Surface(
+                                    shape = PillShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                ) {
+                                    Text(
+                                        text = String.format(Locale.US, "%d%%", (state.customBackgroundRatio * 100).toInt()),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                                    )
+                                }
                             }
+                            Spacer(modifier = Modifier.height(4.dp))
                             Slider(
                                 value = state.customBackgroundRatio,
                                 onValueChange = { onEvent(MirageTankUiEvent.OnCustomBackgroundRatioChanged(it)) },
                                 valueRange = 0f..1f,
+                                modifier = Modifier.fillMaxWidth(),
                                 colors = SliderDefaults.colors(
                                     thumbColor = MaterialTheme.colorScheme.primary,
-                                    activeTrackColor = MaterialTheme.colorScheme.primary
+                                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                                    inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
                                 )
                             )
                         }
@@ -424,16 +474,22 @@ fun MirageTankScreen(
                         label = "preview_bg_anim"
                     )
 
+                    val overlayContentColor = if (targetBgColor.red < 0.5f) {
+                        MaterialTheme.colorScheme.inverseOnSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(260.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(ToolCardShape)
                             .background(animatedBgColor)
                             .border(
                                 width = 1.dp,
                                 color = MaterialTheme.colorScheme.outlineVariant,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = ToolCardShape
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -456,7 +512,7 @@ fun MirageTankScreen(
                                 Icon(
                                     imageVector = Icons.Rounded.Tune,
                                     contentDescription = null,
-                                    tint = if (targetBgColor.red < 0.5f) Color.LightGray else Color.DarkGray,
+                                    tint = overlayContentColor,
                                     modifier = Modifier.size(36.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -467,7 +523,7 @@ fun MirageTankScreen(
                                         stringResource(R.string.mirage_tank_hint_ready)
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (targetBgColor.red < 0.5f) Color.LightGray else Color.DarkGray,
+                                    color = overlayContentColor,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -477,7 +533,7 @@ fun MirageTankScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color.Black.copy(alpha = 0.35f)),
+                                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -500,11 +556,22 @@ fun MirageTankScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    shape = PillShape
+                    shape = PillShape,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    border = BorderStroke(
+                        1.dp,
+                        if (state.hasBothImages && !state.isProcessing) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.38f)
+                        }
+                    )
                 ) {
                     Icon(imageVector = Icons.Rounded.AutoAwesome, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = stringResource(R.string.mirage_tank_generate))
+                    Text(text = stringResource(R.string.mirage_tank_generate), fontWeight = FontWeight.SemiBold)
                 }
 
                 Button(
@@ -514,7 +581,10 @@ fun MirageTankScreen(
                         .weight(1.2f)
                         .height(48.dp),
                     shape = PillShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
                     if (state.isSaving) {
                         CircularProgressIndicator(
@@ -525,7 +595,7 @@ fun MirageTankScreen(
                     } else {
                         Icon(imageVector = Icons.Rounded.SaveAlt, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(text = stringResource(R.string.mirage_tank_save_lossless))
+                        Text(text = stringResource(R.string.mirage_tank_save_lossless), fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -573,6 +643,7 @@ private fun ImageSourceCard(
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = stringResource(R.string.grid_split_clear_image),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -645,30 +716,48 @@ private fun ParameterSlider(
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                text = String.format(Locale.US, "%.2fx", value),
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Surface(
+                shape = PillShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) {
+                Text(
+                    text = String.format(Locale.US, "%.2fx", value),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                )
+            }
         }
+        Spacer(modifier = Modifier.height(4.dp))
         Slider(
             value = value,
             onValueChange = onValueChange,
             valueRange = range,
+            modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
             )
         )
     }
@@ -682,28 +771,42 @@ private fun PreviewModeChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (selected) {
-        Button(
-            onClick = onClick,
-            shape = PillShape,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            modifier = modifier.height(36.dp)
-        ) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(text = title, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    } else {
-        FilledTonalButton(
-            onClick = onClick,
-            shape = PillShape,
-            modifier = modifier.height(36.dp)
-        ) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(text = title, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    }
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+        },
+        shape = PillShape,
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = selected,
+            borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+            selectedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        ),
+        modifier = modifier.height(36.dp)
+    )
 }
 
 @Composable
@@ -712,9 +815,13 @@ private fun MirageTankHelpDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(android.R.string.ok))
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(text = stringResource(android.R.string.ok), fontWeight = FontWeight.Bold)
             }
         },
         title = {

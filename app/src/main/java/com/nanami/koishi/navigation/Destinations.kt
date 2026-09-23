@@ -54,6 +54,12 @@ data object ImageSearchRoute
 data object MirageTankRoute
 
 /**
+ * 水印图独立小工具强类型路由
+ */
+@Serializable
+data object WatermarkRoute
+
+/**
  * 工具详情或独立小工具通用强类型路由
  *
  * @property toolId 工具唯一ID

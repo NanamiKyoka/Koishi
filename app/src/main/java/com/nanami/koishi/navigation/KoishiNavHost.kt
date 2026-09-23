@@ -36,6 +36,8 @@ import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
+import com.nanami.koishi.feature.tools.watermark.WatermarkRoute
+import com.nanami.koishi.feature.tools.watermark.WatermarkViewModel
 
 @Composable
 fun KoishiNavHost(
@@ -63,6 +65,7 @@ fun KoishiNavHost(
                         "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
                         "mirage_tank" -> navController.navigate(MirageTankRoute)
                         "qr_code" -> navController.navigate(QrToolRoute)
+                        "watermark" -> navController.navigate(WatermarkRoute)
                         else -> {
                             navController.navigate(
                                 ToolDetailRoute(
@@ -120,6 +123,14 @@ fun KoishiNavHost(
             val qrToolViewModel: QrToolViewModel = viewModel()
             QrToolRoute(
                 viewModel = qrToolViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<WatermarkRoute> {
+            val watermarkViewModel: WatermarkViewModel = viewModel()
+            WatermarkRoute(
+                viewModel = watermarkViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

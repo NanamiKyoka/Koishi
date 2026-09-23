@@ -379,6 +379,44 @@
     <string name="mirage_tank_help_p2">【选图建议】表图建议选择线条分明、整体偏亮或纯白底的图片；里图建议选择主体清晰、整体偏暗的图片。表里两图的反差越大，在黑白背景下各自的显隐效果越惊艳。</string>
     <string name="mirage_tank_help_p3">【调参技巧】若在黑底模式下仍能看到表图轮廓，可适当提高表图亮度或调低里图亮度；对于彩色模式，开启“棋盘格空间调和”可有效利用人眼空间视觉平滑通道溢出，提升色彩保真度。</string>
 
+    <!-- Watermark Tool -->
+    <string name="tool_watermark_name">水印图</string>
+    <string name="tool_watermark_desc">全屏平铺文字与图片水印，自由防伪微调</string>
+    <string name="watermark_title">水印图</string>
+    <string name="watermark_tab_text">文字水印</string>
+    <string name="watermark_tab_image">图片水印</string>
+    <string name="watermark_input_hint">输入水印文字内容</string>
+    <string name="watermark_font_label">字体族</string>
+    <string name="watermark_font_default">默认</string>
+    <string name="watermark_font_bold">粗体</string>
+    <string name="watermark_font_serif">衬线</string>
+    <string name="watermark_font_sans_serif">无衬线</string>
+    <string name="watermark_font_monospace">等宽</string>
+    <string name="watermark_color_label">文字颜色</string>
+    <string name="watermark_pick_bg">选择背景图</string>
+    <string name="watermark_crop_bg">自由裁剪</string>
+    <string name="watermark_pick_watermark_img">选择水印图</string>
+    <string name="watermark_crop_watermark_img">裁剪水印</string>
+    <string name="watermark_no_watermark_img">暂无水印图，请点击选取</string>
+    <string name="watermark_alpha_label">不透明度</string>
+    <string name="watermark_rotation_label">旋转角度</string>
+    <string name="watermark_size_label">水印大小</string>
+    <string name="watermark_scale_label">缩放比例</string>
+    <string name="watermark_spacing_h_label">水平间距</string>
+    <string name="watermark_spacing_v_label">垂直间距</string>
+    <string name="watermark_preset_sample">Sample</string>
+    <string name="watermark_preset_confidential">绝密文件</string>
+    <string name="watermark_preset_audit">仅供审核</string>
+    <string name="watermark_preset_repost">严禁转载</string>
+    <string name="watermark_empty_bg_prompt">点击下方或此处选取背景图片</string>
+    <string name="watermark_saved_success">已成功保存水印图至相册 (Pictures/Koishi)</string>
+    <string name="watermark_save_failed">保存图片至相册失败</string>
+    <string name="watermark_need_bg_prompt">请先选取一张背景图</string>
+    <string name="watermark_need_wm_img_prompt">请选取水印图片</string>
+    <string name="watermark_processing">正在生成高精度水印图片...</string>
+    <string name="watermark_save">保存</string>
+    <string name="watermark_crop_bg_action">裁剪背景图</string>
+
     <!-- Crash Report Screen -->
     <string name="crash_title">应用遇到意外错误</string>
     <string name="crash_subtitle_default">发生未捕获的运行时异常</string>

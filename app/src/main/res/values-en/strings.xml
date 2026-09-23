@@ -378,6 +378,44 @@
     <string name="mirage_tank_help_p2">[Selection Tips] Front image is recommended to be clean, line-defined or light-toned; Back image is recommended to be deeper or dark-toned. Greater contrast yields superior disguise.</string>
     <string name="mirage_tank_help_p3">[Tuning Tips] If the front image bleeds into dark backgrounds, increase front lightness or lower back lightness. Enable Checkerboard Blending in color mode for better color fidelity.</string>
 
+    <!-- Watermark Tool -->
+    <string name="tool_watermark_name">Watermark</string>
+    <string name="tool_watermark_desc">Tile text and image watermarks across full canvas with fine adjustments</string>
+    <string name="watermark_title">Watermark</string>
+    <string name="watermark_tab_text">Text</string>
+    <string name="watermark_tab_image">Image</string>
+    <string name="watermark_input_hint">Enter watermark text</string>
+    <string name="watermark_font_label">Font Family</string>
+    <string name="watermark_font_default">Default</string>
+    <string name="watermark_font_bold">Bold</string>
+    <string name="watermark_font_serif">Serif</string>
+    <string name="watermark_font_sans_serif">Sans-Serif</string>
+    <string name="watermark_font_monospace">Monospace</string>
+    <string name="watermark_color_label">Text Color</string>
+    <string name="watermark_pick_bg">Pick Background</string>
+    <string name="watermark_crop_bg">Crop Background</string>
+    <string name="watermark_pick_watermark_img">Pick Watermark Image</string>
+    <string name="watermark_crop_watermark_img">Crop Watermark</string>
+    <string name="watermark_no_watermark_img">No watermark image selected</string>
+    <string name="watermark_alpha_label">Opacity</string>
+    <string name="watermark_rotation_label">Rotation Angle</string>
+    <string name="watermark_size_label">Font Size</string>
+    <string name="watermark_scale_label">Image Scale</string>
+    <string name="watermark_spacing_h_label">Horizontal Spacing</string>
+    <string name="watermark_spacing_v_label">Vertical Spacing</string>
+    <string name="watermark_preset_sample">Sample</string>
+    <string name="watermark_preset_confidential">Confidential</string>
+    <string name="watermark_preset_audit">Audit Only</string>
+    <string name="watermark_preset_repost">Do Not Repost</string>
+    <string name="watermark_empty_bg_prompt">Tap here or below to select background image</string>
+    <string name="watermark_saved_success">Successfully saved watermark image to gallery (Pictures/Koishi)</string>
+    <string name="watermark_save_failed">Failed to save image to gallery</string>
+    <string name="watermark_need_bg_prompt">Please select a background image first</string>
+    <string name="watermark_need_wm_img_prompt">Please select a watermark image</string>
+    <string name="watermark_processing">Generating high-resolution watermark image...</string>
+    <string name="watermark_save">Save</string>
+    <string name="watermark_crop_bg_action">Crop Background</string>
+
     <!-- Crash Report Screen -->
     <string name="crash_title">App Encountered an Unexpected Error</string>
     <string name="crash_subtitle_default">An uncaught runtime exception occurred</string>
