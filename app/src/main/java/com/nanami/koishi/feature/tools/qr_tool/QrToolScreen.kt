@@ -88,6 +88,7 @@ import androidx.compose.ui.unit.sp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.image.crop.ImageCropActivity
 import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
+import com.nanami.koishi.core.image.preview.ImagePreviewDialog
 import com.nanami.koishi.feature.tools.qr_tool.components.ColorPickerDialog
 import com.nanami.koishi.feature.tools.qr_tool.components.ThemePickerBottomSheet
 import com.nanami.koishi.feature.tools.qr_tool.engine.QrDotStyle
@@ -103,6 +104,7 @@ fun QrToolRoute(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var showPreview by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.userMessage) {
         uiState.userMessage?.let { msg ->
@@ -141,8 +143,7 @@ fun QrToolRoute(
                 title = {
                     Text(
                         text = stringResource(R.string.tool_qr_code_name),
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = uiState.darkColor
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
                     )
                 },
                 navigationIcon = {
@@ -246,7 +247,11 @@ fun QrToolRoute(
                 Card(
                     modifier = Modifier
                         .weight(1f)
-                        .height(168.dp),
+                        .height(168.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(enabled = uiState.qrBitmap != null) {
+                            showPreview = true
+                        },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -269,7 +274,7 @@ fun QrToolRoute(
                         } ?: run {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(32.dp),
-                                color = uiState.darkColor,
+                                color = MaterialTheme.colorScheme.primary,
                                 strokeWidth = 3.dp
                             )
                         }
@@ -300,13 +305,13 @@ fun QrToolRoute(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.Notes,
                                     contentDescription = null,
-                                    tint = uiState.darkColor,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
                                     text = stringResource(R.string.qr_content_label),
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                                    color = uiState.darkColor
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
@@ -327,7 +332,7 @@ fun QrToolRoute(
                                     textStyle = MaterialTheme.typography.bodyMedium.copy(
                                         color = MaterialTheme.colorScheme.onSurface
                                     ),
-                                    cursorBrush = SolidColor(uiState.darkColor),
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
@@ -366,11 +371,13 @@ fun QrToolRoute(
                     ColorCapsuleButton(
                         label = stringResource(R.string.qr_color_dark),
                         color = uiState.darkColor,
+                        enabled = !uiState.isPickFromBg,
                         onClick = { viewModel.onEvent(QrToolUiEvent.OnOpenColorPicker(ColorPickerTarget.DARK)) }
                     )
                     ColorCapsuleButton(
                         label = stringResource(R.string.qr_color_light),
                         color = uiState.lightColor,
+                        enabled = !uiState.isPickFromBg,
                         onClick = { viewModel.onEvent(QrToolUiEvent.OnOpenColorPicker(ColorPickerTarget.LIGHT)) }
                     )
                 }
@@ -388,6 +395,7 @@ fun QrToolRoute(
                         ColorCapsuleButton(
                             label = stringResource(R.string.qr_color_bg),
                             color = uiState.backgroundColor,
+                            enabled = true,
                             onClick = { viewModel.onEvent(QrToolUiEvent.OnOpenColorPicker(ColorPickerTarget.BACKGROUND)) }
                         )
 
@@ -460,7 +468,7 @@ fun QrToolRoute(
                             label = stringResource(R.string.qr_style_square),
                             icon = Icons.Rounded.Square,
                             isSelected = uiState.dotStyle == QrDotStyle.SQUARE,
-                            activeColor = uiState.darkColor,
+                            activeColor = MaterialTheme.colorScheme.primary,
                             onClick = { viewModel.onEvent(QrToolUiEvent.OnDotStyleChange(QrDotStyle.SQUARE)) }
                         )
                         // 圆形
@@ -468,7 +476,7 @@ fun QrToolRoute(
                             label = stringResource(R.string.qr_style_circle),
                             icon = Icons.Rounded.Circle,
                             isSelected = uiState.dotStyle == QrDotStyle.CIRCLE,
-                            activeColor = uiState.darkColor,
+                            activeColor = MaterialTheme.colorScheme.primary,
                             onClick = { viewModel.onEvent(QrToolUiEvent.OnDotStyleChange(QrDotStyle.CIRCLE)) }
                         )
                     }
@@ -636,6 +644,15 @@ fun QrToolRoute(
                 }
             )
         }
+
+        // 大图预览弹窗
+        if (showPreview && uiState.qrBitmap != null) {
+            ImagePreviewDialog(
+                bitmap = uiState.qrBitmap,
+                title = stringResource(R.string.tool_qr_code_name),
+                onDismissRequest = { showPreview = false }
+            )
+        }
     }
 }
 
@@ -646,13 +663,18 @@ fun QrToolRoute(
 private fun ColorCapsuleButton(
     label: String,
     color: Color,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Surface(
         onClick = onClick,
+        enabled = enabled,
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        color = if (enabled) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
+        border = BorderStroke(
+            1.dp,
+            if (enabled) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+        ),
         modifier = Modifier.height(40.dp)
     ) {
         Row(
@@ -664,13 +686,13 @@ private fun ColorCapsuleButton(
                 modifier = Modifier
                     .size(16.dp)
                     .clip(CircleShape)
-                    .background(color)
-                    .border(0.5.dp, Color.Black.copy(alpha = 0.2f), CircleShape)
+                    .background(if (enabled) color else color.copy(alpha = 0.35f))
+                    .border(0.5.dp, Color.Black.copy(alpha = if (enabled) 0.2f else 0.1f), CircleShape)
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.onSurface
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             )
         }
     }

@@ -72,15 +72,25 @@ class QrToolViewModel(
             }
             is QrToolUiEvent.OnTogglePickFromBg -> {
                 val newState = event.enabled
-                _uiState.update { current ->
-                    var updatedDark = current.darkColor
-                    if (newState && current.bgBitmap != null) {
-                        val dominant = QrGeneratorUtil.extractDominantColor(current.bgBitmap)
-                        updatedDark = androidx.compose.ui.graphics.Color(dominant)
+                if (newState && _uiState.value.bgBitmap == null) {
+                    _uiState.update { it.copy(userMessage = "请先添加背景图") }
+                } else {
+                    _uiState.update { current ->
+                        var extDark = current.extractedDarkColor
+                        var extLight = current.extractedLightColor
+                        if (newState && current.bgBitmap != null && (extDark == null || extLight == null)) {
+                            val (d, l) = QrGeneratorUtil.extractColorsFromBackground(current.bgBitmap)
+                            extDark = androidx.compose.ui.graphics.Color(d)
+                            extLight = androidx.compose.ui.graphics.Color(l)
+                        }
+                        current.copy(
+                            isPickFromBg = newState,
+                            extractedDarkColor = extDark,
+                            extractedLightColor = extLight
+                        )
                     }
-                    current.copy(isPickFromBg = newState, darkColor = updatedDark)
+                    triggerGeneration()
                 }
-                triggerGeneration()
             }
             is QrToolUiEvent.OnThemeSelected -> {
                 applyThemePreset(event.preset)
@@ -106,7 +116,15 @@ class QrToolViewModel(
             }
             QrToolUiEvent.OnClearBg -> {
                 _uiState.value.bgBitmap?.recycle()
-                _uiState.update { it.copy(bgUri = null, bgBitmap = null) }
+                _uiState.update {
+                    it.copy(
+                        bgUri = null,
+                        bgBitmap = null,
+                        isPickFromBg = false,
+                        extractedDarkColor = null,
+                        extractedLightColor = null
+                    )
+                }
                 triggerGeneration(debounceMs = 0)
             }
             is QrToolUiEvent.OnBgAlphaChange -> {
@@ -124,6 +142,10 @@ class QrToolViewModel(
                 _uiState.update { it.copy(showThemePicker = false) }
             }
             is QrToolUiEvent.OnOpenColorPicker -> {
+                if (_uiState.value.isPickFromBg && (event.target == ColorPickerTarget.DARK || event.target == ColorPickerTarget.LIGHT)) {
+                    // 从背景图取色开启时，仅允许调整背景色
+                    return
+                }
                 _uiState.update { it.copy(activeColorPicker = event.target) }
             }
             QrToolUiEvent.OnDismissColorPicker -> {
@@ -202,14 +224,19 @@ class QrToolViewModel(
 
                     _uiState.value.bgBitmap?.recycle()
 
-                    // 如果开启了“从背景图取色”，提取主色
-                    var darkColor = _uiState.value.darkColor
-                    if (_uiState.value.isPickFromBg) {
-                        val dominant = QrGeneratorUtil.extractDominantColor(scaled)
-                        darkColor = androidx.compose.ui.graphics.Color(dominant)
-                    }
+                    // 提取背景图的深色与浅色对
+                    val (extDarkInt, extLightInt) = QrGeneratorUtil.extractColorsFromBackground(scaled)
+                    val extDark = androidx.compose.ui.graphics.Color(extDarkInt)
+                    val extLight = androidx.compose.ui.graphics.Color(extLightInt)
 
-                    _uiState.update { it.copy(bgUri = uri, bgBitmap = scaled, darkColor = darkColor) }
+                    _uiState.update {
+                        it.copy(
+                            bgUri = uri,
+                            bgBitmap = scaled,
+                            extractedDarkColor = extDark,
+                            extractedLightColor = extLight
+                        )
+                    }
                     triggerGeneration(debounceMs = 0)
                 }
             } catch (e: Exception) {
@@ -227,12 +254,24 @@ class QrToolViewModel(
             _uiState.update { it.copy(isGenerating = true) }
             val state = _uiState.value
 
+            val effectiveDarkColor = if (state.isPickFromBg && state.extractedDarkColor != null && state.bgBitmap != null) {
+                state.extractedDarkColor
+            } else {
+                state.darkColor
+            }
+
+            val effectiveLightColor = if (state.isPickFromBg && state.extractedLightColor != null && state.bgBitmap != null) {
+                state.extractedLightColor
+            } else {
+                state.lightColor
+            }
+
             val marginPx = (state.marginDp * 3f).toInt()
             val config = QrConfig(
                 content = state.content.ifBlank { " " },
                 outputSize = 1024,
-                darkColor = state.darkColor.toArgb(),
-                lightColor = state.lightColor.toArgb(),
+                darkColor = effectiveDarkColor.toArgb(),
+                lightColor = effectiveLightColor.toArgb(),
                 backgroundColor = state.backgroundColor.toArgb(),
                 dotStyle = state.dotStyle,
                 dotScale = state.dotScale,

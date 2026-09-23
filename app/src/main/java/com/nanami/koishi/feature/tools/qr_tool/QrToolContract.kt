@@ -18,6 +18,8 @@ data class QrToolUiState(
     val lightColor: Color = Color(0xFFEAF2EC),
     val backgroundColor: Color = Color(0xFFFFFFFF),
     val isPickFromBg: Boolean = false,
+    val extractedDarkColor: Color? = null,
+    val extractedLightColor: Color? = null,
     val dotStyle: QrDotStyle = QrDotStyle.SQUARE,
     val dotScale: Float = 0.85f,
     val logoUri: Uri? = null,

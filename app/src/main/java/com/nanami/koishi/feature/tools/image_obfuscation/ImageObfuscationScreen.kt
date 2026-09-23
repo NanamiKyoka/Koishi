@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,6 +51,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -65,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -77,6 +80,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
+import com.nanami.koishi.core.image.preview.ImagePreviewDialog
 import com.nanami.koishi.feature.tools.image_obfuscation.engine.ObfuscationMode
 
 @Composable
@@ -104,6 +108,7 @@ fun ImageObfuscationScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var showPreview by remember { mutableStateOf(false) }
 
     val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
@@ -221,9 +226,13 @@ fun ImageObfuscationScreen(
                     .clip(ToolCardShape)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                     .clickable {
-                        multiplePhotoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
+                        if (uiState.currentBitmap != null) {
+                            showPreview = true
+                        } else {
+                            multiplePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -333,6 +342,27 @@ fun ImageObfuscationScreen(
             )
         }
     }
+
+    if (showPreview && uiState.currentBitmap != null) {
+        val previewImages = if (uiState.images.isNotEmpty()) {
+            uiState.images.map { it.bitmap }
+        } else {
+            listOfNotNull(uiState.currentBitmap)
+        }
+        val initialIdx = uiState.selectedIndex.coerceIn(0, (previewImages.size - 1).coerceAtLeast(0))
+
+        ImagePreviewDialog(
+            images = previewImages,
+            initialIndex = initialIdx,
+            title = stringResource(R.string.preview_image),
+            onIndexChanged = { newIndex ->
+                if (newIndex in uiState.images.indices && newIndex != uiState.selectedIndex) {
+                    onEvent(ImageObfuscationUiEvent.OnSelectImageIndex(newIndex))
+                }
+            },
+            onDismissRequest = { showPreview = false }
+        )
+    }
 }
 
 @Composable
@@ -342,50 +372,71 @@ private fun ModeSelectorBar(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        label = "arrowRotation"
+    )
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(PillShape)
-            .clickable { expanded = true }
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(R.string.mode_prefix),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = stringResource(currentMode.titleRes),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+    Box(modifier = modifier.fillMaxWidth()) {
+        Surface(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.mode_prefix),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(currentMode.titleRes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Rounded.ArrowDropDown,
+                    contentDescription = stringResource(R.string.select_mode),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.graphicsLayer { rotationZ = arrowRotation }
+                )
+            }
         }
-        Icon(
-            imageVector = Icons.Rounded.ArrowDropDown,
-            contentDescription = stringResource(R.string.select_mode),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
         ) {
             ObfuscationMode.entries.forEach { mode ->
+                val isSelected = mode == currentMode
                 DropdownMenuItem(
                     text = {
-                        Column {
+                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
                             Text(
                                 text = stringResource(mode.titleRes),
-                                fontWeight = if (mode == currentMode) FontWeight.Bold else FontWeight.Normal,
-                                color = if (mode == currentMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = stringResource(mode.descRes),
                                 style = MaterialTheme.typography.bodySmall,
@@ -393,9 +444,23 @@ private fun ModeSelectorBar(
                             )
                         }
                     },
-                    leadingIcon = if (mode == currentMode) {
-                        { Icon(Icons.Rounded.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                    leadingIcon = if (isSelected) {
+                        {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     } else null,
+                    modifier = Modifier
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                            else Color.Transparent
+                        ),
                     onClick = {
                         onModeSelected(mode)
                         expanded = false

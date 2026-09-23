@@ -199,8 +199,7 @@ object QrGeneratorUtil {
                         QrDotStyle.SQUARE -> {
                             val half = cellSize * scale / 2f
                             val rect = RectF(cx - half, cy - half, cx + half, cy + half)
-                            val corner = cellSize * scale * 0.15f
-                            canvas.drawRoundRect(rect, corner, corner, darkPaint)
+                            canvas.drawRect(rect, darkPaint)
                         }
                     }
                 }
@@ -287,36 +286,105 @@ object QrGeneratorUtil {
     }
 
     /**
-     * 从 Bitmap 提取主色调 (用于“从背景图取色”)
+     * 从背景图提取深色与浅色对
+     * 返回 Pair(darkColor, lightColor)，不改变背景色
      */
-    fun extractDominantColor(bitmap: Bitmap): Int {
-        if (bitmap.isRecycled) return 0xFF3D6B57.toInt()
-        val small = Bitmap.createScaledBitmap(bitmap, 24, 24, false)
-        var redSum = 0L
-        var greenSum = 0L
-        var blueSum = 0L
-        val count = small.width * small.height
-
-        for (x in 0 until small.width) {
-            for (y in 0 until small.height) {
-                val pixel = small.getPixel(x, y)
-                redSum += Color.red(pixel)
-                greenSum += Color.green(pixel)
-                blueSum += Color.blue(pixel)
-            }
+    fun extractColorsFromBackground(bitmap: Bitmap): Pair<Int, Int> {
+        if (bitmap.isRecycled) {
+            return Pair(0xFF3D6B57.toInt(), 0xFFEAF2EC.toInt())
         }
+        val small = Bitmap.createScaledBitmap(bitmap, 32, 32, false)
+        val pixels = IntArray(small.width * small.height)
+        small.getPixels(pixels, 0, small.width, 0, 0, small.width, small.height)
         small.recycle()
 
-        val r = (redSum / count).toInt()
-        val g = (greenSum / count).toInt()
-        val b = (blueSum / count).toInt()
+        var totalR = 0L
+        var totalG = 0L
+        var totalB = 0L
+        var darkR = 0L
+        var darkG = 0L
+        var darkB = 0L
+        var darkCount = 0
+        var lightR = 0L
+        var lightG = 0L
+        var lightB = 0L
+        var lightCount = 0
 
-        // 确保前景色具备足够的对比度，如果太亮则适当调深
-        val luminance = 0.299 * r + 0.587 * g + 0.114 * b
-        return if (luminance > 160) {
-            Color.rgb((r * 0.6).toInt(), (g * 0.6).toInt(), (b * 0.6).toInt())
-        } else {
-            Color.rgb(r, g, b)
+        for (pixel in pixels) {
+            val r = Color.red(pixel)
+            val g = Color.green(pixel)
+            val b = Color.blue(pixel)
+            val lum = 0.299 * r + 0.587 * g + 0.114 * b
+
+            totalR += r
+            totalG += g
+            totalB += b
+
+            if (lum < 128) {
+                darkR += r
+                darkG += g
+                darkB += b
+                darkCount++
+            } else {
+                lightR += r
+                lightG += g
+                lightB += b
+                lightCount++
+            }
         }
+
+        val count = pixels.size
+        val avgR = (totalR / count).toInt()
+        val avgG = (totalG / count).toInt()
+        val avgB = (totalB / count).toInt()
+        val hsv = FloatArray(3)
+        Color.RGBToHSV(avgR, avgG, avgB, hsv)
+
+        // 提取深色：确保亮度 <= 80，保证扫码的高对比度
+        val darkColorInt = if (darkCount > count * 0.15) {
+            val dr = (darkR / darkCount).toInt()
+            val dg = (darkG / darkCount).toInt()
+            val db = (darkB / darkCount).toInt()
+            val lum = 0.299 * dr + 0.587 * dg + 0.114 * db
+            if (lum > 80) {
+                val factor = 80.0 / lum
+                Color.rgb((dr * factor).toInt(), (dg * factor).toInt(), (db * factor).toInt())
+            } else {
+                Color.rgb(dr, dg, db)
+            }
+        } else {
+            val darkHsv = floatArrayOf(hsv[0], (hsv[1] * 1.2f).coerceIn(0.5f, 0.9f), 0.30f)
+            Color.HSVToColor(darkHsv)
+        }
+
+        // 提取浅色：高明度柔和浅色（亮度 >= 235）
+        val lightColorInt = if (lightCount > count * 0.15) {
+            val lr = (lightR / lightCount).toInt()
+            val lg = (lightG / lightCount).toInt()
+            val lb = (lightB / lightCount).toInt()
+            val lum = 0.299 * lr + 0.587 * lg + 0.114 * lb
+            if (lum < 235) {
+                val factor = 235.0 / lum.coerceAtLeast(1.0)
+                Color.rgb(
+                    minOf(255, (lr * factor).toInt()),
+                    minOf(255, (lg * factor).toInt()),
+                    minOf(255, (lb * factor).toInt())
+                )
+            } else {
+                Color.rgb(lr, lg, lb)
+            }
+        } else {
+            val lightHsv = floatArrayOf(hsv[0], (hsv[1] * 0.2f).coerceIn(0.05f, 0.15f), 0.96f)
+            Color.HSVToColor(lightHsv)
+        }
+
+        return Pair(darkColorInt, lightColorInt)
+    }
+
+    /**
+     * 从 Bitmap 提取主色调 (保持向前兼容)
+     */
+    fun extractDominantColor(bitmap: Bitmap): Int {
+        return extractColorsFromBackground(bitmap).first
     }
 }
