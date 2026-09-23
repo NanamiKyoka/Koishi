@@ -71,7 +71,7 @@ class ImageCropActivity : ComponentActivity() {
                         setResult(Activity.RESULT_CANCELED)
                         finish()
                     },
-                    onConfirm = { cropRectOnScreen, viewportWidth, viewportHeight, scale, rotationDegrees, panX, panY, brightness, contrast, saturation ->
+                    onConfirm = { cropRectOnScreen, viewportWidth, viewportHeight, scale, rotationDegrees, panX, panY, brightness, contrast, saturation, baseScale ->
                         processAndSaveCroppedBitmap(
                             cropRectOnScreen,
                             viewportWidth,
@@ -82,7 +82,8 @@ class ImageCropActivity : ComponentActivity() {
                             panY,
                             brightness,
                             contrast,
-                            saturation
+                            saturation,
+                            baseScale
                         )
                     }
                 )
@@ -143,7 +144,8 @@ class ImageCropActivity : ComponentActivity() {
         panY: Float,
         brightness: Float,
         contrast: Float,
-        saturation: Float
+        saturation: Float,
+        baseScale: Float
     ) {
         val src = sourceBitmap ?: return
         lifecycleScope.launch(Dispatchers.Default) {
@@ -160,7 +162,8 @@ class ImageCropActivity : ComponentActivity() {
                     brightness = brightness,
                     contrast = contrast,
                     saturation = saturation,
-                    outputMaxDimension = 1024
+                    outputMaxDimension = 1024,
+                    baseScaleOverride = baseScale
                 )
 
                 // 保存至缓存文件
@@ -169,7 +172,15 @@ class ImageCropActivity : ComponentActivity() {
                     cropped.compress(Bitmap.CompressFormat.PNG, 100, out)
                 }
 
-                val outputUri = Uri.fromFile(cacheFile)
+                val outputUri = try {
+                    androidx.core.content.FileProvider.getUriForFile(
+                        this@ImageCropActivity,
+                        "${packageName}.fileprovider",
+                        cacheFile
+                    )
+                } catch (e: Exception) {
+                    Uri.fromFile(cacheFile)
+                }
 
                 withContext(Dispatchers.Main) {
                     val resultIntent = Intent().apply {

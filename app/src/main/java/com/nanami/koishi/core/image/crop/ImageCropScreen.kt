@@ -5,6 +5,7 @@ import android.graphics.RectF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -64,6 +66,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nanami.koishi.R
+import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -75,8 +78,36 @@ enum class CropToolTab(@StringRes val titleRes: Int, val icon: ImageVector) {
     SATURATION(R.string.crop_tab_saturation, Icons.Rounded.ColorLens)
 }
 
+private enum class CropDragHandle {
+    NONE, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT, TOP, RIGHT, BOTTOM, INSIDE
+}
+
+private fun detectCropHandle(touch: Offset, rect: RectF, touchRadius: Float): CropDragHandle {
+    val tx = touch.x
+    val ty = touch.y
+    val r = touchRadius
+
+    // 1. 优先匹配 4 个角落 (半径扩展 1.25x 以增大有效点击热区)
+    val cornerRadius = r * 1.25f
+    if (hypot(tx - rect.left, ty - rect.top) <= cornerRadius) return CropDragHandle.TOP_LEFT
+    if (hypot(tx - rect.right, ty - rect.top) <= cornerRadius) return CropDragHandle.TOP_RIGHT
+    if (hypot(tx - rect.left, ty - rect.bottom) <= cornerRadius) return CropDragHandle.BOTTOM_LEFT
+    if (hypot(tx - rect.right, ty - rect.bottom) <= cornerRadius) return CropDragHandle.BOTTOM_RIGHT
+
+    // 2. 匹配 4 条边缘
+    if (kotlin.math.abs(tx - rect.left) <= r && ty in (rect.top - r)..(rect.bottom + r)) return CropDragHandle.LEFT
+    if (kotlin.math.abs(tx - rect.right) <= r && ty in (rect.top - r)..(rect.bottom + r)) return CropDragHandle.RIGHT
+    if (kotlin.math.abs(ty - rect.top) <= r && tx in (rect.left - r)..(rect.right + r)) return CropDragHandle.TOP
+    if (kotlin.math.abs(ty - rect.bottom) <= r && tx in (rect.left - r)..(rect.right + r)) return CropDragHandle.BOTTOM
+
+    // 3. 内部拖动移动整个框
+    if (rect.contains(tx, ty)) return CropDragHandle.INSIDE
+
+    return CropDragHandle.NONE
+}
+
 /**
- * 专业 MD3 图片裁剪与调整界面 (1:1 还原用户参考设计)
+ * 专业 MD3 图片裁剪与调整界面 (支持 1:1 正方形裁剪与全图自适应自由拉伸裁剪)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +125,8 @@ fun ImageCropScreen(
         panY: Float,
         brightness: Float,
         contrast: Float,
-        saturation: Float
+        saturation: Float,
+        baseScale: Float
     ) -> Unit
 ) {
     if (sourceBitmap == null) {
@@ -105,6 +137,11 @@ fun ImageCropScreen(
     }
 
     val context = LocalContext.current
+    val density = LocalDensity.current
+    val marginPx = with(density) { 28.dp.toPx() }
+    val touchRadius = with(density) { 30.dp.toPx() }
+    val minSize = with(density) { 48.dp.toPx() }
+    val boundPadding = with(density) { 16.dp.toPx() }
     val primaryColor = MaterialTheme.colorScheme.primary
     var activeTab by remember { mutableStateOf(CropToolTab.ROTATE) }
 
@@ -127,6 +164,8 @@ fun ImageCropScreen(
     // 视口与裁剪框几何参数记录
     var viewportSizePx by remember { mutableStateOf(Size.Zero) }
     var cropRectPx by remember { mutableStateOf(RectF()) }
+    var freeCropRect by remember { mutableStateOf<RectF?>(null) }
+    var currentBaseScale by remember { mutableFloatStateOf(1f) }
 
     val colorFilter = remember(brightness, contrast, saturation) {
         ImageAdjustmentEngine.createComposeColorFilter(brightness, contrast, saturation)
@@ -177,7 +216,8 @@ fun ImageCropScreen(
                             panOffset.y,
                             brightness,
                             contrast,
-                            saturation
+                            saturation,
+                            currentBaseScale
                         )
                     },
                     colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
@@ -264,39 +304,68 @@ fun ImageCropScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .clipToBounds()
-                .pointerInput(constrainToImage, totalRotation, sourceBitmap) {
-                    val viewW = size.width.toFloat()
-                    val viewH = size.height.toFloat()
-                    val boxSide = min(viewW, viewH) * 0.82f
-                    detectTransformGestures { _, pan, zoom, _ ->
-                        val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
-                            pan = panOffset + pan,
-                            scale = scaleFactor * zoom,
-                            rotationDegrees = totalRotation,
-                            sourceWidth = sourceBitmap.width.toFloat(),
-                            sourceHeight = sourceBitmap.height.toFloat(),
-                            cropBoxWidth = boxSide,
-                            cropBoxHeight = boxSide,
-                            constrainToImage = constrainToImage
-                        )
-                        scaleFactor = clampedScale
-                        panOffset = clampedPan
-                    }
-                },
+                .clipToBounds(),
             contentAlignment = Alignment.Center
         ) {
             val viewWidth = constraints.maxWidth.toFloat()
             val viewHeight = constraints.maxHeight.toFloat()
+            if (viewWidth <= 0f || viewHeight <= 0f) return@BoxWithConstraints
+
             viewportSizePx = Size(viewWidth, viewHeight)
 
-            // 计算裁剪框尺寸 (1:1 正方形或自适应)
-            val cropBoxSide = min(viewWidth, viewHeight) * 0.82f
-            val cropLeft = (viewWidth - cropBoxSide) / 2f
-            val cropTop = (viewHeight - cropBoxSide) / 2f
-            val cropRight = cropLeft + cropBoxSide
-            val cropBottom = cropTop + cropBoxSide
-            cropRectPx = RectF(cropLeft, cropTop, cropRight, cropBottom)
+            val srcW = sourceBitmap.width.toFloat()
+            val srcH = sourceBitmap.height.toFloat()
+
+            // 考虑 90°/270° 旋转对视口适配的影响
+            val isRotatedSideways = ((baseRotateSteps / 90f).toInt() % 2 != 0)
+            val effectiveSrcW = if (isRotatedSideways) srcH else srcW
+            val effectiveSrcH = if (isRotatedSideways) srcW else srcH
+
+            val initialCropRect = remember(viewWidth, viewHeight, effectiveSrcW, effectiveSrcH, isSquare) {
+                if (isSquare) {
+                    val squareSide = min(viewWidth, viewHeight) * 0.82f
+                    val squareLeft = (viewWidth - squareSide) / 2f
+                    val squareTop = (viewHeight - squareSide) / 2f
+                    RectF(squareLeft, squareTop, squareLeft + squareSide, squareTop + squareSide)
+                } else {
+                    val availWidth = (viewWidth - marginPx * 2).coerceAtLeast(1f)
+                    val availHeight = (viewHeight - marginPx * 2).coerceAtLeast(1f)
+                    val fitScale = minOf(availWidth / effectiveSrcW, availHeight / effectiveSrcH)
+                    val rectWidth = effectiveSrcW * fitScale
+                    val rectHeight = effectiveSrcH * fitScale
+                    val left = (viewWidth - rectWidth) / 2f
+                    val top = (viewHeight - rectHeight) / 2f
+                    RectF(left, top, left + rectWidth, top + rectHeight)
+                }
+            }
+
+            val calculatedBaseScale = if (isSquare) {
+                ImageAdjustmentEngine.calculateBaseScale(
+                    sourceWidth = srcW,
+                    sourceHeight = srcH,
+                    cropBoxWidth = initialCropRect.width(),
+                    cropBoxHeight = initialCropRect.height()
+                )
+            } else {
+                val availWidth = (viewWidth - marginPx * 2).coerceAtLeast(1f)
+                val availHeight = (viewHeight - marginPx * 2).coerceAtLeast(1f)
+                minOf(availWidth / effectiveSrcW, availHeight / effectiveSrcH)
+            }
+            currentBaseScale = calculatedBaseScale
+
+            val activeCropRect = if (isSquare) {
+                initialCropRect
+            } else {
+                freeCropRect ?: initialCropRect
+            }
+            cropRectPx = activeCropRect
+
+            val cLeft = activeCropRect.left
+            val cTop = activeCropRect.top
+            val cRight = activeCropRect.right
+            val cBottom = activeCropRect.bottom
+            val cWidth = activeCropRect.width()
+            val cHeight = activeCropRect.height()
 
             // 绘制底图 (带 GPU 旋转、缩放、平移与色彩滤镜)
             val imageBitmap = remember(sourceBitmap) { sourceBitmap.asImageBitmap() }
@@ -311,16 +380,8 @@ fun ImageCropScreen(
                         translationY = panOffset.y
                     }
             ) {
-                val srcW = sourceBitmap.width.toFloat()
-                val srcH = sourceBitmap.height.toFloat()
-                val baseScale = ImageAdjustmentEngine.calculateBaseScale(
-                    sourceWidth = srcW,
-                    sourceHeight = srcH,
-                    cropBoxWidth = cropBoxSide,
-                    cropBoxHeight = cropBoxSide
-                )
-                val drawW = srcW * baseScale
-                val drawH = srcH * baseScale
+                val drawW = srcW * calculatedBaseScale
+                val drawH = srcH * calculatedBaseScale
                 val topLeft = Offset((viewWidth - drawW) / 2f, (viewHeight - drawH) / 2f)
 
                 drawImage(
@@ -331,56 +392,170 @@ fun ImageCropScreen(
                 )
             }
 
-            // 绘制视口半透明遮罩与九宫格高亮框
+            // 绘制视口半透明遮罩与九宫格高亮框、拉伸操作手柄
             Canvas(modifier = Modifier.fillMaxSize()) {
-                // 四周暗色遮罩
                 val scrimColor = Color.Black.copy(alpha = 0.62f)
-                // 顶部
-                drawRect(scrimColor, Offset.Zero, Size(viewWidth, cropTop))
-                // 底部
-                drawRect(scrimColor, Offset(0f, cropBottom), Size(viewWidth, viewHeight - cropBottom))
-                // 左侧
-                drawRect(scrimColor, Offset(0f, cropTop), Size(cropLeft, cropBoxSide))
-                // 右侧
-                drawRect(scrimColor, Offset(cropRight, cropTop), Size(viewWidth - cropRight, cropBoxSide))
+                // 顶部遮罩
+                drawRect(scrimColor, Offset.Zero, Size(viewWidth, cTop))
+                // 底部遮罩
+                drawRect(scrimColor, Offset(0f, cBottom), Size(viewWidth, viewHeight - cBottom))
+                // 左侧遮罩
+                drawRect(scrimColor, Offset(0f, cTop), Size(cLeft, cHeight))
+                // 右侧遮罩
+                drawRect(scrimColor, Offset(cRight, cTop), Size(viewWidth - cRight, cHeight))
 
                 // 裁剪框白色外框 (2.dp)
                 drawRect(
                     color = Color.White,
-                    topLeft = Offset(cropLeft, cropTop),
-                    size = Size(cropBoxSide, cropBoxSide),
+                    topLeft = Offset(cLeft, cTop),
+                    size = Size(cWidth, cHeight),
                     style = Stroke(width = 2.dp.toPx())
                 )
 
                 // 3x3 经典九宫格网格细线
-                val third = cropBoxSide / 3f
+                val thirdW = cWidth / 3f
+                val thirdH = cHeight / 3f
                 val gridColor = Color.White.copy(alpha = 0.38f)
                 val gridWidth = 1.dp.toPx()
 
                 // 水平内网格
-                drawLine(gridColor, Offset(cropLeft, cropTop + third), Offset(cropRight, cropTop + third), gridWidth)
-                drawLine(gridColor, Offset(cropLeft, cropTop + third * 2), Offset(cropRight, cropTop + third * 2), gridWidth)
+                drawLine(gridColor, Offset(cLeft, cTop + thirdH), Offset(cRight, cTop + thirdH), gridWidth)
+                drawLine(gridColor, Offset(cLeft, cTop + thirdH * 2), Offset(cRight, cTop + thirdH * 2), gridWidth)
                 // 垂直内网格
-                drawLine(gridColor, Offset(cropLeft + third, cropTop), Offset(cropLeft + third, cropBottom), gridWidth)
-                drawLine(gridColor, Offset(cropLeft + third * 2, cropTop), Offset(cropLeft + third * 2, cropBottom), gridWidth)
+                drawLine(gridColor, Offset(cLeft + thirdW, cTop), Offset(cLeft + thirdW, cBottom), gridWidth)
+                drawLine(gridColor, Offset(cLeft + thirdW * 2, cTop), Offset(cLeft + thirdW * 2, cBottom), gridWidth)
 
                 // 4 个角落主题色强调角标
-                val cornerLen = 18.dp.toPx()
-                val cornerStroke = 3.5.dp.toPx()
-                val cornerColor = primaryColor
-                // 左上
-                drawLine(cornerColor, Offset(cropLeft, cropTop), Offset(cropLeft + cornerLen, cropTop), cornerStroke)
-                drawLine(cornerColor, Offset(cropLeft, cropTop), Offset(cropLeft, cropTop + cornerLen), cornerStroke)
-                // 右上
-                drawLine(cornerColor, Offset(cropRight, cropTop), Offset(cropRight - cornerLen, cropTop), cornerStroke)
-                drawLine(cornerColor, Offset(cropRight, cropTop), Offset(cropRight, cropTop + cornerLen), cornerStroke)
-                // 左下
-                drawLine(cornerColor, Offset(cropLeft, cropBottom), Offset(cropLeft + cornerLen, cropBottom), cornerStroke)
-                drawLine(cornerColor, Offset(cropLeft, cropBottom), Offset(cropLeft, cropBottom - cornerLen), cornerStroke)
-                // 右下
-                drawLine(cornerColor, Offset(cropRight, cropBottom), Offset(cropRight - cornerLen, cropBottom), cornerStroke)
-                drawLine(cornerColor, Offset(cropRight, cropBottom), Offset(cropRight, cropBottom - cornerLen), cornerStroke)
+                val cornerLen = 22.dp.toPx()
+                val cornerStroke = 4.dp.toPx()
+                val handleColor = primaryColor
+
+                // 左上角
+                drawLine(handleColor, Offset(cLeft, cTop), Offset(cLeft + cornerLen, cTop), cornerStroke)
+                drawLine(handleColor, Offset(cLeft, cTop), Offset(cLeft, cTop + cornerLen), cornerStroke)
+                // 右上角
+                drawLine(handleColor, Offset(cRight, cTop), Offset(cRight - cornerLen, cTop), cornerStroke)
+                drawLine(handleColor, Offset(cRight, cTop), Offset(cRight, cTop + cornerLen), cornerStroke)
+                // 左下角
+                drawLine(handleColor, Offset(cLeft, cBottom), Offset(cLeft + cornerLen, cBottom), cornerStroke)
+                drawLine(handleColor, Offset(cLeft, cBottom), Offset(cLeft, cBottom - cornerLen), cornerStroke)
+                // 右下角
+                drawLine(handleColor, Offset(cRight, cBottom), Offset(cRight - cornerLen, cBottom), cornerStroke)
+                drawLine(handleColor, Offset(cRight, cBottom), Offset(cRight, cBottom - cornerLen), cornerStroke)
+
+                // 非方形模式下，在四条边中点绘制拉伸指示条
+                if (!isSquare) {
+                    val edgeHandleLen = 28.dp.toPx()
+                    val edgeHandleStroke = 4.5.dp.toPx()
+                    // 顶部中点
+                    drawLine(handleColor, Offset(cLeft + cWidth / 2f - edgeHandleLen / 2f, cTop), Offset(cLeft + cWidth / 2f + edgeHandleLen / 2f, cTop), edgeHandleStroke)
+                    // 底部中点
+                    drawLine(handleColor, Offset(cLeft + cWidth / 2f - edgeHandleLen / 2f, cBottom), Offset(cLeft + cWidth / 2f + edgeHandleLen / 2f, cBottom), edgeHandleStroke)
+                    // 左侧中点
+                    drawLine(handleColor, Offset(cLeft, cTop + cHeight / 2f - edgeHandleLen / 2f), Offset(cLeft, cTop + cHeight / 2f + edgeHandleLen / 2f), edgeHandleStroke)
+                    // 右侧中点
+                    drawLine(handleColor, Offset(cRight, cTop + cHeight / 2f - edgeHandleLen / 2f), Offset(cRight, cTop + cHeight / 2f + edgeHandleLen / 2f), edgeHandleStroke)
+                }
             }
+
+            var currentHandle by remember { mutableStateOf(CropDragHandle.NONE) }
+
+            // 触摸手势交互层：支持手柄拉伸、框体整体移动与底图变换手势
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(isSquare, viewWidth, viewHeight, constrainToImage, initialCropRect) {
+                        if (isSquare) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
+                                    pan = panOffset + pan,
+                                    scale = scaleFactor * zoom,
+                                    rotationDegrees = totalRotation,
+                                    sourceWidth = sourceBitmap.width.toFloat(),
+                                    sourceHeight = sourceBitmap.height.toFloat(),
+                                    cropBoxWidth = initialCropRect.width(),
+                                    cropBoxHeight = initialCropRect.height(),
+                                    constrainToImage = constrainToImage
+                                )
+                                scaleFactor = clampedScale
+                                panOffset = clampedPan
+                            }
+                        } else {
+                            detectDragGestures(
+                                onDragStart = { touchOffset ->
+                                    val currentRect = freeCropRect ?: initialCropRect
+                                    currentHandle = detectCropHandle(touchOffset, currentRect, touchRadius)
+                                },
+                                onDrag = { change, dragAmount ->
+                                    if (currentHandle != CropDragHandle.NONE) {
+                                        change.consume()
+                                        val currentRect = freeCropRect ?: initialCropRect
+                                        val newRect = RectF(currentRect)
+                                        val bLeft = if (constrainToImage) initialCropRect.left else boundPadding
+                                        val bTop = if (constrainToImage) initialCropRect.top else boundPadding
+                                        val bRight = if (constrainToImage) initialCropRect.right else viewWidth - boundPadding
+                                        val bBottom = if (constrainToImage) initialCropRect.bottom else viewHeight - boundPadding
+
+                                        val dx = dragAmount.x
+                                        val dy = dragAmount.y
+
+                                        when (currentHandle) {
+                                            CropDragHandle.TOP_LEFT -> {
+                                                newRect.left = (newRect.left + dx).coerceIn(bLeft, newRect.right - minSize)
+                                                newRect.top = (newRect.top + dy).coerceIn(bTop, newRect.bottom - minSize)
+                                            }
+                                            CropDragHandle.TOP_RIGHT -> {
+                                                newRect.right = (newRect.right + dx).coerceIn(newRect.left + minSize, bRight)
+                                                newRect.top = (newRect.top + dy).coerceIn(bTop, newRect.bottom - minSize)
+                                            }
+                                            CropDragHandle.BOTTOM_LEFT -> {
+                                                newRect.left = (newRect.left + dx).coerceIn(bLeft, newRect.right - minSize)
+                                                newRect.bottom = (newRect.bottom + dy).coerceIn(newRect.top + minSize, bBottom)
+                                            }
+                                            CropDragHandle.BOTTOM_RIGHT -> {
+                                                newRect.right = (newRect.right + dx).coerceIn(newRect.left + minSize, bRight)
+                                                newRect.bottom = (newRect.bottom + dy).coerceIn(newRect.top + minSize, bBottom)
+                                            }
+                                            CropDragHandle.LEFT -> {
+                                                newRect.left = (newRect.left + dx).coerceIn(bLeft, newRect.right - minSize)
+                                            }
+                                            CropDragHandle.RIGHT -> {
+                                                newRect.right = (newRect.right + dx).coerceIn(newRect.left + minSize, bRight)
+                                            }
+                                            CropDragHandle.TOP -> {
+                                                newRect.top = (newRect.top + dy).coerceIn(bTop, newRect.bottom - minSize)
+                                            }
+                                            CropDragHandle.BOTTOM -> {
+                                                newRect.bottom = (newRect.bottom + dy).coerceIn(newRect.top + minSize, bBottom)
+                                            }
+                                            CropDragHandle.INSIDE -> {
+                                                val w = newRect.width()
+                                                val h = newRect.height()
+                                                var l = newRect.left + dx
+                                                var t = newRect.top + dy
+                                                if (l < bLeft) l = bLeft
+                                                if (l + w > bRight) l = bRight - w
+                                                if (t < bTop) t = bTop
+                                                if (t + h > bBottom) t = bBottom - h
+                                                newRect.set(l, t, l + w, t + h)
+                                            }
+                                            CropDragHandle.NONE -> {}
+                                        }
+                                        freeCropRect = RectF(newRect)
+                                    } else {
+                                        panOffset += dragAmount
+                                    }
+                                },
+                                onDragEnd = {
+                                    currentHandle = CropDragHandle.NONE
+                                },
+                                onDragCancel = {
+                                    currentHandle = CropDragHandle.NONE
+                                }
+                            )
+                        }
+                    }
+            )
         }
 
         // 3. 标尺滑杆控制区 (重置按钮 + 当前数值指示 + 90°旋转 + 刻度标尺)
@@ -408,8 +583,13 @@ fun ImageCropScreen(
                                 CropToolTab.ROTATE -> {
                                     fineAngle = 0f
                                     baseRotateSteps = 0f
+                                    freeCropRect = null
                                 }
-                                CropToolTab.SCALE -> scaleFactor = 1f
+                                CropToolTab.SCALE -> {
+                                    scaleFactor = 1f
+                                    panOffset = Offset.Zero
+                                    freeCropRect = null
+                                }
                                 CropToolTab.BRIGHTNESS -> brightness = 0f
                                 CropToolTab.CONTRAST -> contrast = 0f
                                 CropToolTab.SATURATION -> saturation = 0f
@@ -445,6 +625,7 @@ fun ImageCropScreen(
                         onClick = {
                             val newRotate = (baseRotateSteps + 90f) % 360f
                             baseRotateSteps = newRotate
+                            freeCropRect = null
                             if (constrainToImage && cropRectPx.width() > 0f) {
                                 val (clampedPan, clampedScale) = ImageAdjustmentEngine.clampPanAndScale(
                                     pan = panOffset,

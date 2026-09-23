@@ -3,6 +3,7 @@ package com.nanami.koishi.core.data.repository
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.ImageSearch
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.ViewCarousel
 import com.nanami.koishi.R
@@ -56,6 +57,15 @@ class InMemoryToolRepository : ToolRepository {
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = false
+            ),
+            ToolItem(
+                id = "image_search",
+                nameRes = R.string.tool_image_search_name,
+                descriptionRes = R.string.tool_image_search_desc,
+                icon = Icons.Rounded.ImageSearch,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
             )
         )
     )

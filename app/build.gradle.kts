@@ -26,6 +26,10 @@ android {
         }
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
@@ -95,6 +99,12 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.8")
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+
+    // Network & Image Search
+    implementation(libs.okhttp)
+    implementation(libs.jsoup)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.browser)
 
     // QR Code Generation & Scanning
     implementation(libs.qrcode.kotlin)

@@ -143,7 +143,8 @@ object ImageAdjustmentEngine {
         brightness: Float,
         contrast: Float,
         saturation: Float,
-        outputMaxDimension: Int = 1024
+        outputMaxDimension: Int = 1024,
+        baseScaleOverride: Float? = null
     ): Bitmap {
         // 计算目标输出分辨率（保持裁剪框的宽高比）
         val aspect = cropRectOnScreen.width() / cropRectOnScreen.height()
@@ -163,8 +164,8 @@ object ImageAdjustmentEngine {
         // 视口屏幕坐标 -> 输出画布坐标的缩放比
         val screenToCanvasScale = targetWidth.toFloat() / cropRectOnScreen.width()
 
-        // 计算底图适配裁剪框的基础缩放比 (与 ImageCropScreen 中 baseScale 保持一致)
-        val baseScale = calculateBaseScale(
+        // 计算底图适配裁剪框的基础缩放比 (优先使用传入的视口实际基础缩放比)
+        val baseScale = baseScaleOverride ?: calculateBaseScale(
             sourceWidth = source.width.toFloat(),
             sourceHeight = source.height.toFloat(),
             cropBoxWidth = cropRectOnScreen.width(),

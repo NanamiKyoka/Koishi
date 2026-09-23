@@ -56,6 +56,7 @@ fun KoishiNavHost(
                 onNavigateToTool = { tool ->
                     when (tool.id) {
                         "image_stitching" -> navController.navigate(ImageStitchingRoute)
+                        "image_search" -> navController.navigate(ImageSearchRoute)
                         "grid_split" -> navController.navigate(GridSplitRoute)
                         "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
                         "qr_code" -> navController.navigate(QrToolRoute)
@@ -69,6 +70,14 @@ fun KoishiNavHost(
                         }
                     }
                 }
+            )
+        }
+
+        composable<ImageSearchRoute> {
+            val imageSearchViewModel: com.nanami.koishi.feature.tools.image_search.ImageSearchViewModel = viewModel()
+            com.nanami.koishi.feature.tools.image_search.ImageSearchRoute(
+                viewModel = imageSearchViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 
