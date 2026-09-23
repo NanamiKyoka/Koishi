@@ -42,10 +42,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nanami.koishi.R
 
 @Composable
 fun CrashScreen(
@@ -100,13 +102,13 @@ fun CrashScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "应用遇到意外错误",
+                            text = stringResource(R.string.crash_title),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onErrorContainer
-                        )
+                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = errorMessage.ifBlank { "发生未捕获的运行时异常" },
+                            text = errorMessage.ifBlank { stringResource(R.string.crash_subtitle_default) },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f),
                             maxLines = 2
@@ -158,7 +160,7 @@ fun CrashScreen(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("Koishi Crash Report", crashReport))
-                        Toast.makeText(context, "已复制错误详情到剪贴板", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.crash_copied_toast), Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -167,7 +169,7 @@ fun CrashScreen(
                 ) {
                     Icon(imageVector = Icons.Rounded.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("复制错误详情")
+                    Text(stringResource(R.string.crash_btn_copy))
                 }
 
                 Button(
@@ -182,7 +184,7 @@ fun CrashScreen(
                 ) {
                     Icon(imageVector = Icons.Rounded.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("重启应用")
+                    Text(stringResource(R.string.crash_btn_restart))
                 }
             }
         }

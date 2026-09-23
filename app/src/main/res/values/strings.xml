@@ -338,4 +338,13 @@
     <string name="image_search_label_tweet_id">Tweet ID</string>
     <string name="image_search_collapse">收起结果</string>
     <string name="image_search_expand">展开结果</string>
+
+    <!-- Crash Report Screen -->
+    <string name="crash_title">应用遇到意外错误</string>
+    <string name="crash_subtitle_default">发生未捕获的运行时异常</string>
+    <string name="crash_btn_copy">复制错误详情</string>
+    <string name="crash_copied_toast">已复制错误详情到剪贴板</string>
+    <string name="crash_btn_restart">重启应用</string>
+    <string name="crash_no_report">未获取到崩溃日志详情</string>
+    <string name="crash_unknown_exception">未知异常</string>
 </resources>

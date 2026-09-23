@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import com.nanami.koishi.core.util.LocaleHelper
 import kotlin.math.max
 
 class ImageCropActivity : ComponentActivity() {
@@ -44,6 +45,10 @@ class ImageCropActivity : ComponentActivity() {
     private var sourceBitmap by mutableStateOf<Bitmap?>(null)
     private var isSquare by mutableStateOf(true)
     private var targetType = "image"
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.applyLocale(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -96,12 +96,17 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.KoishiTheme
+import com.nanami.koishi.core.util.LocaleHelper
 import java.util.concurrent.Executors
 
 class QrScanActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_RESULT_TEXT = "extra_qr_result_text"
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.applyLocale(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

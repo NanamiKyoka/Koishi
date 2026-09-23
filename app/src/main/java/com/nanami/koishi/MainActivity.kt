@@ -1,8 +1,10 @@
 package com.nanami.koishi
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -17,6 +19,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.core.designsystem.KoishiTheme
+import com.nanami.koishi.core.util.LocaleHelper
 import com.nanami.koishi.feature.settings.AppLanguage
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.settings.ThemeMode
@@ -26,6 +29,10 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
 
     private val settingsViewModel: SettingsViewModel by viewModels()
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.applyLocale(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -48,20 +55,13 @@ class MainActivity : ComponentActivity() {
 
             val currentConfig = LocalConfiguration.current
             val (effectiveConfig, localizedContext) = remember(settingsState.language, currentConfig) {
-                if (targetLocale != null) {
-                    val config = Configuration(currentConfig).apply {
-                        setLocale(targetLocale)
-                        setLayoutDirection(targetLocale)
-                    }
-                    config to createConfigurationContext(config)
-                } else {
-                    currentConfig to this
-                }
+                LocaleHelper.wrapWithActivity(this@MainActivity, currentConfig, targetLocale)
             }
 
             CompositionLocalProvider(
                 LocalConfiguration provides effectiveConfig,
-                LocalContext provides localizedContext
+                LocalContext provides localizedContext,
+                LocalActivityResultRegistryOwner provides this@MainActivity
             ) {
                 KoishiTheme(
                     darkTheme = isDark,
