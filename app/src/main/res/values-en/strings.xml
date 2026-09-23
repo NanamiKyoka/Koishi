@@ -338,6 +338,46 @@
     <string name="image_search_collapse">Collapse results</string>
     <string name="image_search_expand">Expand results</string>
 
+    <!-- Mirage Tank Tool -->
+    <string name="tool_mirage_tank_name">Mirage Tank</string>
+    <string name="tool_mirage_tank_desc">Synthesize dual-surface images via Alpha channel calculation for white and black backgrounds</string>
+    <string name="mirage_tank_title">Mirage Tank</string>
+    <string name="mirage_tank_front_image">Front Image (White Bg)</string>
+    <string name="mirage_tank_front_image_desc">Light or bright image recommended</string>
+    <string name="mirage_tank_back_image">Back Image (Black Bg)</string>
+    <string name="mirage_tank_back_image_desc">Dark or deep image recommended</string>
+    <string name="mirage_tank_tap_to_pick">Tap to pick image</string>
+    <string name="mirage_tank_swap_images">Swap Front/Back Images</string>
+    <string name="mirage_tank_mode_and_params">Mode &amp; Fine-tuning</string>
+    <string name="mirage_tank_mode_grayscale">Grayscale</string>
+    <string name="mirage_tank_mode_color">Color</string>
+    <string name="mirage_tank_reset_params">Reset</string>
+    <string name="mirage_tank_front_lightness">Front Lightness</string>
+    <string name="mirage_tank_front_contrast">Front Contrast</string>
+    <string name="mirage_tank_back_lightness">Back Lightness</string>
+    <string name="mirage_tank_back_contrast">Back Contrast</string>
+    <string name="mirage_tank_checkerboard">Checkerboard Blending</string>
+    <string name="mirage_tank_checkerboard_desc">Use spatial micro-dither to optimize color fidelity and boundaries</string>
+    <string name="mirage_tank_checkerboard_strength">Checkerboard Strength</string>
+    <string name="mirage_tank_preview_title">Preview &amp; Contrast</string>
+    <string name="mirage_tank_preview_white">White Bg</string>
+    <string name="mirage_tank_preview_black">Black Bg</string>
+    <string name="mirage_tank_preview_custom">Smooth Ratio</string>
+    <string name="mirage_tank_bg_ratio_label">Background Brightness</string>
+    <string name="mirage_tank_hint_pick_both">Please select both front and back images</string>
+    <string name="mirage_tank_hint_ready">Ready. Switch backgrounds to preview</string>
+    <string name="mirage_tank_generate">Generate</string>
+    <string name="mirage_tank_save_lossless">Save Lossless PNG</string>
+    <string name="mirage_tank_load_failed">Failed to load image</string>
+    <string name="mirage_tank_process_failed">Failed to generate mirage tank, please retry</string>
+    <string name="mirage_tank_no_result_to_save">No generated image to save</string>
+    <string name="mirage_tank_saved_success">Successfully saved lossless PNG to gallery (Pictures/Koishi/MirageTank)</string>
+    <string name="mirage_tank_save_failed">Failed to save image to gallery</string>
+    <string name="mirage_tank_help_title">Mirage Tank Guide &amp; Tips</string>
+    <string name="mirage_tank_help_p1">[What is Mirage Tank?] By controlling PNG Alpha transparency, a single picture renders distinct visuals when blended against light (white) vs. dark (black) background platforms.</string>
+    <string name="mirage_tank_help_p2">[Selection Tips] Front image is recommended to be clean, line-defined or light-toned; Back image is recommended to be deeper or dark-toned. Greater contrast yields superior disguise.</string>
+    <string name="mirage_tank_help_p3">[Tuning Tips] If the front image bleeds into dark backgrounds, increase front lightness or lower back lightness. Enable Checkerboard Blending in color mode for better color fidelity.</string>
+
     <!-- Crash Report Screen -->
     <string name="crash_title">App Encountered an Unexpected Error</string>
     <string name="crash_subtitle_default">An uncaught runtime exception occurred</string>

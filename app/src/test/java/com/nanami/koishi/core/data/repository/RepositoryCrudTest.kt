@@ -134,7 +134,7 @@ class RepositoryCrudTest {
         val repo = InMemoryToolRepository()
         val tools = repo.availableTools.first()
 
-        assertEquals(5, tools.size)
+        assertEquals(6, tools.size)
         assertEquals("image_stitching", tools[0].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[0].category)
         assertFalse(tools[0].isFavorite)
@@ -149,13 +149,18 @@ class RepositoryCrudTest {
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[2].category)
         assertFalse(tools[2].isFavorite)
 
-        assertEquals("qr_code", tools[3].id)
+        assertEquals("mirage_tank", tools[3].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[3].category)
         assertFalse(tools[3].isFavorite)
+        assertTrue(tools[3].hasDot)
 
-        assertEquals("image_search", tools[4].id)
+        assertEquals("qr_code", tools[4].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[4].category)
         assertFalse(tools[4].isFavorite)
-        assertTrue(tools[4].hasDot)
+
+        assertEquals("image_search", tools[5].id)
+        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[5].category)
+        assertFalse(tools[5].isFavorite)
+        assertTrue(tools[5].hasDot)
     }
 }

@@ -1,6 +1,7 @@
 package com.nanami.koishi.core.data.repository
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
@@ -48,6 +49,15 @@ class InMemoryToolRepository : ToolRepository {
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = false
+            ),
+            ToolItem(
+                id = "mirage_tank",
+                nameRes = R.string.tool_mirage_tank_name,
+                descriptionRes = R.string.tool_mirage_tank_desc,
+                icon = Icons.Rounded.Contrast,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
             ),
             ToolItem(
                 id = "qr_code",

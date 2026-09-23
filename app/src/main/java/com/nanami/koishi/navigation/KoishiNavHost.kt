@@ -32,6 +32,8 @@ import com.nanami.koishi.feature.tools.grid_split.GridSplitRoute
 import com.nanami.koishi.feature.tools.grid_split.GridSplitViewModel
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationRoute
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewModel
+import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
+import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 
@@ -59,6 +61,7 @@ fun KoishiNavHost(
                         "image_search" -> navController.navigate(ImageSearchRoute)
                         "grid_split" -> navController.navigate(GridSplitRoute)
                         "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
+                        "mirage_tank" -> navController.navigate(MirageTankRoute)
                         "qr_code" -> navController.navigate(QrToolRoute)
                         else -> {
                             navController.navigate(
@@ -101,6 +104,14 @@ fun KoishiNavHost(
             val obfuscationViewModel: ImageObfuscationViewModel = viewModel()
             ImageObfuscationRoute(
                 viewModel = obfuscationViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<MirageTankRoute> {
+            val mirageTankViewModel: MirageTankViewModel = viewModel()
+            MirageTankRoute(
+                viewModel = mirageTankViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

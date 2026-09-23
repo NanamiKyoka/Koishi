@@ -339,6 +339,46 @@
     <string name="image_search_collapse">收起结果</string>
     <string name="image_search_expand">展开结果</string>
 
+    <!-- Mirage Tank Tool -->
+    <string name="tool_mirage_tank_name">幻影坦克</string>
+    <string name="tool_mirage_tank_desc">基于 Alpha 通道计算合成表里双图，白底与黑底展现不同画面</string>
+    <string name="mirage_tank_title">幻影坦克</string>
+    <string name="mirage_tank_front_image">表图 (白底可见)</string>
+    <string name="mirage_tank_front_image_desc">建议选择明亮或浅色画面</string>
+    <string name="mirage_tank_back_image">里图 (黑底可见)</string>
+    <string name="mirage_tank_back_image_desc">建议选择较暗或深色画面</string>
+    <string name="mirage_tank_tap_to_pick">点击选取图片</string>
+    <string name="mirage_tank_swap_images">互换表里图</string>
+    <string name="mirage_tank_mode_and_params">模式与参数微调</string>
+    <string name="mirage_tank_mode_grayscale">黑白模式</string>
+    <string name="mirage_tank_mode_color">彩色模式</string>
+    <string name="mirage_tank_reset_params">重置参数</string>
+    <string name="mirage_tank_front_lightness">表图亮度增强</string>
+    <string name="mirage_tank_front_contrast">表图对比度</string>
+    <string name="mirage_tank_back_lightness">里图亮度压缩</string>
+    <string name="mirage_tank_back_contrast">里图对比度</string>
+    <string name="mirage_tank_checkerboard">棋盘格空间调和</string>
+    <string name="mirage_tank_checkerboard_desc">利用微空间点阵交错补偿彩色色差与边缘</string>
+    <string name="mirage_tank_checkerboard_strength">棋盘格调和强度</string>
+    <string name="mirage_tank_preview_title">效果对比预览</string>
+    <string name="mirage_tank_preview_white">白底模式</string>
+    <string name="mirage_tank_preview_black">黑底模式</string>
+    <string name="mirage_tank_preview_custom">实时无极</string>
+    <string name="mirage_tank_bg_ratio_label">背景明暗比例</string>
+    <string name="mirage_tank_hint_pick_both">请先分别选取表图与里图</string>
+    <string name="mirage_tank_hint_ready">已就绪，可实时切换背景对比预览</string>
+    <string name="mirage_tank_generate">合成图片</string>
+    <string name="mirage_tank_save_lossless">保存无损 PNG</string>
+    <string name="mirage_tank_load_failed">图片加载失败</string>
+    <string name="mirage_tank_process_failed">合成处理失败，请重试</string>
+    <string name="mirage_tank_no_result_to_save">尚未生成合成图片</string>
+    <string name="mirage_tank_saved_success">已成功保存无损 PNG 至相册 (Pictures/Koishi/MirageTank)</string>
+    <string name="mirage_tank_save_failed">保存图片至相册失败</string>
+    <string name="mirage_tank_help_title">幻影坦克原理解析与技巧</string>
+    <string name="mirage_tank_help_p1">【什么是幻影坦克？】利用 PNG 图片的透明通道 (Alpha Channel)，同一张图片在浅色（白底）与深色（黑底）背景下会混合出完全不同的色彩与内容，类似《红色警戒》中隐藏伪装的幻影坦克。</string>
+    <string name="mirage_tank_help_p2">【选图建议】表图建议选择线条分明、整体偏亮或纯白底的图片；里图建议选择主体清晰、整体偏暗的图片。表里两图的反差越大，在黑白背景下各自的显隐效果越惊艳。</string>
+    <string name="mirage_tank_help_p3">【调参技巧】若在黑底模式下仍能看到表图轮廓，可适当提高表图亮度或调低里图亮度；对于彩色模式，开启“棋盘格空间调和”可有效利用人眼空间视觉平滑通道溢出，提升色彩保真度。</string>
+
     <!-- Crash Report Screen -->
     <string name="crash_title">应用遇到意外错误</string>
     <string name="crash_subtitle_default">发生未捕获的运行时异常</string>
