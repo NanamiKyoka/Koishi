@@ -5,17 +5,22 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,21 +58,23 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.hypot
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * 可在多个工具中复用的全屏手势放大/缩小图片预览弹窗
@@ -130,7 +137,6 @@ fun ImagePreviewDialog(
             // 水平滑动分页
             HorizontalPager(
                 state = pagerState,
-                userScrollEnabled = currentPageScale <= 1.05f,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 val item = images[page]
@@ -287,164 +293,245 @@ private fun ZoomableImagePage(
         if (loadedBitmap == null && item is Uri) {
             isLoading = true
             withContext(Dispatchers.IO) {
-                try {
-                    context.contentResolver.openInputStream(item)?.use { stream ->
-                        loadedBitmap = BitmapFactory.decodeStream(stream)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    isLoading = false
-                }
+                loadedBitmap = decodeSampledBitmapFromUri(context, item)
+                isLoading = false
             }
         }
     }
 
     var scale by remember { mutableFloatStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
 
-    // 当页面变为非当前页时，平滑重置缩放和偏移
+    val scaleAnim = remember { Animatable(1f) }
+    val offsetXAnim = remember { Animatable(0f) }
+    val offsetYAnim = remember { Animatable(0f) }
+
+    var containerSize by remember { mutableStateOf(IntSize.Zero) }
+    var animationJob by remember { mutableStateOf<Job?>(null) }
+
+    // 当页面变为非当前页或完全离屏时，重置缩放和偏移至初始状态
     LaunchedEffect(isActive) {
-        if (!isActive && scale != 1f) {
+        if (!isActive) {
+            animationJob?.cancel()
             scale = 1f
-            offset = Offset.Zero
+            offsetX = 0f
+            offsetY = 0f
             onScaleChanged(1f)
         }
     }
 
-    var lastTapTime by remember { mutableStateOf(0L) }
-    var lastTapPos by remember { mutableStateOf(Offset.Zero) }
+    // 动态计算在特定倍率下的真实可移动极值边界（基于容器尺寸与图片实际渲染尺寸，严禁写死数值）
+    val calculateMaxOffsets: (Float) -> Pair<Float, Float> = { currentScale ->
+        val bmp = loadedBitmap
+        if (bmp == null || containerSize.width == 0 || containerSize.height == 0) {
+            0f to 0f
+        } else {
+            val bmpW = bmp.width.toFloat()
+            val bmpH = bmp.height.toFloat()
+            val boxW = containerSize.width.toFloat()
+            val boxH = containerSize.height.toFloat()
+
+            val scaleFit = min(boxW / bmpW, boxH / bmpH)
+            val fittedW = bmpW * scaleFit
+            val fittedH = bmpH * scaleFit
+
+            val scaledW = fittedW * currentScale
+            val scaledH = fittedH * currentScale
+
+            val maxOffsetX = max(0f, (scaledW - boxW) / 2f)
+            val maxOffsetY = max(0f, (scaledH - boxH) / 2f)
+            maxOffsetX to maxOffsetY
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(scale, isActive) {
-                awaitEachGesture {
-                    val firstDown = awaitFirstDown(requireUnconsumed = false)
-                    val startTime = System.currentTimeMillis()
-                    var isMoved = false
-
-                    if (scale > 1.05f) {
-                        // 处于放大状态：由当前页面完全消费拖拽与双指手势
-                        var prevCenter = firstDown.position
-                        var prevDistance = 0f
-
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val activePointers = event.changes.filter { it.pressed }
-                            if (activePointers.isEmpty()) break
-
-                            if (activePointers.size >= 2) {
-                                val p0 = activePointers[0].position
-                                val p1 = activePointers[1].position
-                                val currentDistance = hypot(p0.x - p1.x, p0.y - p1.y)
-
-                                if (prevDistance > 0f) {
-                                    val zoom = currentDistance / prevDistance
-                                    val newScale = (scale * zoom).coerceIn(1f, 5f)
-                                    scale = newScale
-                                    onScaleChanged(newScale)
+            .onSizeChanged { containerSize = it }
+            // 1. 分层手势：由 detectTapGestures 处理单击（切换操作栏）与双击（平滑动画过渡）
+            .pointerInput(containerSize, loadedBitmap) {
+                detectTapGestures(
+                    onTap = {
+                        onToggleControls()
+                    },
+                    onDoubleTap = { tapPos ->
+                        animationJob?.cancel()
+                        animationJob = coroutineScope.launch {
+                            val currentScale = scale
+                            val (maxOffX, maxOffY) = calculateMaxOffsets(2.5f)
+                            scaleAnim.snapTo(scale)
+                            offsetXAnim.snapTo(offsetX)
+                            offsetYAnim.snapTo(offsetY)
+                            if (currentScale > 1.05f) {
+                                // 处于放大状态：双击平滑恢复到 1.0x 全局居中视图
+                                launch {
+                                    scaleAnim.animateTo(1f, tween(250)) {
+                                        scale = value
+                                        onScaleChanged(value)
+                                    }
                                 }
-                                val currentCenter = Offset((p0.x + p1.x) / 2f, (p0.y + p1.y) / 2f)
-                                val pan = currentCenter - prevCenter
-                                val maxOffsetX = (scale - 1f) * 600f
-                                val maxOffsetY = (scale - 1f) * 800f
-                                offset = Offset(
-                                    x = (offset.x + pan.x).coerceIn(-maxOffsetX, maxOffsetX),
-                                    y = (offset.y + pan.y).coerceIn(-maxOffsetY, maxOffsetY)
-                                )
-                                prevCenter = currentCenter
-                                prevDistance = currentDistance
-                                event.changes.forEach { it.consume() }
-                            } else if (activePointers.size == 1) {
-                                val p0 = activePointers[0]
-                                val pan = p0.position - prevCenter
-                                if (hypot(pan.x, pan.y) > 3f) {
-                                    isMoved = true
+                                launch {
+                                    offsetXAnim.animateTo(0f, tween(250)) {
+                                        offsetX = value
+                                    }
                                 }
-                                val maxOffsetX = (scale - 1f) * 600f
-                                val maxOffsetY = (scale - 1f) * 800f
-                                offset = Offset(
-                                    x = (offset.x + pan.x).coerceIn(-maxOffsetX, maxOffsetX),
-                                    y = (offset.y + pan.y).coerceIn(-maxOffsetY, maxOffsetY)
-                                )
-                                prevCenter = p0.position
-                                prevDistance = 0f
-                                p0.consume()
-                            }
-                        }
-
-                        // 手势结束：若未拖拽且点击时间短，判定为单击切换操作栏或双击还原
-                        if (!isMoved && (System.currentTimeMillis() - startTime) < 300) {
-                            val now = System.currentTimeMillis()
-                            if (now - lastTapTime < 350) {
-                                scale = 1f
-                                offset = Offset.Zero
-                                onScaleChanged(1f)
-                                lastTapTime = 0L
+                                launch {
+                                    offsetYAnim.animateTo(0f, tween(250)) {
+                                        offsetY = value
+                                    }
+                                }
                             } else {
-                                lastTapTime = now
-                                coroutineScope.launch {
-                                    delay(350)
-                                    if (lastTapTime == now) {
-                                        onToggleControls()
+                                // 1.0x 状态：双击平滑过渡至 2.5x 并围绕触控点锚定
+                                val targetScale = 2.5f
+                                val center = Offset(containerSize.width / 2f, containerSize.height / 2f)
+                                val targetOffsetX = (-(tapPos.x - center.x) * (targetScale - 1f)).coerceIn(-maxOffX, maxOffX)
+                                val targetOffsetY = (-(tapPos.y - center.y) * (targetScale - 1f)).coerceIn(-maxOffY, maxOffY)
+                                launch {
+                                    scaleAnim.animateTo(targetScale, tween(250)) {
+                                        scale = value
+                                        onScaleChanged(value)
+                                    }
+                                }
+                                launch {
+                                    offsetXAnim.animateTo(targetOffsetX, tween(250)) {
+                                        offsetX = value
+                                    }
+                                }
+                                launch {
+                                    offsetYAnim.animateTo(targetOffsetY, tween(250)) {
+                                        offsetY = value
                                     }
                                 }
                             }
                         }
-                    } else {
-                        // scale <= 1.05f (正常全屏视图)：绝不消费单指滑动，让 HorizontalPager 流畅翻页！
-                        var prevDistance = 0f
-                        var isPinching = false
+                    }
+                )
+            }
+            // 2. 变换手势：处理双指缩放（围绕双指几何中心）与单指大图平移及边缘滑动切页透传
+            .pointerInput(containerSize, loadedBitmap) {
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    animationJob?.cancel()
 
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val activePointers = event.changes.filter { it.pressed }
-                            if (activePointers.isEmpty()) break
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val activePointers = event.changes.filter { it.pressed }
+                        if (activePointers.isEmpty()) break
 
-                            if (activePointers.size >= 2) {
-                                // 两个手指触控：判定为 Pinch 缩放
-                                isPinching = true
-                                val p0 = activePointers[0].position
-                                val p1 = activePointers[1].position
-                                val currentDistance = hypot(p0.x - p1.x, p0.y - p1.y)
+                        val currentScale = scale
+                        val currentOffsetX = offsetX
+                        val currentOffsetY = offsetY
 
-                                if (prevDistance > 0f) {
-                                    val zoom = currentDistance / prevDistance
-                                    val newScale = (scale * zoom).coerceIn(1f, 5f)
-                                    scale = newScale
-                                    onScaleChanged(newScale)
-                                }
-                                prevDistance = currentDistance
-                                event.changes.forEach { it.consume() }
+                        if (activePointers.size >= 2) {
+                            // 双指手势：围绕双指几何中心锚定缩放与平移
+                            val zoomChange = event.calculateZoom()
+                            val panChange = event.calculatePan()
+                            val centroid = event.calculateCentroid(useCurrent = true)
+
+                            val newScale = (currentScale * zoomChange).coerceIn(0.7f, 5f)
+                            val (newMaxX, newMaxY) = calculateMaxOffsets(newScale)
+
+                            val center = Offset(containerSize.width / 2f, containerSize.height / 2f)
+                            val centroidRel = centroid - center
+
+                            val scaleRatio = if (currentScale > 0f) newScale / currentScale else 1f
+                            val newX = (currentOffsetX * scaleRatio + centroidRel.x * (1f - scaleRatio) + panChange.x).coerceIn(-newMaxX, newMaxX)
+                            val newY = (currentOffsetY * scaleRatio + centroidRel.y * (1f - scaleRatio) + panChange.y).coerceIn(-newMaxY, newMaxY)
+
+                            scale = newScale
+                            offsetX = newX
+                            offsetY = newY
+                            onScaleChanged(newScale)
+
+                            // 消费双指事件，保证多指缩放不被外层干扰
+                            event.changes.forEach { it.consume() }
+                        } else if (activePointers.size == 1) {
+                            // 单指手势
+                            val pointer = activePointers[0]
+                            val panChange = pointer.position - pointer.previousPosition
+
+                            if (currentScale <= 1.05f) {
+                                // 1.0x 视图：不消费任何单指滑动，让外层 HorizontalPager 自由翻页
                             } else {
-                                val p0 = activePointers[0]
-                                if (hypot(p0.position.x - firstDown.position.x, p0.position.y - firstDown.position.y) > 10f) {
-                                    isMoved = true
+                                // 放大状态：动态判断是否达到水平/垂直真实可移动边缘
+                                val (maxX, maxY) = calculateMaxOffsets(currentScale)
+
+                                var canPanX = false
+                                if (panChange.x > 0f) {
+                                    // 向右平移：尚未到达最左边缘（offset.x < maxX）
+                                    canPanX = currentOffsetX < maxX - 0.5f
+                                } else if (panChange.x < 0f) {
+                                    // 向左平移：尚未到达最右边缘（offset.x > -maxX）
+                                    canPanX = currentOffsetX > -maxX + 0.5f
                                 }
-                                // 单指滑动不调用 consume()，HorizontalPager 接收并执行页面平移翻页
+
+                                var canPanY = false
+                                if (panChange.y > 0f) {
+                                    canPanY = currentOffsetY < maxY - 0.5f
+                                } else if (panChange.y < 0f) {
+                                    canPanY = currentOffsetY > -maxY + 0.5f
+                                }
+
+                                if (canPanX || canPanY) {
+                                    val newX = if (canPanX) (currentOffsetX + panChange.x).coerceIn(-maxX, maxX) else currentOffsetX
+                                    val newY = if (canPanY) (currentOffsetY + panChange.y).coerceIn(-maxY, maxY) else currentOffsetY
+
+                                    scale = currentScale
+                                    offsetX = newX
+                                    offsetY = newY
+
+                                    // 如果在水平可移动范围内，或主要是垂直拖拽，消费位移
+                                    if (canPanX || abs(panChange.y) > abs(panChange.x)) {
+                                        pointer.consume()
+                                    }
+                                } else {
+                                    // 水平平移已达到极值边界且用户继续往边缘方向滑动：
+                                    // 绝不消费该水平位移，自然透传给外层 HorizontalPager 进行切页！
+                                }
                             }
                         }
+                    }
 
-                        // 手势结束：若未缩放且未滑动，判定为单击切换操作栏或双击放大
-                        if (!isPinching && !isMoved && (System.currentTimeMillis() - startTime) < 300) {
-                            val now = System.currentTimeMillis()
-                            val tapPos = firstDown.position
-                            if (now - lastTapTime < 350 && hypot(tapPos.x - lastTapPos.x, tapPos.y - lastTapPos.y) < 80f) {
-                                scale = 2.5f
-                                onScaleChanged(2.5f)
-                                offset = Offset(
-                                    x = (size.width / 2f - tapPos.x).coerceIn(-400f, 400f),
-                                    y = (size.height / 2f - tapPos.y).coerceIn(-600f, 600f)
-                                )
-                                lastTapTime = 0L
-                            } else {
-                                lastTapTime = now
-                                lastTapPos = tapPos
-                                coroutineScope.launch {
-                                    delay(350)
-                                    if (lastTapTime == now) {
-                                        onToggleControls()
+                    // 手指离开屏幕后，若缩放倍率小于 1.0x 或因平移略微越界，平滑回弹
+                    if (scale < 1f) {
+                        animationJob = coroutineScope.launch {
+                            scaleAnim.snapTo(scale)
+                            offsetXAnim.snapTo(offsetX)
+                            offsetYAnim.snapTo(offsetY)
+                            launch {
+                                scaleAnim.animateTo(1f, tween(200)) {
+                                    scale = value
+                                    onScaleChanged(value)
+                                }
+                            }
+                            launch {
+                                offsetXAnim.animateTo(0f, tween(200)) {
+                                    offsetX = value
+                                }
+                            }
+                            launch {
+                                offsetYAnim.animateTo(0f, tween(200)) {
+                                    offsetY = value
+                                }
+                            }
+                        }
+                    } else {
+                        val (maxX, maxY) = calculateMaxOffsets(scale)
+                        val clampedX = offsetX.coerceIn(-maxX, maxX)
+                        val clampedY = offsetY.coerceIn(-maxY, maxY)
+                        if (clampedX != offsetX || clampedY != offsetY) {
+                            animationJob = coroutineScope.launch {
+                                offsetXAnim.snapTo(offsetX)
+                                offsetYAnim.snapTo(offsetY)
+                                launch {
+                                    offsetXAnim.animateTo(clampedX, tween(150)) {
+                                        offsetX = value
+                                    }
+                                }
+                                launch {
+                                    offsetYAnim.animateTo(clampedY, tween(150)) {
+                                        offsetY = value
                                     }
                                 }
                             }
@@ -460,8 +547,8 @@ private fun ZoomableImagePage(
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
-                    translationX = offset.x
-                    translationY = offset.y
+                    translationX = offsetX
+                    translationY = offsetY
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -490,53 +577,113 @@ private fun ZoomableImagePage(
 }
 
 /**
- * 通用图片保存至系统相册 (支持 Bitmap 与 Uri)
+ * 依据屏幕物理分辨率按需降采样解码大图 Uri，有效避免 OOM 崩溃
+ */
+private fun decodeSampledBitmapFromUri(context: Context, uri: Uri): Bitmap? {
+    return try {
+        val displayMetrics = context.resources.displayMetrics
+        val reqWidth = displayMetrics.widthPixels
+        val reqHeight = displayMetrics.heightPixels
+
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        context.contentResolver.openInputStream(uri)?.use { stream ->
+            BitmapFactory.decodeStream(stream, null, options)
+        }
+
+        val rawWidth = options.outWidth
+        val rawHeight = options.outHeight
+        if (rawWidth <= 0 || rawHeight <= 0) return null
+
+        var inSampleSize = 1
+        // 允许保留至多 2 倍屏幕分辨率，兼顾双击缩放清晰度与内存开销
+        if (rawWidth > reqWidth * 2 || rawHeight > reqHeight * 2) {
+            val halfWidth = rawWidth / 2
+            val halfHeight = rawHeight / 2
+            while ((halfWidth / inSampleSize) >= reqWidth || (halfHeight / inSampleSize) >= reqHeight) {
+                inSampleSize *= 2
+            }
+        }
+
+        val decodeOptions = BitmapFactory.Options().apply {
+            this.inSampleSize = inSampleSize
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+        }
+        context.contentResolver.openInputStream(uri)?.use { stream ->
+            BitmapFactory.decodeStream(stream, null, decodeOptions)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+/**
+ * 通用图片保存至系统相册 (适配 Android 10+ / API 29+ Scoped Storage 与 MediaStore IS_PENDING 机制)
  */
 private suspend fun saveItemToGallery(context: Context, item: Any): Boolean = withContext(Dispatchers.IO) {
     try {
-        val bitmapToSave: Bitmap = when (item) {
-            is Bitmap -> item
-            is Uri -> {
-                context.contentResolver.openInputStream(item)?.use { stream ->
-                    BitmapFactory.decodeStream(stream)
-                }
-            }
-            else -> null
-        } ?: return@withContext false
-
+        val resolver = context.contentResolver
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val filename = "IMG_$timeStamp.png"
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
-                put(MediaStore.MediaColumns.IS_PENDING, 1)
+        val mimeType: String
+        val extension: String
+        if (item is Uri) {
+            val type = resolver.getType(item)
+            mimeType = if (!type.isNullOrBlank() && type.startsWith("image/")) type else "image/png"
+            extension = when (mimeType) {
+                "image/jpeg", "image/jpg" -> "jpg"
+                "image/webp" -> "webp"
+                "image/gif" -> "gif"
+                else -> "png"
             }
-            val resolver = context.contentResolver
-            val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return@withContext false
-            resolver.openOutputStream(uri)?.use { os ->
-                bitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, os)
-            }
+        } else {
+            mimeType = "image/png"
+            extension = "png"
+        }
+
+        val filename = "IMG_$timeStamp.$extension"
+
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+
+        val targetUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return@withContext false
+
+        val success = try {
+            resolver.openOutputStream(targetUri)?.use { os ->
+                when (item) {
+                    is Uri -> {
+                        // 若输入源已是 Uri，直接通过流转存，避免解码为 Bitmap 再压缩导致的内存浪费与画质损耗
+                        resolver.openInputStream(item)?.use { input ->
+                            input.copyTo(os)
+                            true
+                        } ?: false
+                    }
+                    is Bitmap -> {
+                        item.compress(Bitmap.CompressFormat.PNG, 100, os)
+                        true
+                    }
+                    else -> false
+                }
+            } ?: false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+
+        if (success) {
             values.clear()
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
-            resolver.update(uri, values, null, null)
+            resolver.update(targetUri, values, null, null)
             true
         } else {
-            @Suppress("DEPRECATION")
-            val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Koishi")
-            if (!dir.exists()) dir.mkdirs()
-            val file = File(dir, filename)
-            FileOutputStream(file).use { os ->
-                bitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, os)
-            }
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DATA, file.absolutePath)
-                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-            }
-            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-            true
+            resolver.delete(targetUri, null, null)
+            false
         }
     } catch (e: Exception) {
         e.printStackTrace()
