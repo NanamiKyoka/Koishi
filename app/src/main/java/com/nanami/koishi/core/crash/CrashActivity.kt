@@ -6,17 +6,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import com.nanami.koishi.MainActivity
 import com.nanami.koishi.R
-import com.nanami.koishi.core.designsystem.KoishiTheme
+import com.nanami.koishi.core.designsystem.theme.KoishiTheme
 import com.nanami.koishi.core.util.LocaleHelper
 import com.nanami.koishi.feature.settings.AppLanguage
-import com.nanami.koishi.feature.settings.ThemeMode
 import java.util.Locale
 
 class CrashActivity : ComponentActivity() {
@@ -37,9 +35,6 @@ class CrashActivity : ComponentActivity() {
         val crashMessage = intent.getStringExtra(EXTRA_CRASH_MESSAGE) ?: getString(R.string.crash_unknown_exception)
 
         val prefs = getSharedPreferences("koishi_settings", Context.MODE_PRIVATE)
-        val themeOrdinal = prefs.getInt("theme_mode", ThemeMode.SYSTEM.ordinal)
-        val themeMode = ThemeMode.entries.getOrElse(themeOrdinal) { ThemeMode.SYSTEM }
-        val dynamicColor = prefs.getBoolean("dynamic_color", false)
         val langOrdinal = prefs.getInt("language", AppLanguage.SYSTEM.ordinal)
         val language = AppLanguage.entries.getOrElse(langOrdinal) { AppLanguage.SYSTEM }
 
@@ -50,12 +45,6 @@ class CrashActivity : ComponentActivity() {
         }
 
         setContent {
-            val isDark = when (themeMode) {
-                ThemeMode.SYSTEM -> isSystemInDarkTheme()
-                ThemeMode.LIGHT -> false
-                ThemeMode.DARK -> true
-            }
-
             val currentConfig = LocalConfiguration.current
             val (effectiveConfig, localizedContext) = remember(language, currentConfig) {
                 LocaleHelper.wrapWithActivity(this@CrashActivity, currentConfig, targetLocale)
@@ -66,10 +55,7 @@ class CrashActivity : ComponentActivity() {
                 LocalContext provides localizedContext,
                 LocalActivityResultRegistryOwner provides this@CrashActivity
             ) {
-                KoishiTheme(
-                    darkTheme = isDark,
-                    dynamicColor = dynamicColor
-                ) {
+                KoishiTheme {
                     CrashScreen(
                         crashReport = crashReport,
                         errorMessage = crashMessage,

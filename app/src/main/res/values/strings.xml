@@ -62,8 +62,22 @@
     <string name="settings_theme_system">跟随系统</string>
     <string name="settings_theme_light">浅色模式</string>
     <string name="settings_theme_dark">深色模式</string>
-    <string name="settings_dynamic_color">动态色彩</string>
-    <string name="settings_dynamic_color_desc">基于壁纸色彩自定义界面色调 (Android 12+)</string>
+    <string name="settings_app_theme">应用主题</string>
+    <string name="settings_amoled">纯黑深色模式</string>
+    <string name="settings_amoled_desc">深色模式下使用纯黑背景，更适配 OLED 屏幕</string>
+
+    <!-- Theme Names -->
+    <string name="theme_koishi">恋恋</string>
+    <string name="theme_monet">动态取色</string>
+    <string name="theme_catppuccin">Catppuccin</string>
+    <string name="theme_nord">Nord</string>
+    <string name="theme_tokyonight">Tokyo Night</string>
+    <string name="theme_gruvbox">Gruvbox</string>
+    <string name="theme_rosepine">Rosé Pine</string>
+    <string name="theme_everforest">Everforest</string>
+    <string name="theme_lavender">薰衣草</string>
+    <string name="theme_monochrome">黑白</string>
+
     <string name="settings_category_language">语言</string>
     <string name="settings_language">应用语言</string>
     <string name="settings_lang_system">跟随系统</string>
