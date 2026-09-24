@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
@@ -31,11 +30,16 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.theme.ThemeMode
+import com.nanami.koishi.core.designsystem.theme.isDarkTheme
+import com.nanami.koishi.feature.settings.components.AppThemePicker
+import com.nanami.koishi.feature.settings.components.ThemeModeSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,14 +48,6 @@ fun SettingsScreen(
     onEvent: (SettingsUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (uiState.showThemeDialog) {
-        ThemeSelectionDialog(
-            currentMode = uiState.themeMode,
-            onSelect = { onEvent(SettingsUiEvent.OnThemeModeSelected(it)) },
-            onDismiss = { onEvent(SettingsUiEvent.OnShowThemeDialog(false)) }
-        )
-    }
-
     if (uiState.showLanguageDialog) {
         LanguageSelectionDialog(
             currentLanguage = uiState.language,
@@ -83,19 +79,27 @@ fun SettingsScreen(
         ) {
             SettingsCategoryHeader(title = stringResource(R.string.settings_category_appearance))
 
-            SettingsClickableItem(
-                icon = Icons.Rounded.DarkMode,
-                title = stringResource(R.string.settings_theme_mode),
-                subtitle = stringResource(uiState.themeMode.titleRes),
-                onClick = { onEvent(SettingsUiEvent.OnShowThemeDialog(true)) }
+            ThemeModeSelector(
+                value = uiState.themeMode,
+                onSelect = { onEvent(SettingsUiEvent.OnThemeModeSelected(it)) }
             )
 
+            AppThemePicker(
+                value = uiState.appTheme,
+                amoled = uiState.amoled,
+                darkTheme = uiState.themeMode.isDarkTheme,
+                onSelect = { onEvent(SettingsUiEvent.OnAppThemeSelected(it)) }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             SettingsSwitchItem(
-                icon = Icons.Rounded.ColorLens,
-                title = stringResource(R.string.settings_dynamic_color),
-                subtitle = stringResource(R.string.settings_dynamic_color_desc),
-                checked = uiState.dynamicColor,
-                onCheckedChange = { onEvent(SettingsUiEvent.OnDynamicColorToggled(it)) }
+                icon = Icons.Rounded.DarkMode,
+                title = stringResource(R.string.settings_amoled),
+                subtitle = stringResource(R.string.settings_amoled_desc),
+                checked = uiState.amoled,
+                enabled = uiState.themeMode != ThemeMode.LIGHT,
+                onCheckedChange = { onEvent(SettingsUiEvent.OnAmoledToggled(it)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -182,12 +186,14 @@ private fun SettingsSwitchItem(
     title: String,
     subtitle: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
+            .alpha(if (enabled) 1f else 0.38f)
+            .clickable(enabled = enabled) { onCheckedChange(!checked) }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -211,49 +217,10 @@ private fun SettingsSwitchItem(
         }
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
+            enabled = enabled
         )
     }
-}
-
-@Composable
-private fun ThemeSelectionDialog(
-    currentMode: ThemeMode,
-    onSelect: (ThemeMode) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.settings_theme_mode)) },
-        text = {
-            Column {
-                ThemeMode.entries.forEach { mode ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSelect(mode) }
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = (mode == currentMode),
-                            onClick = { onSelect(mode) }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = stringResource(mode.titleRes),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.dialog_cancel))
-            }
-        }
-    )
 }
 
 @Composable

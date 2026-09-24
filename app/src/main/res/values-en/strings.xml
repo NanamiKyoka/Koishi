@@ -62,8 +62,22 @@
     <string name="settings_theme_system">System Default</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
-    <string name="settings_dynamic_color">Dynamic Color</string>
-    <string name="settings_dynamic_color_desc">Extract colors from wallpaper (Android 12+)</string>
+    <string name="settings_app_theme">App Theme</string>
+    <string name="settings_amoled">Pure black dark mode</string>
+    <string name="settings_amoled_desc">Use a pure black background in dark mode, ideal for OLED screens</string>
+
+    <!-- Theme Names -->
+    <string name="theme_koishi">Koishi</string>
+    <string name="theme_monet">Dynamic</string>
+    <string name="theme_catppuccin">Catppuccin</string>
+    <string name="theme_nord">Nord</string>
+    <string name="theme_tokyonight">Tokyo Night</string>
+    <string name="theme_gruvbox">Gruvbox</string>
+    <string name="theme_rosepine">Rosé Pine</string>
+    <string name="theme_everforest">Everforest</string>
+    <string name="theme_lavender">Lavender</string>
+    <string name="theme_monochrome">Monochrome</string>
+
     <string name="settings_category_language">Language</string>
     <string name="settings_language">App Language</string>
     <string name="settings_lang_system">System Default</string>

@@ -95,7 +95,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.nanami.koishi.R
-import com.nanami.koishi.core.designsystem.KoishiTheme
+import com.nanami.koishi.core.designsystem.theme.KoishiTheme
 import com.nanami.koishi.core.util.LocaleHelper
 import java.util.concurrent.Executors
 
