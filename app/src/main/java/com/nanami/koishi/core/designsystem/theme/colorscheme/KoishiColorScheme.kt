@@ -4,7 +4,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-/** Koishi 默认主题，以水绿、紫罗兰与缎带金为主色 */
+/** Koishi 默认主题，以水绿为主色，缎带金为强调色；secondary 采用与 primary 同色相的柔和绿*/
 internal object KoishiColorScheme : BaseColorScheme() {
 
     override val darkScheme = darkColorScheme(
@@ -13,10 +13,10 @@ internal object KoishiColorScheme : BaseColorScheme() {
         primaryContainer = Color(0xFF005231),
         onPrimaryContainer = Color(0xFFA6F2C1),
         inversePrimary = Color(0xFF1E6A44),
-        secondary = Color(0xFFC8BFEE),
-        onSecondary = Color(0xFF302B49),
-        secondaryContainer = Color(0xFF474160),
-        onSecondaryContainer = Color(0xFFE5DEFF),
+        secondary = Color(0xFFC5D3CC),
+        onSecondary = Color(0xFF293D33),
+        secondaryContainer = Color(0xFF3F5A4D),
+        onSecondaryContainer = Color(0xFFE2E9E6),
         tertiary = Color(0xFFECC34A),
         onTertiary = Color(0xFF3E2E00),
         tertiaryContainer = Color(0xFF594400),
@@ -51,10 +51,10 @@ internal object KoishiColorScheme : BaseColorScheme() {
         primaryContainer = Color(0xFFA6F2C1),
         onPrimaryContainer = Color(0xFF002111),
         inversePrimary = Color(0xFF8CD5A6),
-        secondary = Color(0xFF5F5979),
+        secondary = Color(0xFF587466),
         onSecondary = Color(0xFFFFFFFF),
-        secondaryContainer = Color(0xFFE5DEFF),
-        onSecondaryContainer = Color(0xFF1C1733),
+        secondaryContainer = Color(0xFFE1EAE6),
+        onSecondaryContainer = Color(0xFF293D33),
         tertiary = Color(0xFF755C00),
         onTertiary = Color(0xFFFFFFFF),
         tertiaryContainer = Color(0xFFFFE08B),
