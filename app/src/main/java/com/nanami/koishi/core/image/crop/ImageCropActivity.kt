@@ -99,13 +99,13 @@ class ImageCropActivity : ComponentActivity() {
     private fun loadSourceBitmap(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // 1. 获取图片尺寸
+                // 获取图片尺寸
                 val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 contentResolver.openInputStream(uri)?.use { stream ->
                     BitmapFactory.decodeStream(stream, null, options)
                 }
 
-                // 2. 采样率限制在 2048 以内防 OOM
+                // 采样率限制在 2048 以内防 OOM
                 val maxDim = max(options.outWidth, options.outHeight)
                 var sampleSize = 1
                 while (maxDim / sampleSize > 2048) {

@@ -8,7 +8,7 @@ import android.util.Log
 import kotlin.system.exitProcess
 
 /**
- * 全局未捕获异常拦截器 (参考 mihon 架构设计)
+ * 全局未捕获异常拦截器
  */
 class GlobalCrashHandler private constructor(
     private val application: Application,

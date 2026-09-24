@@ -25,12 +25,6 @@ import kotlin.math.roundToInt
 
 /**
  * 经典相机级标尺刻度滑动器 (Ruler Dial Slider)
- * 1:1 还原用户参考设计：
- * - 丝滑流畅单指拖拽微调，100% 物理跟手；
- * - 支持点击任意刻度直接居中对齐；
- * - 左右边缘平滑渐隐淡出效果；
- * - 刻度线基于 index 等间距精准排布；
- * - 中心高亮主题色指示标针。
  */
 @Composable
 fun RulerSlider(

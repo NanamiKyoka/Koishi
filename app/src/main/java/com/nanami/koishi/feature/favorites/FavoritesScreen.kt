@@ -229,7 +229,7 @@ private fun FavoritesEmptyView(
 
         Spacer(modifier = Modifier.height(36.dp))
 
-        // 图2样式的底部胶囊操作条（"暂无收藏" + "+"）
+        // 底部胶囊操作条（"暂无收藏" + "+"）
         Surface(
             shape = RoundedCornerShape(percent = 50),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,

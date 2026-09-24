@@ -78,15 +78,6 @@ import kotlin.math.min
 
 /**
  * 可在多个工具中复用的全屏手势放大/缩小图片预览弹窗
- *
- * 特性：
- * 1. 沉浸式暗黑全屏背景，支持点击遮罩/关闭按钮退出
- * 2. 支持多图左右滑动分页切换 (HorizontalPager)
- * 3. 单页双指手势缩放 (1.0x ~ 5.0x) 与平移 (Pan)
- * 4. 双击快速切换 1.0x 原始视图与 2.5x 局部放大视图
- * 5. 放大状态下禁用 Pager 滑动以优先响应大图平移，1.0x 时支持流畅滑页
- * 6. 支持直接传入 List<Bitmap>, List<Uri>, 单张 Bitmap 或 Uri
- * 7. 顶部显示页码指示器 (如 "3 / 10")，内置当前图片保存到相册功能
  */
 @Composable
 fun ImagePreviewDialog(
@@ -349,7 +340,7 @@ private fun ZoomableImagePage(
         modifier = Modifier
             .fillMaxSize()
             .onSizeChanged { containerSize = it }
-            // 1. 分层手势：由 detectTapGestures 处理单击（切换操作栏）与双击（平滑动画过渡）
+            // 分层手势：由 detectTapGestures 处理单击（切换操作栏）与双击（平滑动画过渡）
             .pointerInput(containerSize, loadedBitmap) {
                 detectTapGestures(
                     onTap = {
@@ -408,7 +399,7 @@ private fun ZoomableImagePage(
                     }
                 )
             }
-            // 2. 变换手势：处理双指缩放（围绕双指几何中心）与单指大图平移及边缘滑动切页透传
+            // 变换手势：处理双指缩放（围绕双指几何中心）与单指大图平移及边缘滑动切页透传
             .pointerInput(containerSize, loadedBitmap) {
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)

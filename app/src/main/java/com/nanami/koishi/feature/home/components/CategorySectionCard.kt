@@ -42,7 +42,7 @@ import com.nanami.koishi.core.model.ToolCategory
 import com.nanami.koishi.core.model.ToolItem
 
 /**
- * 图1风格的分类容器卡片：包含左侧绿色Accent条、折叠箭头、FlowRow药丸流式排列
+ * 分类容器卡片：包含左侧绿色Accent条、折叠箭头、FlowRow药丸流式排列
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

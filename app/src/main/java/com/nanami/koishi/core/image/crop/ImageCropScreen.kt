@@ -87,20 +87,20 @@ private fun detectCropHandle(touch: Offset, rect: RectF, touchRadius: Float): Cr
     val ty = touch.y
     val r = touchRadius
 
-    // 1. 优先匹配 4 个角落 (半径扩展 1.25x 以增大有效点击热区)
+    // 优先匹配 4 个角落
     val cornerRadius = r * 1.25f
     if (hypot(tx - rect.left, ty - rect.top) <= cornerRadius) return CropDragHandle.TOP_LEFT
     if (hypot(tx - rect.right, ty - rect.top) <= cornerRadius) return CropDragHandle.TOP_RIGHT
     if (hypot(tx - rect.left, ty - rect.bottom) <= cornerRadius) return CropDragHandle.BOTTOM_LEFT
     if (hypot(tx - rect.right, ty - rect.bottom) <= cornerRadius) return CropDragHandle.BOTTOM_RIGHT
 
-    // 2. 匹配 4 条边缘
+    // 匹配 4 条边缘
     if (kotlin.math.abs(tx - rect.left) <= r && ty in (rect.top - r)..(rect.bottom + r)) return CropDragHandle.LEFT
     if (kotlin.math.abs(tx - rect.right) <= r && ty in (rect.top - r)..(rect.bottom + r)) return CropDragHandle.RIGHT
     if (kotlin.math.abs(ty - rect.top) <= r && tx in (rect.left - r)..(rect.right + r)) return CropDragHandle.TOP
     if (kotlin.math.abs(ty - rect.bottom) <= r && tx in (rect.left - r)..(rect.right + r)) return CropDragHandle.BOTTOM
 
-    // 3. 内部拖动移动整个框
+    // 内部拖动移动整个框
     if (rect.contains(tx, ty)) return CropDragHandle.INSIDE
 
     return CropDragHandle.NONE
@@ -558,7 +558,7 @@ fun ImageCropScreen(
             )
         }
 
-        // 3. 标尺滑杆控制区 (重置按钮 + 当前数值指示 + 90°旋转 + 刻度标尺)
+        // 标尺滑杆控制区 (重置按钮 + 当前数值指示 + 90°旋转 + 刻度标尺)
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.surfaceContainer

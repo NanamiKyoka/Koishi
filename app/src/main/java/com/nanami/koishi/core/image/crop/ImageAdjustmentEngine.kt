@@ -32,7 +32,7 @@ object ImageAdjustmentEngine {
     fun createColorMatrixArray(brightness: Float, contrast: Float, saturation: Float): FloatArray {
         var current = identityMatrix()
 
-        // 1. 对比度
+        // 对比度
         if (contrast != 0f) {
             val scale = if (contrast >= 0) 1f + (contrast / 100f) * 1.5f else 1f + (contrast / 100f) * 0.8f
             val offset = (1f - scale) * 128f
@@ -45,7 +45,7 @@ object ImageAdjustmentEngine {
             current = multiplyColorMatrices(contrastMatrix, current)
         }
 
-        // 2. 亮度
+        // 亮度
         if (brightness != 0f) {
             val bOffset = (brightness / 100f) * 255f
             val brightnessMatrix = floatArrayOf(
@@ -57,7 +57,7 @@ object ImageAdjustmentEngine {
             current = multiplyColorMatrices(brightnessMatrix, current)
         }
 
-        // 3. 饱和度
+        // 饱和度
         if (saturation != 0f) {
             val sat = if (saturation >= 0) 1f + (saturation / 100f) * 2f else (saturation + 100f) / 100f
             val invSat = 1f - sat.coerceAtLeast(0f)
@@ -176,7 +176,7 @@ object ImageAdjustmentEngine {
         // 变换矩阵：将裁剪框左上角平移至 (0, 0)，再缩放到画布尺寸
         val matrix = Matrix()
 
-        // 1. 将图片中心平移至视口中心 + 用户平移
+        // 将图片中心平移至视口中心 + 用户平移
         val srcCenterX = source.width / 2f
         val srcCenterY = source.height / 2f
         val viewCenterX = viewportWidth / 2f + panX
@@ -187,7 +187,7 @@ object ImageAdjustmentEngine {
         matrix.postRotate(rotationDegrees)
         matrix.postTranslate(viewCenterX, viewCenterY)
 
-        // 2. 映射到裁剪区域：减去 cropRectOnScreen 的左上角，并乘以 screenToCanvasScale
+        // 映射到裁剪区域：减去 cropRectOnScreen 的左上角，并乘以 screenToCanvasScale
         matrix.postTranslate(-cropRectOnScreen.left, -cropRectOnScreen.top)
         matrix.postScale(screenToCanvasScale, screenToCanvasScale)
 

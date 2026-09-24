@@ -12,7 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
- * 搜索历史数据仓库（支持完整的 CRUD 接口、严格保序、去重、上限与异步持久化）
+ * 搜索历史数据仓库
  */
 interface SearchHistoryRepository {
     /** 观察当前搜索历史记录流（保序且去重，最新在前） */
