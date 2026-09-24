@@ -65,6 +65,11 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.graphics.drawable.toBitmap
+import coil.ImageLoader
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -277,14 +282,21 @@ private fun ZoomableImagePage(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val isRemoteUrl = item is String && item.startsWith("http")
     var loadedBitmap by remember(item) { mutableStateOf((item as? Bitmap)) }
-    var isLoading by remember(item) { mutableStateOf(loadedBitmap == null && item is Uri) }
+    var isLoading by remember(item) { mutableStateOf(loadedBitmap == null && (item is Uri || isRemoteUrl)) }
 
     LaunchedEffect(item) {
         if (loadedBitmap == null && item is Uri) {
             isLoading = true
             withContext(Dispatchers.IO) {
                 loadedBitmap = decodeSampledBitmapFromUri(context, item)
+                isLoading = false
+            }
+        } else if (loadedBitmap == null && item is String && item.startsWith("http")) {
+            isLoading = true
+            withContext(Dispatchers.IO) {
+                loadedBitmap = decodeSampledBitmapFromUrl(context, item)
                 isLoading = false
             }
         }
@@ -568,6 +580,29 @@ private fun ZoomableImagePage(
 }
 
 /**
+ * 依据屏幕物理分辨率按需降采样解码网络图片，避免大图 OOM 并复用与本地图一致的手势体验
+ */
+private suspend fun decodeSampledBitmapFromUrl(context: Context, url: String): Bitmap? {
+    return try {
+        val displayMetrics = context.resources.displayMetrics
+        val reqWidth = displayMetrics.widthPixels
+        val reqHeight = displayMetrics.heightPixels
+
+        val request = ImageRequest.Builder(context)
+            .data(url)
+            .size(reqWidth * 2, reqHeight * 2)
+            .allowHardware(false)
+            .build()
+
+        val result = context.imageLoader.execute(request)
+        (result as? SuccessResult)?.drawable?.toBitmap()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+/**
  * 依据屏幕物理分辨率按需降采样解码大图 Uri，有效避免 OOM 崩溃
  */
 private fun decodeSampledBitmapFromUri(context: Context, uri: Uri): Bitmap? {
@@ -629,6 +664,9 @@ private suspend fun saveItemToGallery(context: Context, item: Any): Boolean = wi
                 "image/gif" -> "gif"
                 else -> "png"
             }
+        } else if (item is String && item.startsWith("http")) {
+            mimeType = "image/jpeg"
+            extension = "jpg"
         } else {
             mimeType = "image/png"
             extension = "png"
@@ -654,6 +692,15 @@ private suspend fun saveItemToGallery(context: Context, item: Any): Boolean = wi
                             input.copyTo(os)
                             true
                         } ?: false
+                    }
+                    is String -> {
+                        val bitmap = decodeSampledBitmapFromUrl(context, item)
+                        if (bitmap != null) {
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
+                            true
+                        } else {
+                            false
+                        }
                     }
                     is Bitmap -> {
                         item.compress(Bitmap.CompressFormat.PNG, 100, os)

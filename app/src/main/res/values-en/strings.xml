@@ -16,11 +16,8 @@
     <string name="delete_history_item">Delete</string>
     <string name="search_results_title">Search Results</string>
     <string name="category_all">All</string>
-    <string name="category_common">Common</string>
-    <string name="category_calc_convert">Convert &amp; Calc</string>
-    <string name="category_dev_code">Dev &amp; Code</string>
-    <string name="category_hardware">Hardware</string>
-    <string name="category_text_image">Image Apps</string>
+    <string name="category_life">Life Apps</string>
+    <string name="category_image_apps">Image Apps</string>
     <string name="tools_count_summary">%1$d tools</string>
     <string name="empty_search_title">No tools found for \"%1$s\"</string>
     <string name="empty_category_title">No tools in this category</string>
@@ -31,22 +28,8 @@
     <!-- Tools -->
     <string name="tool_image_obfuscation_name">Image Obfuscation</string>
     <string name="tool_image_obfuscation_desc">Lossless scramble and restore images with Tomato Hilbert, Logistic map, and MD5</string>
-    <string name="tool_palette_assistant_name">Color Palette</string>
-    <string name="tool_palette_assistant_desc">Color scheme exploration and color conversion utility</string>
-    <string name="tool_barrage_name">LED Scroller</string>
-    <string name="tool_barrage_desc">Full-screen scrolling banner and message display</string>
-    <string name="tool_time_screen_name">Time Screen</string>
-    <string name="tool_time_screen_desc">Full-screen flip clock and minimalist standby display</string>
-    <string name="tool_ruler_name">Pocket Ruler</string>
-    <string name="tool_ruler_desc">Physical screen dimension measurement and caliper tool</string>
-    <string name="tool_decision_maker_name">Decision Maker</string>
-    <string name="tool_decision_maker_desc">Indecision breaker and randomized spinning wheel</string>
-    <string name="tool_base64_name">Base64 Codec</string>
-    <string name="tool_base64_desc">Fast text and media Base64 encode and decode</string>
-    <string name="tool_device_info_name">Device Info</string>
-    <string name="tool_device_info_desc">Screen metrics, OS version, and hardware sensor status</string>
-    <string name="tool_unit_convert_name">Unit Converter</string>
-    <string name="tool_unit_convert_desc">Length, area, mass, and digital storage converter</string>
+    <string name="tool_today_in_history_name">Today in History</string>
+    <string name="tool_today_in_history_desc">Revisit what happened on this day through an immersive timeline</string>
 
     <!-- Favorites Tab -->
     <string name="favorites_title">Favorites</string>
@@ -429,6 +412,55 @@
     <string name="watermark_processing">Generating high-resolution watermark image...</string>
     <string name="watermark_save">Save</string>
     <string name="watermark_crop_bg_action">Crop Background</string>
+
+    <!-- Today in History Tool -->
+    <string name="history_title">Today in History</string>
+    <string name="history_date_label">%1$s/%2$s</string>
+    <string name="history_today">Today</string>
+    <string name="history_tap_to_today">Tap to return to today</string>
+    <string name="history_long_press_to_pick">Long press to pick a date</string>
+    <string name="history_date_picker_title">Select date</string>
+    <string name="history_date_picker_month">Month</string>
+    <string name="history_date_picker_day">Day</string>
+    <string name="history_date_picker_confirm">OK</string>
+    <string name="history_previous_day">Previous day</string>
+    <string name="history_next_day">Next day</string>
+    <string name="history_refresh">Refresh</string>
+    <string name="history_loading">Tracing back through history...</string>
+    <string name="history_retry">Retry</string>
+    <string name="history_expand">Expand details</string>
+    <string name="history_collapse">Collapse details</string>
+    <string name="history_expand_all">Expand all</string>
+    <string name="history_year_label">%1$s</string>
+    <string name="history_year_unknown">Unknown era</string>
+    <string name="history_no_detail">No detailed description is available for this event.</string>
+    <string name="history_events_count">%1$d items</string>
+    <string name="history_source_showapi">ShowAPI data source is active</string>
+    <string name="history_source_free">Free public source · Tap to configure ShowAPI</string>
+    <string name="history_source_degraded">ShowAPI failed, automatically fell back to the free source</string>
+    <string name="history_source_cached">%1$s · cached today</string>
+    <string name="history_source_showapi_name">ShowAPI</string>
+    <string name="history_empty_title">No records for this day</string>
+    <string name="history_empty_desc">No historical events were found for this date. Try the previous or next day.</string>
+    <string name="history_empty_action">View previous day</string>
+    <string name="history_error_title">Unable to load historical events</string>
+    <string name="history_error_missing_key">ShowAPI appKey is not configured and the free source is unreachable</string>
+    <string name="history_error_invalid_key">The ShowAPI appKey is invalid or inactive. Please verify and retry</string>
+    <string name="history_error_quota">ShowAPI quota has been exhausted. Please top up or wait for the quota reset</string>
+    <string name="history_error_network">Network error. Please check your connection and retry</string>
+    <string name="history_error_parse">Failed to parse the response. The API format may have changed</string>
+    <string name="history_error_server">The service responded with an error. Please retry later</string>
+    <string name="history_api_key_label">ShowAPI appKey</string>
+    <string name="history_api_key_dialog_title">Configure ShowAPI appKey</string>
+    <string name="history_api_key_dialog_desc">With an appKey, the ShowAPI endpoint is used first, providing detailed content and images. When left empty, the app falls back to a free public API. Each date is fetched only once per day, so repeated browsing does not consume extra quota.</string>
+    <string name="history_api_key_hint">Paste the appKey from your ShowAPI console</string>
+    <string name="history_api_key_get">Register and get one at showapi.com</string>
+    <string name="history_api_key_save">Save</string>
+    <string name="history_api_key_clear">Clear key</string>
+    <string name="history_api_key_status_on">Status: configured</string>
+    <string name="history_api_key_status_off">Status: not configured (using free source)</string>
+    <string name="history_key_saved">appKey saved, reloading data</string>
+    <string name="history_key_cleared">appKey cleared, switched to the free source</string>
 
     <!-- Crash Report Screen -->
     <string name="crash_title">App Encountered an Unexpected Error</string>

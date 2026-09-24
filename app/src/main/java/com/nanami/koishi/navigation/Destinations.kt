@@ -60,13 +60,7 @@ data object MirageTankRoute
 data object WatermarkRoute
 
 /**
- * 工具详情或独立小工具通用强类型路由
- *
- * @property toolId 工具唯一ID
- * @property toolTitle 工具名称
+ * 历史上的今天独立小工具强类型路由
  */
 @Serializable
-data class ToolDetailRoute(
-    val toolId: String,
-    val toolTitle: String
-)
+data object TodayInHistoryRoute

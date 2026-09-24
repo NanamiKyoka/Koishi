@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
 import androidx.compose.material.icons.rounded.QrCode2
@@ -84,6 +85,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_watermark_desc,
                 icon = Icons.AutoMirrored.Rounded.BrandingWatermark,
                 category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "today_in_history",
+                nameRes = R.string.tool_today_in_history_name,
+                descriptionRes = R.string.tool_today_in_history_desc,
+                icon = Icons.Rounded.HistoryEdu,
+                category = ToolCategory.LIFE,
                 isFavorite = false,
                 hasDot = true
             )

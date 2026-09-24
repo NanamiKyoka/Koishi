@@ -1,30 +1,12 @@
 package com.nanami.koishi.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.nanami.koishi.R
 import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
@@ -36,6 +18,8 @@ import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
+import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
+import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
 import com.nanami.koishi.feature.tools.watermark.WatermarkRoute
 import com.nanami.koishi.feature.tools.watermark.WatermarkViewModel
 
@@ -45,8 +29,6 @@ fun KoishiNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
-    val context = LocalContext.current
-
     NavHost(
         navController = navController,
         startDestination = HomeRoute,
@@ -66,14 +48,7 @@ fun KoishiNavHost(
                         "mirage_tank" -> navController.navigate(MirageTankRoute)
                         "qr_code" -> navController.navigate(QrToolRoute)
                         "watermark" -> navController.navigate(WatermarkRoute)
-                        else -> {
-                            navController.navigate(
-                                ToolDetailRoute(
-                                    toolId = tool.id,
-                                    toolTitle = context.getString(tool.nameRes)
-                                )
-                            )
-                        }
+                        "today_in_history" -> navController.navigate(TodayInHistoryRoute)
                     }
                 }
             )
@@ -135,55 +110,13 @@ fun KoishiNavHost(
             )
         }
 
-        composable<ToolDetailRoute> { backStackEntry ->
-            val route = backStackEntry.toRoute<ToolDetailRoute>()
-            ToolPlaceholderScreen(
-                toolId = route.toolId,
-                toolTitle = route.toolTitle,
+        composable<TodayInHistoryRoute> {
+            val historyViewModel: TodayInHistoryViewModel = viewModel()
+            TodayInHistoryRoute(
+                viewModel = historyViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ToolPlaceholderScreen(
-    toolId: String,
-    toolTitle: String,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(toolTitle, style = MaterialTheme.typography.titleLarge) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = stringResource(R.string.btn_back)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "[$toolTitle] feature/tools/$toolId",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
