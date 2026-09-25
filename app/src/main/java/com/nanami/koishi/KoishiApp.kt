@@ -8,12 +8,18 @@ import coil.memory.MemoryCache
 import com.nanami.koishi.core.crash.GlobalCrashHandler
 import com.nanami.koishi.core.data.cache.TempImageCleaner
 import com.nanami.koishi.core.data.cache.TempImageStore
+import com.nanami.koishi.core.data.storage.ToolStorageDao
+import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import java.io.File
 
 /**
  * Koishi 全局 Application 入口
  */
 class KoishiApp : Application(), ImageLoaderFactory {
+
+    val toolStorageDao: ToolStorageDao by lazy {
+        ToolStorageDatabase.get(this).toolStorageDao()
+    }
 
     override fun onCreate() {
         super.onCreate()

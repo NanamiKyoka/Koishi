@@ -24,3 +24,19 @@
 -keep class androidx.camera.lifecycle.** { *; }
 -keep class androidx.camera.view.** { *; }
 -dontwarn androidx.camera.**
+
+# Kotlinx Serialization：保证通用表内的 JSON 载荷在混淆后仍可正确往返
+-keepattributes *Annotation*, InnerClasses
+-keepclassmembers class kotlinx.serialization.json.** {
+    *** Companion;
+}
+-keepclasseswithmembers class kotlinx.serialization.json.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-keep,includedescriptorclasses class com.nanami.koishi.**$$serializer { *; }
+-keepclassmembers class com.nanami.koishi.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.nanami.koishi.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
