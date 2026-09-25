@@ -7,7 +7,7 @@
     <string name="nav_settings">设置</string>
 
     <!-- Home / Toolbox -->
-    <string name="search_tools_placeholder">搜索工具（如：图片混淆、番茄混淆…）</string>
+    <string name="search_tools_placeholder">搜索工具</string>
     <string name="search_icon_desc">搜索</string>
     <string name="clear_search_desc">清除搜索</string>
     <string name="search_history">搜索历史</string>
@@ -15,6 +15,7 @@
     <string name="no_search_history">暂无搜索历史</string>
     <string name="delete_history_item">删除</string>
     <string name="search_results_title">搜索结果</string>
+    <string name="search_result_for">与「%1$s」相关的工具</string>
     <string name="category_all">全部</string>
     <string name="category_life">生活应用</string>
     <string name="category_image_apps">图片应用</string>

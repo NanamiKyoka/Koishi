@@ -26,6 +26,7 @@ sealed interface HomeUiEvent {
     data class OnSelectTab(val tab: MainTab) : HomeUiEvent
     data class OnSearchQueryChange(val query: String) : HomeUiEvent
     data class OnSearchActiveChange(val active: Boolean) : HomeUiEvent
+    data class OnSubmitSearch(val query: String) : HomeUiEvent
     data object OnClearSearch : HomeUiEvent
     data class OnSelectCategory(val category: ToolCategory) : HomeUiEvent
     data class OnToggleCategoryExpanded(val category: ToolCategory) : HomeUiEvent

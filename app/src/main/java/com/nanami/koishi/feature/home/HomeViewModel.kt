@@ -102,6 +102,12 @@ class HomeViewModel @JvmOverloads constructor(
                     recordSearchHistory(_searchQuery.value)
                 }
             }
+            is HomeUiEvent.OnSubmitSearch -> {
+                if (event.query.isNotBlank()) {
+                    _searchQuery.value = event.query
+                    recordSearchHistory(event.query)
+                }
+            }
             is HomeUiEvent.OnClearSearch -> {
                 _searchQuery.value = ""
             }
@@ -124,7 +130,6 @@ class HomeViewModel @JvmOverloads constructor(
             }
             is HomeUiEvent.OnSearchHistoryClick -> {
                 _searchQuery.value = event.keyword
-                _isSearchActive.value = false
                 recordSearchHistory(event.keyword)
             }
             is HomeUiEvent.OnDeleteSearchHistoryItem -> {

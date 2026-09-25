@@ -7,7 +7,7 @@
     <string name="nav_settings">Settings</string>
 
     <!-- Home / Toolbox -->
-    <string name="search_tools_placeholder">Search tools (e.g. Image Obfuscation…)</string>
+    <string name="search_tools_placeholder">Search tools</string>
     <string name="search_icon_desc">Search</string>
     <string name="clear_search_desc">Clear search</string>
     <string name="search_history">Search History</string>
@@ -15,6 +15,7 @@
     <string name="no_search_history">No search history</string>
     <string name="delete_history_item">Delete</string>
     <string name="search_results_title">Search Results</string>
+    <string name="search_result_for">Tools matching \"%1$s\"</string>
     <string name="category_all">All</string>
     <string name="category_life">Life Apps</string>
     <string name="category_image_apps">Image Apps</string>
