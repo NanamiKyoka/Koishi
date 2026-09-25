@@ -76,3 +76,6 @@ data object TodayInHistoryRoute
  */
 @Serializable
 data object DecisionMakerRoute
+
+@Serializable
+data object RulerRoute

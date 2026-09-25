@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
 import androidx.compose.material.icons.rounded.QrCode2
+import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material.icons.rounded.ViewCarousel
 import com.nanami.koishi.R
 import com.nanami.koishi.core.model.ToolCategory
@@ -113,6 +114,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_decision_maker_name,
                 descriptionRes = R.string.tool_decision_maker_desc,
                 icon = Icons.Rounded.Casino,
+                category = ToolCategory.LIFE,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "ruler",
+                nameRes = R.string.tool_ruler_name,
+                descriptionRes = R.string.tool_ruler_desc,
+                icon = Icons.Rounded.Straighten,
                 category = ToolCategory.LIFE,
                 isFavorite = false,
                 hasDot = true

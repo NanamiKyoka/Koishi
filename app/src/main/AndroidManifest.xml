@@ -45,6 +45,13 @@
             android:exported="false"
             android:theme="@android:style/Theme.Material.NoActionBar" />
 
+        <activity
+            android:name=".feature.tools.ruler.RulerActivity"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

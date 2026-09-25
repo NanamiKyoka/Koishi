@@ -55,6 +55,7 @@ fun KoishiNavHost(
                         "image_sketch" -> navController.navigate(ImageSketchRoute)
                         "today_in_history" -> navController.navigate(TodayInHistoryRoute)
                         "decision_maker" -> navController.navigate(DecisionMakerRoute)
+                        "ruler" -> navController.navigate(RulerRoute)
                     }
                 }
             )
@@ -137,6 +138,17 @@ fun KoishiNavHost(
             DecisionMakerRoute(
                 viewModel = decisionViewModel,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<RulerRoute> {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            com.nanami.koishi.feature.tools.ruler.RulerSelectionScreen(
+                onBack = { navController.popBackStack() },
+                onSelectMode = { mode ->
+                    val intent = com.nanami.koishi.feature.tools.ruler.RulerActivity.createIntent(context, mode)
+                    context.startActivity(intent)
+                }
             )
         }
 
