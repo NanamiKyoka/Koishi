@@ -1,67 +1,14 @@
-package com.nanami.koishi.core.data.storage
+package com.nanami.koishi.core.data.storage.sample
 
-import com.nanami.koishi.core.data.storage.sample.ImageSearchConfig
-import com.nanami.koishi.core.data.storage.sample.ImageSearchConfigRepository
-import com.nanami.koishi.core.data.storage.sample.OptionWeight
-import com.nanami.koishi.core.data.storage.sample.WeightedOptionsRepository
+import com.nanami.koishi.core.data.storage.FakeToolStorageDao
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.random.Random
-
-class ImageSearchConfigRepositoryTest {
-
-    private val dao = FakeToolStorageDao()
-    private val repository = ImageSearchConfigRepository(dao)
-
-    @Test
-    fun `config starts from declared defaults`() = runTest {
-        assertEquals(ImageSearchConfig(), repository.dataFlow.first())
-        assertTrue(repository.currentData().hapticsEnabled)
-        assertEquals(1280, repository.currentData().uploadMaxEdge)
-    }
-
-    @Test
-    fun `config fields are persisted independently`() = runTest {
-        repository.setApiKey("  sauce-key  ")
-        repository.setAutoSearchOnPick(true)
-
-        val stored = repository.currentData()
-        assertEquals("sauce-key", stored.sauceNaoApiKey)
-        assertTrue(stored.autoSearchOnPick)
-        assertEquals(stored, repository.dataFlow.first())
-    }
-
-    @Test
-    fun `boolean toggle flips previous value`() = runTest {
-        assertTrue(repository.currentData().hapticsEnabled)
-
-        assertFalse(repository.toggleHaptics().hapticsEnabled)
-        assertTrue(repository.toggleHaptics().hapticsEnabled)
-    }
-
-    @Test
-    fun `numeric field is clamped to supported range`() = runTest {
-        assertEquals(ImageSearchConfig.MIN_UPLOAD_MAX_EDGE, repository.setUploadMaxEdge(16).uploadMaxEdge)
-        assertEquals(ImageSearchConfig.MAX_UPLOAD_MAX_EDGE, repository.setUploadMaxEdge(8192).uploadMaxEdge)
-    }
-
-    @Test
-    fun `config and list tools share the same table without interference`() = runTest {
-        val optionsRepository = WeightedOptionsRepository(dao, Random(1))
-        repository.setApiKey("shared-table-key")
-        optionsRepository.addOption("出门散步")
-
-        assertEquals("shared-table-key", repository.currentData().sauceNaoApiKey)
-        assertEquals(1, optionsRepository.currentData().options.size)
-        assertEquals(2, dao.observeAll().first().size)
-    }
-}
 
 class WeightedOptionsRepositoryTest {
 
@@ -103,7 +50,8 @@ class WeightedOptionsRepositoryTest {
     }
 
     @Test
-    fun `pick records result and history without duplicates`() = runTest {        val option = repository.addOption("爬山") ?: error("option should be created")
+    fun `pick records result and history without duplicates`() = runTest {
+        val option = repository.addOption("爬山") ?: error("option should be created")
 
         repeat(3) { assertEquals(option.id, repository.pick()?.id) }
 

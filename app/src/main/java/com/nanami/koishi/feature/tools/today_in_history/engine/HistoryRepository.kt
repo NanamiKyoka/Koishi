@@ -7,7 +7,7 @@ sealed interface HistoryLoadResult {
 }
 
 class HistoryRepository(
-    private val preferences: HistoryPreferences,
+    private val settings: HistorySettingsRepository,
     private val cache: HistoryCache
 ) {
 
@@ -23,7 +23,7 @@ class HistoryRepository(
             }
         }
 
-        val appKey = preferences.showApiAppKey
+        val appKey = settings.currentData().showApiAppKey
         var primaryError: HistoryException? = null
 
         if (appKey.isNotBlank()) {
@@ -32,7 +32,7 @@ class HistoryRepository(
                 if (events.isNotEmpty()) {
                     val result = HistoryDay(month, day, events, HistorySource.SHOW_API)
                     cache.writeDay(result, stamp)
-                    preferences.recordSource(HistorySource.SHOW_API)
+                    settings.recordSource(HistorySource.SHOW_API)
                     lastPrimaryError = null
                     return HistoryLoadResult.Success(result, fromCache = false)
                 }
@@ -70,7 +70,7 @@ class HistoryRepository(
 
         val result = HistoryDay(month, day, events, HistorySource.XXAPI)
         cache.writeDay(result, stamp)
-        preferences.recordSource(HistorySource.XXAPI)
+        settings.recordSource(HistorySource.XXAPI)
         return HistoryLoadResult.Success(result, fromCache = false)
     }
 }

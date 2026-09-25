@@ -1,14 +1,15 @@
 package com.nanami.koishi.feature.tools.image_search
 
 import android.app.Application
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchEngines
+import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchSettingsRepository
 import com.nanami.koishi.feature.tools.image_search.model.EngineSearchState
 import com.nanami.koishi.feature.tools.image_search.model.EngineSearchStatus
 import com.nanami.koishi.feature.tools.image_search.model.SearchEngineEnum
@@ -25,14 +26,20 @@ import java.io.ByteArrayOutputStream
 
 class ImageSearchViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val prefs = application.getSharedPreferences("koishi_image_search_prefs", Context.MODE_PRIVATE)
-
-    private val _uiState = MutableStateFlow(
-        ImageSearchUiState(
-            sauceNaoApiKey = prefs.getString(KEY_SAUCENAO_API_KEY, "").orEmpty()
-        )
+    private val settings = ImageSearchSettingsRepository(
+        (application as KoishiApp).toolStorageDao
     )
+
+    private val _uiState = MutableStateFlow(ImageSearchUiState())
     val uiState: StateFlow<ImageSearchUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            settings.dataFlow.collect { stored ->
+                _uiState.update { it.copy(sauceNaoApiKey = stored.sauceNaoApiKey) }
+            }
+        }
+    }
 
     fun onEvent(event: ImageSearchUiEvent) {
         when (event) {
@@ -73,15 +80,15 @@ class ImageSearchViewModel(application: Application) : AndroidViewModel(applicat
                 _uiState.update { it.copy(showApiKeyDialog = event.show) }
             }
             is ImageSearchUiEvent.OnSaveSauceNaoApiKey -> {
-                val trimmedKey = event.key.trim()
-                prefs.edit().putString(KEY_SAUCENAO_API_KEY, trimmedKey).apply()
-                _uiState.update {
-                    it.copy(
-                        sauceNaoApiKey = trimmedKey,
-                        showApiKeyDialog = false,
-                        userMessageRes = R.string.image_search_key_saved,
-                        userMessageArgs = emptyList()
-                    )
+                viewModelScope.launch {
+                    settings.saveApiKey(event.key)
+                    _uiState.update {
+                        it.copy(
+                            showApiKeyDialog = false,
+                            userMessageRes = R.string.image_search_key_saved,
+                            userMessageArgs = emptyList()
+                        )
+                    }
                 }
             }
             is ImageSearchUiEvent.OnStartSearch -> startConcurrentSearch()
@@ -233,9 +240,5 @@ class ImageSearchViewModel(application: Application) : AndroidViewModel(applicat
         val stream = ByteArrayOutputStream()
         targetBitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
         return stream.toByteArray()
-    }
-
-    companion object {
-        private const val KEY_SAUCENAO_API_KEY = "saucenao_api_key"
     }
 }

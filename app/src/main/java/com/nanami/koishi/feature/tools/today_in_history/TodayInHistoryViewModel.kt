@@ -3,12 +3,13 @@ package com.nanami.koishi.feature.tools.today_in_history
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryCache
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryException
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryLoadResult
-import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryPreferences
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryRepository
+import com.nanami.koishi.feature.tools.today_in_history.engine.HistorySettingsRepository
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistorySource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +21,8 @@ import java.util.Calendar
 
 class TodayInHistoryViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val preferences = HistoryPreferences(application)
-    private val repository = HistoryRepository(preferences, HistoryCache(application))
+    private val settings = HistorySettingsRepository((application as KoishiApp).toolStorageDao)
+    private val repository = HistoryRepository(settings, HistoryCache((application as KoishiApp).toolStorageDao))
 
     private val _uiState = MutableStateFlow(TodayInHistoryUiState())
     val uiState: StateFlow<TodayInHistoryUiState> = _uiState.asStateFlow()
@@ -29,12 +30,15 @@ class TodayInHistoryViewModel(application: Application) : AndroidViewModel(appli
     private var loadingJob: Job? = null
 
     init {
-        _uiState.update {
-            it.copy(
-                isToday = true,
-                showApiKeyConfigured = preferences.hasShowApiKey,
-                activeSource = preferences.lastUsedSource
-            )
+        _uiState.update { it.copy(isToday = true) }
+        viewModelScope.launch {
+            val stored = settings.currentData()
+            _uiState.update {
+                it.copy(
+                    showApiKeyConfigured = stored.showApiAppKey.isNotBlank(),
+                    activeSource = stored.lastUsedSource
+                )
+            }
         }
         jumpToToday()
     }
@@ -52,25 +56,29 @@ class TodayInHistoryViewModel(application: Application) : AndroidViewModel(appli
                 _uiState.update { it.copy(showApiKeyDialog = event.show) }
             }
             is TodayInHistoryUiEvent.OnSaveShowApiKey -> {
-                preferences.saveShowApiAppKey(event.key)
-                _uiState.update {
-                    it.copy(
-                        showApiKeyDialog = false,
-                        showApiKeyConfigured = preferences.hasShowApiKey,
-                        userMessageRes = R.string.history_key_saved
-                    )
+                viewModelScope.launch {
+                    val saved = settings.saveShowApiAppKey(event.key)
+                    _uiState.update {
+                        it.copy(
+                            showApiKeyDialog = false,
+                            showApiKeyConfigured = saved.showApiAppKey.isNotBlank(),
+                            userMessageRes = R.string.history_key_saved
+                        )
+                    }
+                    load(forceRefresh = true)
                 }
-                load(forceRefresh = true)
             }
             is TodayInHistoryUiEvent.OnClearShowApiKey -> {
-                preferences.saveShowApiAppKey("")
-                _uiState.update {
-                    it.copy(
-                        showApiKeyConfigured = false,
-                        userMessageRes = R.string.history_key_cleared
-                    )
+                viewModelScope.launch {
+                    settings.saveShowApiAppKey("")
+                    _uiState.update {
+                        it.copy(
+                            showApiKeyConfigured = false,
+                            userMessageRes = R.string.history_key_cleared
+                        )
+                    }
+                    load(forceRefresh = true)
                 }
-                load(forceRefresh = true)
             }
             is TodayInHistoryUiEvent.OnDismissMessage -> {
                 _uiState.update { it.copy(userMessageRes = null) }

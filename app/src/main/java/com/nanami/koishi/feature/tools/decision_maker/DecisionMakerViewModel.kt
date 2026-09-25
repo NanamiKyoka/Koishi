@@ -5,12 +5,15 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
+import com.nanami.koishi.feature.tools.decision_maker.engine.BuiltInPresets
+import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionArchiveStore
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionIds
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionMode
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionPhase
-import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionPreferences
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionRepository
+import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionStorageRepository
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionTopic
 import com.nanami.koishi.feature.tools.decision_maker.engine.TopicImportResult
 import com.nanami.koishi.feature.tools.decision_maker.engine.WeightedPicker
@@ -26,15 +29,14 @@ import kotlinx.coroutines.launch
 
 class DecisionMakerViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val preferences = DecisionPreferences(application)
-    private val repository = DecisionRepository(application, preferences)
-
-    private val _uiState = MutableStateFlow(
-        DecisionMakerUiState(
-            mode = preferences.mode,
-            hapticsEnabled = preferences.hapticsEnabled
-        )
+    private val dao = (application as KoishiApp).toolStorageDao
+    private val repository = DecisionRepository(
+        builtInTopics = { BuiltInPresets.build(application) },
+        storage = DecisionStorageRepository(dao)
     )
+    private val archiveStore = DecisionArchiveStore(application)
+
+    private val _uiState = MutableStateFlow(DecisionMakerUiState())
     val uiState: StateFlow<DecisionMakerUiState> = _uiState.asStateFlow()
 
     private var energyJob: Job? = null
@@ -42,7 +44,15 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
 
     init {
         viewModelScope.launch {
-            repository.topics.collect { topics -> applyTopics(topics) }
+            var lastTopics: List<DecisionTopic>? = null
+            repository.state.collect { store ->
+                _uiState.update { it.copy(mode = store.mode, hapticsEnabled = store.hapticsEnabled) }
+                val topics = repository.effectiveTopics(store)
+                if (topics != lastTopics) {
+                    lastTopics = topics
+                    applyTopics(store.selectedTopicId, topics)
+                }
+            }
         }
     }
 
@@ -78,11 +88,13 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    private fun applyTopics(topics: List<DecisionTopic>) {
+    private fun applyTopics(selectedTopicId: String, topics: List<DecisionTopic>) {
+        val targetId = _uiState.value.currentTopic?.id ?: selectedTopicId
+        val current = topics.firstOrNull { it.id == targetId } ?: topics.firstOrNull()
+        if (current != null && current.id != selectedTopicId) {
+            viewModelScope.launch { repository.selectTopic(current.id) }
+        }
         _uiState.update { state ->
-            val targetId = state.currentTopic?.id ?: preferences.selectedTopicId
-            val current = topics.firstOrNull { it.id == targetId } ?: topics.firstOrNull()
-            if (current != null) preferences.selectedTopicId = current.id
             state.copy(
                 topics = topics,
                 currentTopic = current,
@@ -95,23 +107,25 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun selectMode(mode: DecisionMode) {
-        preferences.mode = mode
         resetRound()
         _uiState.update { it.copy(mode = mode) }
+        viewModelScope.launch { repository.setMode(mode) }
     }
 
     private fun selectTopic(topicId: String) {
-        val topic = repository.findTopic(topicId) ?: return
-        preferences.selectedTopicId = topicId
-        stopEnergyTicker()
-        _uiState.update {
-            it.copy(
-                currentTopic = topic,
-                showTopicManager = false,
-                phase = DecisionPhase.IDLE,
-                shakeEnergy = 0f,
-                result = null
-            )
+        viewModelScope.launch {
+            val topic = repository.findTopic(topicId) ?: return@launch
+            repository.selectTopic(topicId)
+            stopEnergyTicker()
+            _uiState.update {
+                it.copy(
+                    currentTopic = topic,
+                    showTopicManager = false,
+                    phase = DecisionPhase.IDLE,
+                    shakeEnergy = 0f,
+                    result = null
+                )
+            }
         }
     }
 
@@ -191,46 +205,54 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun saveTopic(topic: DecisionTopic) {
-        val saved = repository.saveTopic(topic)
-        _uiState.update {
-            it.copy(
-                currentTopic = saved,
-                showOptionEditor = false,
-                phase = DecisionPhase.IDLE,
-                result = null
-            )
+        viewModelScope.launch {
+            val saved = repository.saveTopic(topic)
+            _uiState.update {
+                it.copy(
+                    currentTopic = saved,
+                    showOptionEditor = false,
+                    phase = DecisionPhase.IDLE,
+                    result = null
+                )
+            }
         }
     }
 
     private fun deleteTopic(topicId: String) {
-        val target = repository.findTopic(topicId) ?: return
-        repository.deleteTopic(topicId)
-        message(R.string.decision_topic_deleted, target.title)
+        viewModelScope.launch {
+            val target = repository.findTopic(topicId) ?: return@launch
+            repository.deleteTopic(topicId)
+            message(R.string.decision_topic_deleted, target.title)
+        }
     }
 
     private fun restoreBuiltIns() {
-        repository.restoreBuiltIns()
-        message(R.string.decision_builtin_restored_all)
+        viewModelScope.launch {
+            repository.restoreBuiltIns()
+            message(R.string.decision_builtin_restored_all)
+        }
     }
 
     private fun createTopic() {
-        val topic = DecisionTopic(
-            id = DecisionIds.newTopicId(),
-            title = getApplication<Application>().getString(R.string.decision_new_topic_title)
-        )
-        repository.saveTopic(topic)
-        _uiState.update {
-            it.copy(
-                currentTopic = repository.findTopic(topic.id),
-                showTopicManager = false,
-                showOptionEditor = true
+        viewModelScope.launch {
+            val topic = DecisionTopic(
+                id = DecisionIds.newTopicId(),
+                title = getApplication<Application>().getString(R.string.decision_new_topic_title)
             )
+            repository.saveTopic(topic)
+            _uiState.update {
+                it.copy(
+                    currentTopic = repository.findTopic(topic.id),
+                    showTopicManager = false,
+                    showOptionEditor = true
+                )
+            }
         }
     }
 
     private fun importFrom(uri: Uri) {
         viewModelScope.launch {
-            val raw = repository.readFrom(uri)
+            val raw = archiveStore.read(uri)
             val result = raw?.let { repository.importJson(it) }
             val messageRes = when (result) {
                 is TopicImportResult.Success -> R.string.decision_import_success
@@ -246,7 +268,7 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
 
     private fun exportTo(uri: Uri) {
         viewModelScope.launch {
-            val success = repository.writeTo(uri)
+            val success = archiveStore.write(uri, repository.exportJson())
             message(
                 if (success) R.string.decision_export_success else R.string.decision_export_failed
             )
@@ -254,8 +276,8 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun setHapticsEnabled(enabled: Boolean) {
-        preferences.hapticsEnabled = enabled
         _uiState.update { it.copy(hapticsEnabled = enabled) }
+        viewModelScope.launch { repository.setHapticsEnabled(enabled) }
     }
 
     private fun message(@StringRes res: Int, arg: String? = null) {
