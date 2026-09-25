@@ -85,10 +85,21 @@ jobs:
       - name: Generate Changelog
         uses: orhun/git-cliff-action@v4
         id: changelog
+        continue-on-error: true
         with:
-          args: --verbose --latest --strip header --template github
+          config: github
+          args: --verbose --latest --strip header
         env:
           OUTPUT: RELEASE_CHANGELOG.md
+
+      - name: Check Changelog Status
+        id: changelog_check
+        run: |
+          if [ -s "RELEASE_CHANGELOG.md" ]; then
+            echo "has_changelog=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changelog=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -96,6 +107,7 @@ jobs:
         with:
           name: Koishi ${{ github.ref_name }}
           files: ${{ steps.apk.outputs.named }}
-          body_path: RELEASE_CHANGELOG.md
+          body_path: ${{ steps.changelog_check.outputs.has_changelog == 'true' && 'RELEASE_CHANGELOG.md' || '' }}
+          generate_release_notes: ${{ steps.changelog_check.outputs.has_changelog != 'true' }}
           draft: false
           prerelease: false
