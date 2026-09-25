@@ -38,11 +38,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
@@ -155,7 +158,11 @@ fun TimelineEventItem(
                         if (event.imageUrl.isNotBlank()) {
                             Spacer(modifier = Modifier.height(12.dp))
                             AsyncImage(
-                                model = event.imageUrl,
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(event.imageUrl)
+                                    .crossfade(true)
+                                    .diskCachePolicy(CachePolicy.DISABLED)
+                                    .build(),
                                 contentDescription = event.title,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

@@ -12,13 +12,13 @@ class HistoryRepository(
 ) {
 
     suspend fun load(month: Int, day: Int, forceRefresh: Boolean = false): HistoryLoadResult {
-        val todayKey = HistoryCache.todayKey()
+        val stamp = HistoryCacheStamp.forDate(month, day)
 
         if (!forceRefresh) {
-            cache.readDay(month, day, todayKey)?.let { cached ->
+            cache.readDay(month, day, stamp)?.let { cached ->
                 return HistoryLoadResult.Success(cached, fromCache = true)
             }
-            if (cache.isEmptyResultCached(month, day, todayKey)) {
+            if (cache.isEmptyResultCached(month, day, stamp)) {
                 return HistoryLoadResult.Empty
             }
         }
@@ -31,12 +31,12 @@ class HistoryRepository(
                 val events = HistoryEngines.fetchFromShowApi(appKey, month, day)
                 if (events.isNotEmpty()) {
                     val result = HistoryDay(month, day, events, HistorySource.SHOW_API)
-                    cache.writeDay(result, todayKey)
+                    cache.writeDay(result, stamp)
                     preferences.recordSource(HistorySource.SHOW_API)
                     lastPrimaryError = null
                     return HistoryLoadResult.Success(result, fromCache = false)
                 }
-                cache.writeEmpty(month, day, todayKey)
+                cache.writeEmpty(month, day, stamp)
                 lastPrimaryError = null
                 return HistoryLoadResult.Empty
             } catch (e: HistoryException) {
@@ -46,7 +46,7 @@ class HistoryRepository(
             primaryError = HistoryException.MissingApiKey()
         }
 
-        val fallbackResult = loadFromFallback(month, day, todayKey)
+        val fallbackResult = loadFromFallback(month, day, stamp)
         lastPrimaryError = primaryError
         return fallbackResult
     }
@@ -54,7 +54,7 @@ class HistoryRepository(
     var lastPrimaryError: HistoryException? = null
         private set
 
-    private suspend fun loadFromFallback(month: Int, day: Int, todayKey: String): HistoryLoadResult {
+    private suspend fun loadFromFallback(month: Int, day: Int, stamp: HistoryCacheStamp): HistoryLoadResult {
         val events = try {
             HistoryEngines.fetchFromXXapi(month, day)
         } catch (e: HistoryException) {
@@ -64,12 +64,12 @@ class HistoryRepository(
         }
 
         if (events.isEmpty()) {
-            cache.writeEmpty(month, day, todayKey)
+            cache.writeEmpty(month, day, stamp)
             return HistoryLoadResult.Empty
         }
 
         val result = HistoryDay(month, day, events, HistorySource.XXAPI)
-        cache.writeDay(result, todayKey)
+        cache.writeDay(result, stamp)
         preferences.recordSource(HistorySource.XXAPI)
         return HistoryLoadResult.Success(result, fromCache = false)
     }

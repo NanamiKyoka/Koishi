@@ -68,6 +68,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.imageLoader
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.nanami.koishi.core.util.AlbumFolders
@@ -596,6 +597,8 @@ private suspend fun decodeSampledBitmapFromUrl(context: Context, url: String): B
             .data(url)
             .size(reqWidth * 2, reqHeight * 2)
             .allowHardware(false)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.DISABLED)
             .build()
 
         val result = context.imageLoader.execute(request)

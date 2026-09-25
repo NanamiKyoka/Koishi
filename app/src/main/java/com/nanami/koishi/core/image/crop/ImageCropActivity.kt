@@ -16,11 +16,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.nanami.koishi.core.data.cache.TempImageStore
 import com.nanami.koishi.core.designsystem.theme.KoishiTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.io.FileOutputStream
 import com.nanami.koishi.core.util.LocaleHelper
 import kotlin.math.max
@@ -171,8 +171,7 @@ class ImageCropActivity : ComponentActivity() {
                     baseScaleOverride = baseScale
                 )
 
-                // 保存至缓存文件
-                val cacheFile = File(cacheDir, "cropped_${System.currentTimeMillis()}.png")
+                val cacheFile = TempImageStore.newFile(this@ImageCropActivity, "cropped", "png")
                 FileOutputStream(cacheFile).use { out ->
                     cropped.compress(Bitmap.CompressFormat.PNG, 100, out)
                 }

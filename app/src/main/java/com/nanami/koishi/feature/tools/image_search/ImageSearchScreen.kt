@@ -80,6 +80,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
@@ -732,6 +733,7 @@ private fun SearchResultCard(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(item.thumbnailUrl)
                         .crossfade(true)
+                        .diskCachePolicy(CachePolicy.DISABLED)
                         .build(),
                     contentDescription = item.title,
                     contentScale = ContentScale.Crop,
