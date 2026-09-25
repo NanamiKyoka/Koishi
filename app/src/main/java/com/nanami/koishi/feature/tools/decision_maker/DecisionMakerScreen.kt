@@ -76,6 +76,7 @@ import com.nanami.koishi.feature.tools.decision_maker.components.FortuneStickTub
 import com.nanami.koishi.feature.tools.decision_maker.components.OptionEditorSheet
 import com.nanami.koishi.feature.tools.decision_maker.components.TopicManagerSheet
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionMode
+import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionOption
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionPhase
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionTopic
 import com.nanami.koishi.feature.tools.decision_maker.engine.ShakeDetector
@@ -93,14 +94,16 @@ fun DecisionMakerRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 在 composable 作用域内解析文案，避免在 LaunchedEffect 中调用 stringResource
+    val userMessage = uiState.userMessageRes?.let { res ->
+        uiState.userMessageArg?.let { stringResource(res, it) } ?: stringResource(res)
+    }
 
-    LaunchedEffect(uiState.userMessageRes) {
-        val messageRes = uiState.userMessageRes ?: return@LaunchedEffect
-        val text = uiState.userMessageArg
-            ?.let { context.getString(messageRes, it) }
-            ?: context.getString(messageRes)
-        Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-        viewModel.onEvent(DecisionMakerUiEvent.OnDismissMessage)
+    LaunchedEffect(uiState.userMessageRes, userMessage) {
+        if (userMessage != null) {
+            Toast.makeText(context, userMessage, Toast.LENGTH_SHORT).show()
+            viewModel.onEvent(DecisionMakerUiEvent.OnDismissMessage)
+        }
     }
 
     DecisionMakerScreen(
@@ -303,6 +306,9 @@ fun DecisionMakerScreen(
                     )
 
                     state.mode == DecisionMode.WHEEL -> Column(modifier = Modifier.fillMaxSize()) {
+                        // 指针当前指向的选项，转动过程中实时刷新下方结果面板
+                        var pointedOption by remember(state.currentTopic) { mutableStateOf<DecisionOption?>(null) }
+
                         DecisionWheel(
                             topic = currentTopic,
                             result = state.result,
@@ -313,6 +319,7 @@ fun DecisionMakerScreen(
                             spinDurationMillis = WHEEL_SPIN_DURATION_MS,
                             onSpin = { onEvent(DecisionMakerUiEvent.OnStartSpin) },
                             onSpinFinished = { onEvent(DecisionMakerUiEvent.OnSpinFinished) },
+                            onSliceChange = { pointedOption = it },
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
@@ -325,8 +332,8 @@ fun DecisionMakerScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             DecisionResultPlate(
-                                result = state.result,
-                                visible = state.hasResult
+                                option = if (state.isBusy) pointedOption else state.result,
+                                settled = state.hasResult
                             )
                         }
                     }

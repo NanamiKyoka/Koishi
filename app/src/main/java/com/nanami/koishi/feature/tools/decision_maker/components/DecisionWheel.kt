@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,6 +91,7 @@ fun DecisionWheel(
     spinDurationMillis: Int,
     onSpin: () -> Unit,
     onSpinFinished: () -> Unit,
+    onSliceChange: (DecisionOption?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -109,6 +111,19 @@ fun DecisionWheel(
     val view = LocalView.current
     val textMeasurer = rememberTextMeasurer()
 
+    // 记住指针当前指向的扇区，避免每帧重复回调
+    val lastSliceIndex = remember { mutableIntStateOf(-1) }
+
+    // 未转动时（初始 / 首次结果落定）也要让外部拿到指针指向项
+    LaunchedEffect(slices, rotation.value, animationToken) {
+        if (rotation.isRunning) return@LaunchedEffect
+        val index = sliceIndexAt(slices, rotation.value)
+        if (index != lastSliceIndex.intValue) {
+            lastSliceIndex.intValue = index
+            onSliceChange(slices.getOrNull(index)?.option)
+        }
+    }
+
     LaunchedEffect(animationToken) {
         if (animationToken <= 0L) return@LaunchedEffect
         val index = slices.indexOfFirst { it.option.id == result?.id }
@@ -116,7 +131,7 @@ fun DecisionWheel(
 
         val slice = slices[index]
         val target = nextTarget(rotation.value, POINTER_ANGLE - (slice.startAngle + slice.sweep / 2f))
-        var lastSlice = -1
+        var lastTick = -1
 
         rotation.animateTo(
             targetValue = target,
@@ -126,9 +141,13 @@ fun DecisionWheel(
             )
         ) {
             val current = sliceIndexAt(slices, rotation.value)
-            if (current != lastSlice) {
-                lastSlice = current
+            if (current != lastTick) {
+                lastTick = current
                 view.performClockTickHaptic(hapticsEnabled)
+                if (current != lastSliceIndex.intValue) {
+                    lastSliceIndex.intValue = current
+                    onSliceChange(slices.getOrNull(current)?.option)
+                }
             }
         }
         onSpinFinished()

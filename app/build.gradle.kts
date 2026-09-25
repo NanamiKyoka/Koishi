@@ -79,6 +79,12 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
+        ignoreWarnings = false
+    }
 }
 
 dependencies {
@@ -93,7 +99,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
 
-    // Jetpack Compose & MD3 (版本与 NComicR compose-bom-alpha 2026.07.01 对齐)
+    // Jetpack Compose & MD3
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)

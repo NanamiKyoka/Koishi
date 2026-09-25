@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
@@ -242,7 +243,7 @@ fun ImagePreviewDialog(
                         .padding(bottom = 24.dp)
                 ) {
                     Text(
-                        text = String.format(Locale.getDefault(), "%.1fx", currentPageScale),
+                        text = String.format(LocalConfiguration.current.locales[0], "%.1fx", currentPageScale),
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
                     )

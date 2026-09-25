@@ -1,13 +1,13 @@
 package com.nanami.koishi.feature.tools.decision_maker.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,54 +35,61 @@ import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionOption
 
 @Composable
 fun DecisionResultPlate(
-    result: DecisionOption?,
-    visible: Boolean,
+    option: DecisionOption?,
+    settled: Boolean,
     modifier: Modifier = Modifier
 ) {
-    AnimatedVisibility(
-        visible = visible && result != null,
-        enter = fadeIn(tween(220)) + scaleIn(
-            initialScale = 0.86f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMediumLow
-            )
-        ),
-        exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.92f, animationSpec = tween(150)),
+    Surface(
         modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        shape = ToolCardShape,
+        color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            shape = ToolCardShape,
-            color = MaterialTheme.colorScheme.primaryContainer
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.AutoAwesome,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                        modifier = Modifier.size(15.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.decision_result_title),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    )
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    modifier = Modifier.size(15.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = result?.text.orEmpty(),
+                    text = stringResource(R.string.decision_result_title),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+            }
+            // 转盘转动过程中文案会实时变化，用带淡入淡出的切换避免跳变
+            AnimatedContent(
+                targetState = option to settled,
+                transitionSpec = {
+                    // 转动过程中跟随指针高频切换，使用零时长过渡以免掉帧
+                    if (initialState.second && targetState.second) {
+                        EnterTransition.None togetherWith ExitTransition.None
+                    } else {
+                        (fadeIn(tween(220)) + scaleIn(initialScale = 0.92f)) togetherWith
+                            fadeOut(tween(120))
+                    }
+                },
+                label = "decisionResultText"
+            ) { (optionState, settledState) ->
+                Text(
+                    text = optionState?.text
+                        ?: stringResource(R.string.decision_result_pending),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = if (settledState) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.55f)
+                    }
                 )
             }
         }

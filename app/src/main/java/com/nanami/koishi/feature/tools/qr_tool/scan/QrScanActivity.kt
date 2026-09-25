@@ -68,7 +68,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -144,12 +145,15 @@ fun QrScanScreen(
         )
     }
 
+    val permissionDeniedMessage = stringResource(R.string.qr_scan_permission_denied)
+    val qrNotFoundMessage = stringResource(R.string.qr_scan_no_qr_in_image)
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         hasCameraPermission = granted
         if (!granted) {
-            Toast.makeText(context, context.getString(R.string.qr_scan_permission_denied), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, permissionDeniedMessage, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -198,14 +202,14 @@ fun QrScanScreen(
                             triggerVibration(context)
                             scanResult = first
                         } else {
-                            Toast.makeText(context, context.getString(R.string.qr_scan_no_qr_in_image), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, qrNotFoundMessage, Toast.LENGTH_SHORT).show()
                         }
                     }
                     .addOnFailureListener {
-                        Toast.makeText(context, context.getString(R.string.qr_scan_no_qr_in_image), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, qrNotFoundMessage, Toast.LENGTH_SHORT).show()
                     }
             } catch (e: Exception) {
-                Toast.makeText(context, context.getString(R.string.qr_scan_no_qr_in_image), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, qrNotFoundMessage, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -499,7 +503,12 @@ fun ScanResultBottomSheet(
     onFillTool: () -> Unit
 ) {
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
+    // 在 composable 作用域内解析文案，避免在 onClick 回调中调用 stringResource
+    val copiedMessage = stringResource(R.string.qr_scan_copied)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -549,7 +558,7 @@ fun ScanResultBottomSheet(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("QR", resultText))
-                        Toast.makeText(context, context.getString(R.string.qr_scan_copied), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, copiedMessage, Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -596,6 +605,7 @@ fun ScanResultBottomSheet(
     }
 }
 
+@androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 private fun processImageProxy(
     imageProxy: ImageProxy,
     barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,

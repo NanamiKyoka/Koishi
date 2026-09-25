@@ -99,10 +99,12 @@ fun TodayInHistoryRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // 在 composable 作用域内解析文案，避免在 LaunchedEffect 中调用 stringResource
+    val userMessage = uiState.userMessageRes?.let { stringResource(it) }
 
-    LaunchedEffect(uiState.userMessageRes) {
-        uiState.userMessageRes?.let { res ->
-            Toast.makeText(context, context.getString(res), Toast.LENGTH_SHORT).show()
+    LaunchedEffect(uiState.userMessageRes, userMessage) {
+        if (userMessage != null) {
+            Toast.makeText(context, userMessage, Toast.LENGTH_SHORT).show()
             viewModel.onEvent(TodayInHistoryUiEvent.OnDismissMessage)
         }
     }

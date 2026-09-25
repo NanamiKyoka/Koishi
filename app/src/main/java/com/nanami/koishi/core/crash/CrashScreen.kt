@@ -56,6 +56,8 @@ fun CrashScreen(
     onRestartClick: () -> Unit
 ) {
     val context = LocalContext.current
+    // 在 composable 作用域内解析文案，避免在 onClick 回调中调用 stringResource
+    val copiedToast = stringResource(R.string.crash_copied_toast)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -160,7 +162,7 @@ fun CrashScreen(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("Koishi Crash Report", crashReport))
-                        Toast.makeText(context, context.getString(R.string.crash_copied_toast), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, copiedToast, Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
                         .weight(1f)

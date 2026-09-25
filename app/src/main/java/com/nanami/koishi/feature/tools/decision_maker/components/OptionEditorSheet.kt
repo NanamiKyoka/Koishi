@@ -32,7 +32,8 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,7 +62,10 @@ fun OptionEditorSheet(
     onDismiss: () -> Unit,
     onSave: (DecisionTopic) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
     var title by remember(topic.id) { mutableStateOf(topic.title) }
     var options by remember(topic.id) { mutableStateOf(topic.options) }
     var bulkInput by remember(topic.id) { mutableStateOf("") }

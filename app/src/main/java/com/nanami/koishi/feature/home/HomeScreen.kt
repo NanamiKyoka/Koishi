@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
@@ -34,6 +37,7 @@ import androidx.compose.material.icons.rounded.SearchOff
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,12 +47,16 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarState
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -209,43 +217,71 @@ private fun ToolboxTabContent(
     Column(modifier = Modifier.fillMaxSize()) {
         // 搜索激活状态下的搜索界面
         if (uiState.isSearchActive) {
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = { onEvent(HomeUiEvent.OnSearchQueryChange(it)) },
-                onSearch = { /* 实时过滤，输入内容会在点击工具或退出时记录 */ },
-                active = true,
-                onActiveChange = { onEvent(HomeUiEvent.OnSearchActiveChange(it)) },
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.search_tools_placeholder),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                leadingIcon = {
-                    IconButton(onClick = { onEvent(HomeUiEvent.OnSearchActiveChange(false)) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = stringResource(R.string.btn_back),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Expanded)
+            val searchTextFieldState = rememberTextFieldState(uiState.searchQuery)
+
+            // SearchBar 与 ExpandedFullScreenSearchBar 共用同一个输入框
+            val searchInputField: @Composable () -> Unit = {
+                SearchBarDefaults.InputField(
+                    textFieldState = searchTextFieldState,
+                    searchBarState = searchBarState,
+                    onSearch = { /* 实时过滤，输入内容会在点击工具或退出时记录 */ },
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.search_tools_placeholder),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-                },
-                trailingIcon = {
-                    if (uiState.searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { onEvent(HomeUiEvent.OnClearSearch) }) {
+                    },
+                    leadingIcon = {
+                        IconButton(onClick = { onEvent(HomeUiEvent.OnSearchActiveChange(false)) }) {
                             Icon(
-                                imageVector = Icons.Rounded.Clear,
-                                contentDescription = stringResource(R.string.clear_search_desc),
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                contentDescription = stringResource(R.string.btn_back),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                    },
+                    trailingIcon = {
+                        if (uiState.searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    searchTextFieldState.setTextAndPlaceCursorAtEnd("")
+                                    onEvent(HomeUiEvent.OnClearSearch)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Clear,
+                                    contentDescription = stringResource(R.string.clear_search_desc),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
-                },
+                )
+            }
+
+            // 输入框内容变化时同步到 ViewModel（实时过滤）
+            LaunchedEffect(searchTextFieldState.text) {
+                val text = searchTextFieldState.text.toString()
+                if (text != uiState.searchQuery) {
+                    onEvent(HomeUiEvent.OnSearchQueryChange(text))
+                }
+            }
+
+            SearchBar(
+                state = searchBarState,
+                inputField = searchInputField,
                 colors = SearchBarDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
                 modifier = Modifier.fillMaxWidth()
+            )
+
+            // 展开的全屏搜索结果层
+            ExpandedFullScreenSearchBar(
+                state = searchBarState,
+                inputField = searchInputField
             ) {
                 if (uiState.searchQuery.isBlank()) {
                     SearchSuggestions(

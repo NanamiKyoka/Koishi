@@ -7,7 +7,7 @@
     <string name="nav_settings">设置</string>
 
     <!-- Home / Toolbox -->
-    <string name="search_tools_placeholder">搜索工具（如：图片混淆、番茄混淆...）</string>
+    <string name="search_tools_placeholder">搜索工具（如：图片混淆、番茄混淆…）</string>
     <string name="search_icon_desc">搜索</string>
     <string name="clear_search_desc">清除搜索</string>
     <string name="search_history">搜索历史</string>
@@ -84,7 +84,7 @@
     <string name="resolution_format">分辨率: %1$d × %2$d</string>
     <string name="tap_to_pick_images">点击选取图片 (支持批量多选)</string>
     <string name="supported_algorithms_hint">支持番茄空间曲线、Logistic混沌及MD5置乱</string>
-    <string name="calculating">正在高效计算中...</string>
+    <string name="calculating">正在高效计算中…</string>
     <string name="add_more_images">添加更多图片</string>
     <string name="mode_prefix">模式: </string>
     <string name="select_mode">选择模式</string>
@@ -123,7 +123,7 @@
     <string name="hint_decimal_key">输入 0 到 1 之间的小数（如 0.666）</string>
 
     <!-- ViewModel Messages -->
-    <string name="msg_loading_images">正在载入 %1$d 张图片...</string>
+    <string name="msg_loading_images">正在载入 %1$d 张图片…</string>
     <string name="msg_loaded_images">成功载入 %1$d 张图片</string>
     <string name="msg_select_images_first">请先选择或添加图片</string>
     <string name="msg_invalid_decimal_key">请输入 0 到 1 之间的小数密钥（如 0.666）</string>
@@ -147,7 +147,7 @@
     <string name="tool_qr_code_name">二维码工具</string>
     <string name="tool_qr_code_desc">全能二维码生成与个性化美化，支持相机实时与相册图片扫描识别</string>
     <string name="qr_content_label">二维码内容</string>
-    <string name="qr_content_placeholder">输入网址或文字内容...</string>
+    <string name="qr_content_placeholder">输入网址或文字内容…</string>
     <string name="qr_color_dark">深色</string>
     <string name="qr_color_light">浅色</string>
     <string name="qr_color_bg">背景色</string>
@@ -243,7 +243,7 @@
     <string name="stitching_dimensions">尺寸: %1$d × %2$d px</string>
     <string name="stitching_reconfigure">重新设置</string>
     <string name="stitching_share">分享</string>
-    <string name="stitching_processing">正在处理与合成...</string>
+    <string name="stitching_processing">正在处理与合成…</string>
     <string name="stitching_need_at_least_two">请至少选择 2 张图片进行拼接</string>
     <string name="stitching_need_at_least_one">请先选择图片</string>
 
@@ -264,7 +264,7 @@
     <string name="grid_split_square_summary">%1$dx%1$d 均切为 %2$d 格</string>
     <string name="grid_split_custom_summary">%1$dx%2$d 切为 %3$d 个图片</string>
     <string name="grid_split_btn_crop">裁剪</string>
-    <string name="grid_split_processing">正在切图并保存至相册...</string>
+    <string name="grid_split_processing">正在切图并保存至相册…</string>
     <string name="grid_split_saved_success">已成功切分并保存 %1$d 张图片至相册 (Pictures/Koishi/GridSplit)</string>
     <string name="grid_split_saved_partial">已保存 %1$d / %2$d 张切片至相册 (Pictures/Koishi/GridSplit)</string>
     <string name="grid_split_saved_failed">切图保存失败: %1$s</string>
@@ -282,7 +282,7 @@
     <string name="image_search_empty_desc">从系统相册选取并裁剪一张图片，即可并发多源查找二次元插画出处、番剧时间轴与全网相似视觉</string>
     <string name="image_search_engines_label">搜索源选择</string>
     <string name="image_search_btn_search">开始以图搜图</string>
-    <string name="image_search_searching">正在多源检索中...</string>
+    <string name="image_search_searching">正在多源检索中…</string>
     <string name="image_search_saucenao_api_key">SauceNAO API Key</string>
     <string name="image_search_api_key_dialog_title">配置 SauceNAO API Key</string>
     <string name="image_search_api_key_dialog_desc">配置 API Key 可享受官方独立配额与稳定解析；若未配置或超额，将自动提供网页版跳转降级支持。</string>
@@ -296,7 +296,7 @@
     <string name="image_search_open_anilist">番剧信息 (AniList)</string>
     <string name="image_search_fallback_web">前往网页查看</string>
     <string name="image_search_engine_status_idle">等待检索</string>
-    <string name="image_search_engine_status_searching">正在检索...</string>
+    <string name="image_search_engine_status_searching">正在检索…</string>
     <string name="image_search_engine_status_success">检索到 %1$d 条结果</string>
     <string name="image_search_engine_status_empty">未找到高相似度匹配结果</string>
     <string name="image_search_engine_status_error">检索异常: %1$s</string>
@@ -413,7 +413,7 @@
     <string name="watermark_save_failed">保存图片至相册失败</string>
     <string name="watermark_need_bg_prompt">请先选取一张背景图</string>
     <string name="watermark_need_wm_img_prompt">请选取水印图片</string>
-    <string name="watermark_processing">正在生成高精度水印图片...</string>
+    <string name="watermark_processing">正在生成高精度水印图片…</string>
     <string name="watermark_save">保存</string>
     <string name="watermark_crop_bg_action">裁剪背景图</string>
 
@@ -458,7 +458,7 @@
     <string name="history_previous_day">前一天</string>
     <string name="history_next_day">后一天</string>
     <string name="history_refresh">刷新</string>
-    <string name="history_loading">正在回溯历史长河...</string>
+    <string name="history_loading">正在回溯历史长河…</string>
     <string name="history_retry">重试</string>
     <string name="history_expand">展开详情</string>
     <string name="history_collapse">收起详情</string>
@@ -524,6 +524,7 @@
     <string name="decision_hint_drawing">中签已经抽出</string>
     <string name="decision_hint_stick_done">继续摇晃，可以再抽一支</string>
     <string name="decision_result_title">决定好了</string>
+    <string name="decision_result_pending">暂未决定</string>
     <string name="decision_empty_title">这个主题还没有选项</string>
     <string name="decision_empty_desc">添加几个候选，让转盘和签筒替你拿主意</string>
     <string name="decision_empty_action">添加选项</string>

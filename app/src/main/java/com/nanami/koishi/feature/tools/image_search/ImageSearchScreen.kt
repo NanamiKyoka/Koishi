@@ -127,14 +127,18 @@ fun ImageSearchScreen(
         onEvent(ImageSearchUiEvent.OnImageSelected(uri))
     }
 
-    LaunchedEffect(state.userMessageRes) {
-        state.userMessageRes?.let { msgRes ->
-            val text = if (state.userMessageArgs.isNotEmpty()) {
-                context.getString(msgRes, *state.userMessageArgs.toTypedArray())
-            } else {
-                context.getString(msgRes)
-            }
-            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+    // 在 composable 作用域内解析文案，避免在 LaunchedEffect 中调用 stringResource
+    val userMessage = state.userMessageRes?.let { msgRes ->
+        if (state.userMessageArgs.isNotEmpty()) {
+            stringResource(msgRes, *state.userMessageArgs.toTypedArray())
+        } else {
+            stringResource(msgRes)
+        }
+    }
+
+    LaunchedEffect(state.userMessageRes, userMessage) {
+        if (userMessage != null) {
+            Toast.makeText(context, userMessage, Toast.LENGTH_SHORT).show()
             onEvent(ImageSearchUiEvent.OnDismissMessage)
         }
     }

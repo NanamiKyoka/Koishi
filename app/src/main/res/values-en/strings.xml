@@ -7,7 +7,7 @@
     <string name="nav_settings">Settings</string>
 
     <!-- Home / Toolbox -->
-    <string name="search_tools_placeholder">Search tools (e.g. Image Obfuscation...)</string>
+    <string name="search_tools_placeholder">Search tools (e.g. Image Obfuscation…)</string>
     <string name="search_icon_desc">Search</string>
     <string name="clear_search_desc">Clear search</string>
     <string name="search_history">Search History</string>
@@ -84,7 +84,7 @@
     <string name="resolution_format">Resolution: %1$d × %2$d</string>
     <string name="tap_to_pick_images">Tap to pick images (Supports multi-select)</string>
     <string name="supported_algorithms_hint">Supports Tomato Hilbert curve, Logistic chaos, and MD5 shuffling</string>
-    <string name="calculating">Processing...</string>
+    <string name="calculating">Processing…</string>
     <string name="add_more_images">Add more images</string>
     <string name="mode_prefix">Mode: </string>
     <string name="select_mode">Select mode</string>
@@ -123,7 +123,7 @@
     <string name="hint_decimal_key">Enter a decimal between 0 and 1 (e.g. 0.666)</string>
 
     <!-- ViewModel Messages -->
-    <string name="msg_loading_images">Loading %1$d images...</string>
+    <string name="msg_loading_images">Loading %1$d images…</string>
     <string name="msg_loaded_images">Successfully loaded %1$d images</string>
     <string name="msg_select_images_first">Please select or add images first</string>
     <string name="msg_invalid_decimal_key">Please enter a decimal key between 0 and 1 (e.g. 0.666)</string>
@@ -147,7 +147,7 @@
     <string name="tool_qr_code_name">QR Code Tool</string>
     <string name="tool_qr_code_desc">Versatile QR code generator &amp; styler with real-time camera &amp; gallery scanning</string>
     <string name="qr_content_label">QR Code Content</string>
-    <string name="qr_content_placeholder">Enter URL or text content...</string>
+    <string name="qr_content_placeholder">Enter URL or text content…</string>
     <string name="qr_color_dark">Dark</string>
     <string name="qr_color_light">Light</string>
     <string name="qr_color_bg">Background</string>
@@ -242,7 +242,7 @@
     <string name="stitching_dimensions">Dimensions: %1$d × %2$d px</string>
     <string name="stitching_reconfigure">Reconfigure</string>
     <string name="stitching_share">Share</string>
-    <string name="stitching_processing">Processing &amp; stitching...</string>
+    <string name="stitching_processing">Processing &amp; stitching…</string>
     <string name="stitching_need_at_least_two">Please select at least 2 images to stitch</string>
     <string name="stitching_need_at_least_one">Please select images first</string>
 
@@ -263,7 +263,7 @@
     <string name="grid_split_square_summary">%1$dx%1$d sliced into %2$d squares</string>
     <string name="grid_split_custom_summary">%1$dx%2$d sliced into %3$d images</string>
     <string name="grid_split_btn_crop">Slice</string>
-    <string name="grid_split_processing">Slicing and saving to gallery...</string>
+    <string name="grid_split_processing">Slicing and saving to gallery…</string>
     <string name="grid_split_saved_success">Successfully sliced and saved %1$d images to gallery (Pictures/Koishi/GridSplit)</string>
     <string name="grid_split_saved_partial">Saved %1$d / %2$d slices to gallery (Pictures/Koishi/GridSplit)</string>
     <string name="grid_split_saved_failed">Failed to save slices: %1$s</string>
@@ -281,7 +281,7 @@
     <string name="image_search_empty_desc">Select and crop an image from gallery to concurrently search anime origins, episode timelines, and web-wide visually similar matches</string>
     <string name="image_search_engines_label">Search Engines</string>
     <string name="image_search_btn_search">Search by Image</string>
-    <string name="image_search_searching">Searching multiple engines...</string>
+    <string name="image_search_searching">Searching multiple engines…</string>
     <string name="image_search_saucenao_api_key">SauceNAO API Key</string>
     <string name="image_search_api_key_dialog_title">Configure SauceNAO API Key</string>
     <string name="image_search_api_key_dialog_desc">An API Key grants dedicated official rate limits and stable parsing. If not configured or limit exceeded, web fallback will be provided.</string>
@@ -295,7 +295,7 @@
     <string name="image_search_open_anilist">Anime Info (AniList)</string>
     <string name="image_search_fallback_web">Open in Web</string>
     <string name="image_search_engine_status_idle">Waiting to search</string>
-    <string name="image_search_engine_status_searching">Searching...</string>
+    <string name="image_search_engine_status_searching">Searching…</string>
     <string name="image_search_engine_status_success">%1$d results found</string>
     <string name="image_search_engine_status_empty">No high-similarity matches found</string>
     <string name="image_search_engine_status_error">Search error: %1$s</string>
@@ -412,7 +412,7 @@
     <string name="watermark_save_failed">Failed to save image to gallery</string>
     <string name="watermark_need_bg_prompt">Please select a background image first</string>
     <string name="watermark_need_wm_img_prompt">Please select a watermark image</string>
-    <string name="watermark_processing">Generating high-resolution watermark image...</string>
+    <string name="watermark_processing">Generating high-resolution watermark image…</string>
     <string name="watermark_save">Save</string>
     <string name="watermark_crop_bg_action">Crop Background</string>
 
@@ -446,7 +446,7 @@
 
     <!-- Today in History Tool -->
     <string name="history_title">Today in History</string>
-    <string name="history_date_label">%1$s/%2$s</string>
+    <string name="history_date_label">%1$d/%2$d</string>
     <string name="history_today">Today</string>
     <string name="history_tap_to_today">Tap to return to today</string>
     <string name="history_long_press_to_pick">Long press to pick a date</string>
@@ -457,12 +457,12 @@
     <string name="history_previous_day">Previous day</string>
     <string name="history_next_day">Next day</string>
     <string name="history_refresh">Refresh</string>
-    <string name="history_loading">Tracing back through history...</string>
+    <string name="history_loading">Tracing back through history…</string>
     <string name="history_retry">Retry</string>
     <string name="history_expand">Expand details</string>
     <string name="history_collapse">Collapse details</string>
     <string name="history_expand_all">Expand all</string>
-    <string name="history_year_label">%1$s</string>
+    <string name="history_year_label">%1$d</string>
     <string name="history_year_unknown">Unknown era</string>
     <string name="history_no_detail">No detailed description is available for this event.</string>
     <string name="history_events_count">%1$d items</string>
@@ -523,6 +523,7 @@
     <string name="decision_hint_drawing">The winning stick is out</string>
     <string name="decision_hint_stick_done">Keep shaking to draw another stick</string>
     <string name="decision_result_title">It is decided</string>
+    <string name="decision_result_pending">Not decided yet</string>
     <string name="decision_empty_title">This topic has no options</string>
     <string name="decision_empty_desc">Add a few candidates and let the wheel or the tube pick for you</string>
     <string name="decision_empty_action">Add options</string>
