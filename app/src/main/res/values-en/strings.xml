@@ -491,6 +491,76 @@
     <string name="history_key_saved">appKey saved, reloading data</string>
     <string name="history_key_cleared">appKey cleared, switched to the free source</string>
 
+    <!-- Decision Maker Tool -->
+    <string name="tool_decision_maker_name">Decision Maker</string>
+    <string name="tool_decision_maker_desc">A weighted wheel and a fortune-stick tube to settle everyday choices like what to eat</string>
+    <string name="decision_maker_title">Decision Maker</string>
+    <string name="decision_mode_wheel">Wheel</string>
+    <string name="decision_mode_stick">Sticks</string>
+    <string name="decision_spin">Spin</string>
+    <string name="decision_topic_summary">%1$d options</string>
+    <string name="decision_topic_manage">Topics</string>
+    <string name="decision_topic_edit">Edit options</string>
+    <string name="decision_topic_create">New</string>
+    <string name="decision_topic_import">Import</string>
+    <string name="decision_topic_export">Export</string>
+    <string name="decision_topic_restore_builtin">Restore presets</string>
+    <string name="decision_topic_builtin_summary">Built-in · %1$d options</string>
+    <string name="decision_topic_custom_summary">Custom · %1$d options</string>
+    <string name="decision_topic_delete">Delete topic</string>
+    <string name="decision_topic_empty">No topic yet</string>
+    <string name="decision_new_topic_title">New topic</string>
+    <string name="decision_haptics">Haptic feedback</string>
+    <string name="decision_shake_energy">Shake energy</string>
+    <string name="decision_shake_energy_value">%1$d%%</string>
+    <string name="decision_hint_wheel">Tap the hub and let fate decide</string>
+    <string name="decision_hint_wheel_busy">Slowing down, almost there</string>
+    <string name="decision_hint_wheel_done">Tap the hub again for another round</string>
+    <string name="decision_hint_stick">Shake your phone, or drag on the tube to build energy</string>
+    <string name="decision_hint_shaking">Faster, the stick is coming out</string>
+    <string name="decision_hint_drawing">The winning stick is out</string>
+    <string name="decision_hint_stick_done">Keep shaking to draw another stick</string>
+    <string name="decision_result_title">It is decided</string>
+    <string name="decision_empty_title">This topic has no options</string>
+    <string name="decision_empty_desc">Add a few candidates and let the wheel or the tube pick for you</string>
+    <string name="decision_empty_action">Add options</string>
+    <string name="decision_need_two_options">At least two options are required</string>
+    <string name="decision_topic_deleted">Deleted %1$s</string>
+    <string name="decision_builtin_restored_all">All built-in presets restored</string>
+    <string name="decision_import_success">Topics imported</string>
+    <string name="decision_import_empty">No usable topic found in this file</string>
+    <string name="decision_import_failed">Import failed. Please pick a JSON file exported by this tool</string>
+    <string name="decision_export_success">Topics exported</string>
+    <string name="decision_export_failed">Export failed, please retry</string>
+    <string name="decision_editor_title">Edit topic</string>
+    <string name="decision_editor_topic_name">Topic name</string>
+    <string name="decision_editor_option_hint">Option text</string>
+    <string name="decision_editor_weight">Weight %1$d</string>
+    <string name="decision_editor_weight_hint">A higher weight means a higher chance, from 1 to 10</string>
+    <string name="decision_editor_add_option">Add option</string>
+    <string name="decision_editor_remove_option">Remove option</string>
+    <string name="decision_editor_bulk_title">Bulk paste</string>
+    <string name="decision_editor_bulk_hint">One option per line\nHot pot\nSushi\nBarbecue</string>
+    <string name="decision_editor_bulk_parsed">%1$d options detected</string>
+    <string name="decision_editor_bulk_add">Add all</string>
+    <string name="decision_editor_save">Save</string>
+    <string name="decision_help_title">How it works</string>
+    <string name="decision_help_p1">Wheel: each slice is sized by its weight. Tap the hub to spin, and the slice the pointer lands on gets outlined. No dialog pops up.</string>
+    <string name="decision_help_p2">Sticks: shake your phone or drag on the tube to build up shake energy. When the gauge is full, the center stick slides up out of the aperture and shows your answer face up, so no dialog is needed.</string>
+    <string name="decision_help_p3">Another round: tap the hub again on the wheel, or keep shaking the tube — the previous stick is put back automatically.</string>
+    <string name="decision_help_p4">Topics can be created, edited and deleted, weights are adjustable from 1 to 10, options can be pasted in bulk, and everything can be exported or imported as JSON.</string>
+
+    <!-- Decision Maker Presets -->
+    <string name="preset_meal_title">What to eat today</string>
+    <string name="preset_meal_1">Malatang</string>
+    <string name="preset_meal_2">Hot pot</string>
+    <string name="preset_meal_3">Japanese food</string>
+    <string name="preset_meal_4">Barbecue</string>
+    <string name="preset_meal_5">Burger &amp; fries</string>
+    <string name="preset_meal_6">Beef noodles</string>
+    <string name="preset_meal_7">Home-style dishes</string>
+    <string name="preset_meal_8">Salad</string>
+
     <!-- Crash Report Screen -->
     <string name="crash_title">App Encountered an Unexpected Error</string>
     <string name="crash_subtitle_default">An uncaught runtime exception occurred</string>

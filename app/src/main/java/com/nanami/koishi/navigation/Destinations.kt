@@ -70,3 +70,9 @@ data object ImageSketchRoute
  */
 @Serializable
 data object TodayInHistoryRoute
+
+/**
+ * 做个决定独立小工具强类型路由
+ */
+@Serializable
+data object DecisionMakerRoute

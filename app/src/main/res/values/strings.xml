@@ -492,6 +492,76 @@
     <string name="history_key_saved">appKey 已保存并重新加载数据</string>
     <string name="history_key_cleared">appKey 已清除，已切换至免费数据源</string>
 
+    <!-- Decision Maker Tool -->
+    <string name="tool_decision_maker_name">做个决定</string>
+    <string name="tool_decision_maker_desc">大转盘与摇签筒双模式，加权随机终结「今天吃什么」的选择困难</string>
+    <string name="decision_maker_title">做个决定</string>
+    <string name="decision_mode_wheel">大转盘</string>
+    <string name="decision_mode_stick">抽签</string>
+    <string name="decision_spin">转</string>
+    <string name="decision_topic_summary">共 %1$d 个选项</string>
+    <string name="decision_topic_manage">主题管理</string>
+    <string name="decision_topic_edit">编辑选项</string>
+    <string name="decision_topic_create">新建</string>
+    <string name="decision_topic_import">导入</string>
+    <string name="decision_topic_export">导出</string>
+    <string name="decision_topic_restore_builtin">恢复内置预设</string>
+    <string name="decision_topic_builtin_summary">内置预设 · %1$d 个选项</string>
+    <string name="decision_topic_custom_summary">自定义主题 · %1$d 个选项</string>
+    <string name="decision_topic_delete">删除主题</string>
+    <string name="decision_topic_empty">暂无主题</string>
+    <string name="decision_new_topic_title">新主题</string>
+    <string name="decision_haptics">触感反馈</string>
+    <string name="decision_shake_energy">摇晃能量</string>
+    <string name="decision_shake_energy_value">%1$d%%</string>
+    <string name="decision_hint_wheel">点击转盘中心，让命运替你做主</string>
+    <string name="decision_hint_wheel_busy">转盘正在减速，马上揭晓</string>
+    <string name="decision_hint_wheel_done">再点一次转盘中心，重新转一轮</string>
+    <string name="decision_hint_stick">摇一摇手机，或在签筒上拖动蓄力</string>
+    <string name="decision_hint_shaking">再快一点，签就要出来了</string>
+    <string name="decision_hint_drawing">中签已经抽出</string>
+    <string name="decision_hint_stick_done">继续摇晃，可以再抽一支</string>
+    <string name="decision_result_title">决定好了</string>
+    <string name="decision_empty_title">这个主题还没有选项</string>
+    <string name="decision_empty_desc">添加几个候选，让转盘和签筒替你拿主意</string>
+    <string name="decision_empty_action">添加选项</string>
+    <string name="decision_need_two_options">至少需要两个有效选项才能开始</string>
+    <string name="decision_topic_deleted">已删除「%1$s」</string>
+    <string name="decision_builtin_restored_all">已恢复全部内置预设</string>
+    <string name="decision_import_success">主题导入完成</string>
+    <string name="decision_import_empty">文件中没有可用的主题</string>
+    <string name="decision_import_failed">导入失败，请确认是本工具导出的 JSON 文件</string>
+    <string name="decision_export_success">主题已导出</string>
+    <string name="decision_export_failed">导出失败，请重试</string>
+    <string name="decision_editor_title">编辑主题</string>
+    <string name="decision_editor_topic_name">主题名称</string>
+    <string name="decision_editor_option_hint">输入选项内容</string>
+    <string name="decision_editor_weight">权重 %1$d</string>
+    <string name="decision_editor_weight_hint">权重越高越容易被抽中，取值范围 1 ~ 10</string>
+    <string name="decision_editor_add_option">添加选项</string>
+    <string name="decision_editor_remove_option">移除该选项</string>
+    <string name="decision_editor_bulk_title">批量粘贴</string>
+    <string name="decision_editor_bulk_hint">每行一个选项\n麻辣烫\n火锅\n烤肉</string>
+    <string name="decision_editor_bulk_parsed">已识别 %1$d 个选项</string>
+    <string name="decision_editor_bulk_add">批量添加</string>
+    <string name="decision_editor_save">保存</string>
+    <string name="decision_help_title">使用说明</string>
+    <string name="decision_help_p1">大转盘：扇区宽度随权重变化，点击转盘中心开始旋转，减速停止后指针所指的扇区会高亮描边，不再弹出任何窗口。</string>
+    <string name="decision_help_p2">抽签：摇一摇手机或在签筒上拖动都能为摇晃能量蓄力，能量满格时中央竹签会从签孔向上抽出，签身正面朝上显示结果。</string>
+    <string name="decision_help_p3">连续抽取：转盘模式下再次点击中心即可重新转动，抽签模式下继续摇晃签筒会自动收回上一支签并重新抽取。</string>
+    <string name="decision_help_p4">主题与权重：支持新建、编辑、删除主题，选项权重可调，也可以换行批量粘贴选项，同时支持 JSON 导入导出。</string>
+
+    <!-- Decision Maker Presets -->
+    <string name="preset_meal_title">今天吃什么</string>
+    <string name="preset_meal_1">麻辣烫</string>
+    <string name="preset_meal_2">火锅</string>
+    <string name="preset_meal_3">日式料理</string>
+    <string name="preset_meal_4">烧烤</string>
+    <string name="preset_meal_5">汉堡薯条</string>
+    <string name="preset_meal_6">兰州拉面</string>
+    <string name="preset_meal_7">家常小炒</string>
+    <string name="preset_meal_8">沙拉轻食</string>
+
     <!-- Crash Report Screen -->
     <string name="crash_title">应用遇到意外错误</string>
     <string name="crash_subtitle_default">发生未捕获的运行时异常</string>

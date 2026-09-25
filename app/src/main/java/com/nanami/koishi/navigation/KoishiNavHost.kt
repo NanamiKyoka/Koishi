@@ -10,6 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
+import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerRoute
+import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerViewModel
 import com.nanami.koishi.feature.tools.grid_split.GridSplitRoute
 import com.nanami.koishi.feature.tools.grid_split.GridSplitViewModel
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationRoute
@@ -52,6 +54,7 @@ fun KoishiNavHost(
                         "watermark" -> navController.navigate(WatermarkRoute)
                         "image_sketch" -> navController.navigate(ImageSketchRoute)
                         "today_in_history" -> navController.navigate(TodayInHistoryRoute)
+                        "decision_maker" -> navController.navigate(DecisionMakerRoute)
                     }
                 }
             )
@@ -125,6 +128,14 @@ fun KoishiNavHost(
             val historyViewModel: TodayInHistoryViewModel = viewModel()
             TodayInHistoryRoute(
                 viewModel = historyViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<DecisionMakerRoute> {
+            val decisionViewModel: DecisionMakerViewModel = viewModel()
+            DecisionMakerRoute(
+                viewModel = decisionViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

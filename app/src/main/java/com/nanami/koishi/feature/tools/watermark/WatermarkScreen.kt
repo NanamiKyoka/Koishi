@@ -54,12 +54,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -247,40 +248,33 @@ fun WatermarkScreen(
                 onPreviewClick = { showPreviewDialog = true }
             )
 
-            // 模式选择 Tab (文字水印 / 图片水印)
-            PrimaryTabRow(
-                selectedTabIndex = if (state.config.type == WatermarkType.TEXT) 0 else 1,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(PillShape),
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.primary
-            ) {
-                Tab(
+            // 模式选择 (文字水印 / 图片水印)
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                SegmentedButton(
                     selected = state.config.type == WatermarkType.TEXT,
                     onClick = { onEvent(WatermarkUiEvent.OnModeChanged(WatermarkType.TEXT)) },
-                    text = {
-                        Text(
-                            stringResource(R.string.watermark_tab_text),
-                            fontWeight = if (state.config.type == WatermarkType.TEXT) FontWeight.Bold else FontWeight.Normal
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = WatermarkType.entries.size),
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.TextFields,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
                         )
                     },
-                    icon = { Icon(Icons.Rounded.TextFields, contentDescription = null) },
-                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    label = { Text(stringResource(R.string.watermark_tab_text)) }
                 )
-                Tab(
+                SegmentedButton(
                     selected = state.config.type == WatermarkType.IMAGE,
                     onClick = { onEvent(WatermarkUiEvent.OnModeChanged(WatermarkType.IMAGE)) },
-                    text = {
-                        Text(
-                            stringResource(R.string.watermark_tab_image),
-                            fontWeight = if (state.config.type == WatermarkType.IMAGE) FontWeight.Bold else FontWeight.Normal
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = WatermarkType.entries.size),
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Image,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
                         )
                     },
-                    icon = { Icon(Icons.Rounded.Image, contentDescription = null) },
-                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    label = { Text(stringResource(R.string.watermark_tab_image)) }
                 )
             }
 

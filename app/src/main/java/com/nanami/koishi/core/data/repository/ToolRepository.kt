@@ -3,6 +3,7 @@ package com.nanami.koishi.core.data.repository
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
 import androidx.compose.material.icons.rounded.AutoFixHigh
+import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HistoryEdu
@@ -103,6 +104,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_today_in_history_name,
                 descriptionRes = R.string.tool_today_in_history_desc,
                 icon = Icons.Rounded.HistoryEdu,
+                category = ToolCategory.LIFE,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "decision_maker",
+                nameRes = R.string.tool_decision_maker_name,
+                descriptionRes = R.string.tool_decision_maker_desc,
+                icon = Icons.Rounded.Casino,
                 category = ToolCategory.LIFE,
                 isFavorite = false,
                 hasDot = true
