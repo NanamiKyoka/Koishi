@@ -55,31 +55,54 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > keystore.properties
 
-      - name: Build Release APK
-        run: ./gradlew :app:assembleRelease --stacktrace
+      - name: Build Release APK & Bundle
+        run: ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 
       - name: Clean Sensitive Credentials
         if: always()
         run: |
           rm -f release.keystore keystore.properties
 
-      - name: Collect Artifact
-        id: apk
+      - name: Collect Release Artifacts
+        id: collect_artifacts
         run: |
-          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          if [ -z "$APK_PATH" ]; then
-            echo "::error::未找到生成的 APK 文件"
+          mkdir -p release-artifacts
+          TAG_NAME="${GITHUB_REF_NAME}"
+
+          # Collect APKs (ABI splits & universal)
+          for apk in $(find app/build/outputs/apk/release -name "*.apk"); do
+            if [ -f "$apk" ]; then
+              filename=$(basename "$apk" .apk)
+              abi_part=$(echo "$filename" | sed -E 's/^app(-)?//' | sed -E 's/(-)?release$//')
+              if [ -n "$abi_part" ]; then
+                target="Koishi-${TAG_NAME}-${abi_part}.apk"
+              else
+                target="Koishi-${TAG_NAME}.apk"
+              fi
+              cp "$apk" "release-artifacts/$target"
+              echo "Collected APK: $target"
+            fi
+          done
+
+          # Collect AAB (App Bundle)
+          for aab in $(find app/build/outputs/bundle/release -name "*.aab"); do
+            if [ -f "$aab" ]; then
+              target="Koishi-${TAG_NAME}.aab"
+              cp "$aab" "release-artifacts/$target"
+              echo "Collected AAB: $target"
+            fi
+          done
+
+          if [ -z "$(ls -A release-artifacts)" ]; then
+            echo "::error::未找到生成的发布产物"
             exit 1
           fi
-          OUTPUT_NAME="Koishi-${GITHUB_REF_NAME}.apk"
-          cp "$APK_PATH" "$OUTPUT_NAME"
-          echo "named=$OUTPUT_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Upload Artifact
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: koishi-release-apk
-          path: ${{ steps.apk.outputs.named }}
+          name: koishi-release-artifacts
+          path: release-artifacts/*
           if-no-files-found: error
 
       - name: Generate Changelog
@@ -106,7 +129,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: Koishi ${{ github.ref_name }}
-          files: ${{ steps.apk.outputs.named }}
+          files: release-artifacts/*
           body_path: ${{ steps.changelog_check.outputs.has_changelog == 'true' && 'RELEASE_CHANGELOG.md' || '' }}
           generate_release_notes: ${{ steps.changelog_check.outputs.has_changelog != 'true' }}
           draft: false

@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.CurrencyExchange
+import androidx.compose.material.icons.rounded.Gif
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
@@ -97,6 +98,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_image_sketch_name,
                 descriptionRes = R.string.tool_image_sketch_desc,
                 icon = Icons.Rounded.AutoFixHigh,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "video_to_gif",
+                nameRes = R.string.tool_video_to_gif_name,
+                descriptionRes = R.string.tool_video_to_gif_desc,
+                icon = Icons.Rounded.Gif,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true

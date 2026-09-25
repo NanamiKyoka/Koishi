@@ -639,4 +639,44 @@
     <string name="currency_converter_amount_copied">Amount copied</string>
     <string name="currency_converter_clear_input">Clear</string>
     <string name="currency_converter_network_unavailable">Network unavailable, please check your connection</string>
+
+    <!-- Video To GIF Tool -->
+    <string name="tool_video_to_gif_name">Video to GIF</string>
+    <string name="tool_video_to_gif_desc">Trim duration, scale resolution, and adjust FPS to generate lightweight animated GIFs</string>
+    <string name="video_to_gif_title">Video to GIF</string>
+    <string name="video_to_gif_pick_video">Select Local Video</string>
+    <string name="video_to_gif_pick_tip">Supports MP4, MOV, WebM, and common video formats</string>
+    <string name="video_to_gif_reselect">Choose Another</string>
+    <string name="video_to_gif_reading_info">Reading video info…</string>
+    <string name="video_to_gif_load_failed">Failed to read video, check file or permissions</string>
+    <string name="video_to_gif_trim_title">Trim Range</string>
+    <string name="video_to_gif_trim_format">Clip duration: %1$.1f s (%2$s ~ %3$s)</string>
+    <string name="video_to_gif_quick_3s">3s</string>
+    <string name="video_to_gif_quick_5s">5s</string>
+    <string name="video_to_gif_quick_10s">10s</string>
+    <string name="video_to_gif_quick_all">Full</string>
+    <string name="video_to_gif_resolution_title">Resolution Scaling</string>
+    <string name="video_to_gif_res_original">Original</string>
+    <string name="video_to_gif_res_720p">720P</string>
+    <string name="video_to_gif_res_480p">480P (Recommended)</string>
+    <string name="video_to_gif_res_360p">360P</string>
+    <string name="video_to_gif_fps_title">Target Frame Rate</string>
+    <string name="video_to_gif_fps_10">10 fps (Compact)</string>
+    <string name="video_to_gif_fps_15">15 fps (Recommended)</string>
+    <string name="video_to_gif_fps_24">24 fps (Smooth)</string>
+    <string name="video_to_gif_convert_btn">Generate GIF</string>
+    <string name="video_to_gif_stage_prepare">Preparing conversion…</string>
+    <string name="video_to_gif_cancel">Cancel</string>
+    <string name="video_to_gif_canceled">Conversion cancelled</string>
+    <string name="video_to_gif_convert_success">GIF generated successfully!</string>
+    <string name="video_to_gif_convert_failed">Generation failed: %1$s</string>
+    <string name="video_to_gif_saved_to_gallery">Saved to gallery (Pictures/Koishi/VideoToGif)</string>
+    <string name="video_to_gif_save_failed">Failed to save to gallery</string>
+    <string name="video_to_gif_save_action">Save to Gallery</string>
+    <string name="video_to_gif_share_action">Share</string>
+    <string name="video_to_gif_size_format">Size: %1$s</string>
+    <string name="video_to_gif_dimension_format">Resolution: %1$d × %2$d</string>
+    <string name="video_to_gif_estimate_frames">Est. %1$d frames</string>
+    <string name="video_to_gif_help_title">Video to GIF Guide</string>
+    <string name="video_to_gif_help_content">Why trim and scale?\nRaw HD videos (1080P/4K) converted directly into uncompressed GIF format easily exceed hundreds of megabytes and cause out-of-memory crashes. Proper resolution downscaling and frame rate control are crucial for lightweight, shareable GIFs.\n\nRecommended Settings:\n• Social Stickers &amp; Memes: 480P or 360P at 10~15 fps for 2~4 seconds (1~3 MB file size).\n• HD Short Clip: 720P at 15 fps for 3~5 seconds.\n• Hardware-accelerated with Jetpack Media3 Transformer for fast and reliable processing.</string>
 </resources>

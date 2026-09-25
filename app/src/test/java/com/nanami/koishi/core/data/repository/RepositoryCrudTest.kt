@@ -134,7 +134,7 @@ class RepositoryCrudTest {
         val repo = InMemoryToolRepository()
         val tools = repo.availableTools.first()
 
-        assertEquals(12, tools.size)
+        assertEquals(13, tools.size)
         assertEquals("image_stitching", tools[0].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[0].category)
         assertFalse(tools[0].isFavorite)
@@ -173,20 +173,25 @@ class RepositoryCrudTest {
         assertFalse(tools[7].isFavorite)
         assertTrue(tools[7].hasDot)
 
-        assertEquals("today_in_history", tools[8].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[8].category)
+        assertEquals("video_to_gif", tools[8].id)
+        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[8].category)
         assertFalse(tools[8].isFavorite)
         assertTrue(tools[8].hasDot)
 
-        assertEquals("decision_maker", tools[9].id)
+        assertEquals("today_in_history", tools[9].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[9].category)
         assertFalse(tools[9].isFavorite)
         assertTrue(tools[9].hasDot)
 
-        assertEquals("ruler", tools[10].id)
+        assertEquals("decision_maker", tools[10].id)
         assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[10].category)
+        assertFalse(tools[10].isFavorite)
+        assertTrue(tools[10].hasDot)
 
-        assertEquals("currency_converter", tools[11].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.CALCULATION, tools[11].category)
+        assertEquals("ruler", tools[11].id)
+        assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[11].category)
+
+        assertEquals("currency_converter", tools[12].id)
+        assertEquals(com.nanami.koishi.core.model.ToolCategory.CALCULATION, tools[12].category)
     }
 }

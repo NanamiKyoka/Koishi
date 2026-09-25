@@ -20,4 +20,5 @@ object AlbumFolders {
     const val QR_CODE = "$ROOT/QrCode"
 
     const val IMAGE_SKETCH = "$ROOT/ImageSketch"
+    const val VIDEO_TO_GIF = "$ROOT/VideoToGif"
 }

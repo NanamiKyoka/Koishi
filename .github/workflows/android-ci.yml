@@ -41,14 +41,20 @@ jobs:
       - name: Run Checks & Unit Tests
         run: ./gradlew lintDebug testDebugUnitTest --stacktrace
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build Debug APK & AAB
+        run: ./gradlew assembleDebug :app:bundleDebug --stacktrace
 
-      - name: Upload Debug APK
+      - name: Upload Debug APKs
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
+          name: debug-apks
           path: app/build/outputs/apk/debug/*.apk
+
+      - name: Upload Debug AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-aab
+          path: app/build/outputs/bundle/debug/*.aab
 
       - name: Upload Test Reports
         if: always()

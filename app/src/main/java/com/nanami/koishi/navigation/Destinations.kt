@@ -82,3 +82,6 @@ data object RulerRoute
 
 @Serializable
 data object CurrencyConverterRoute
+
+@Serializable
+data object VideoToGifRoute

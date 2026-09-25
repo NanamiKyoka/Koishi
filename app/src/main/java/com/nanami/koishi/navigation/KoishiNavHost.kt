@@ -57,6 +57,7 @@ fun KoishiNavHost(
                         "decision_maker" -> navController.navigate(DecisionMakerRoute)
                         "ruler" -> navController.navigate(RulerRoute)
                         "currency_converter" -> navController.navigate(CurrencyConverterRoute)
+                        "video_to_gif" -> navController.navigate(VideoToGifRoute)
                     }
                 }
             )
@@ -161,5 +162,12 @@ fun KoishiNavHost(
             )
         }
 
+        composable<VideoToGifRoute> {
+            val videoToGifViewModel: com.nanami.koishi.feature.tools.video_to_gif.VideoToGifViewModel = viewModel()
+            com.nanami.koishi.feature.tools.video_to_gif.VideoToGifRoute(
+                viewModel = videoToGifViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }

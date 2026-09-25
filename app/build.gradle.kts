@@ -25,6 +25,30 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = true
+        }
+    }
+
+    bundle {
+        abi {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        language {
+            enableSplit = false
+        }
     }
 
     testOptions {
@@ -117,7 +141,15 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.jsoup)
     implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
     implementation(libs.androidx.browser)
+
+    // Media3 Transformer & ExoPlayer
+    implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.effect)
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     // QR Code Generation & Scanning
     implementation(libs.qrcode.kotlin)
