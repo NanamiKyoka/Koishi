@@ -290,7 +290,7 @@ private fun GridPlaceholderCard(
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Add,
+                    imageVector = Icons.Rounded.AddPhotoAlternate,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )

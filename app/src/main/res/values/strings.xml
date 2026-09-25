@@ -100,7 +100,7 @@
     <string name="dialog_help_2">• 空间曲线混淆 (番茄图)：基于广义希尔伯特曲线遍历与黄金分割移位，完全免密、无损且具备极高撕裂感。</string>
     <string name="dialog_help_3">• PicEncrypt / MD5：使用混沌映射或密码学洗牌置乱。解混淆时必须选择相同算法与完全一致的密钥。</string>
     <string name="dialog_help_4">• 还原：随时重置为刚导入应用时的初始原始状态。</string>
-    <string name="dialog_help_5">• 重要提示：请使用原图格式（PNG 无损存储至 Pictures/Koishi 相册）分享传输。若经过第三方软件的有损二次压缩（如微信非原图发送），将破坏像素矩阵导致无法还原。</string>
+    <string name="dialog_help_5">• 重要提示：请使用原图格式（PNG 无损存储至 Pictures/Koishi/ImageObfuscation 相册）分享传输。若经过第三方软件的有损二次压缩（如微信非原图发送），将破坏像素矩阵导致无法还原。</string>
     <string name="dialog_got_it">我知道了</string>
 
     <!-- Modes & Key hints -->
@@ -133,7 +133,7 @@
     <string name="msg_restored_current">已还原为导入时的原始图片</string>
     <string name="msg_restored_all">已还原全部图片</string>
     <string name="msg_no_image_to_save">无图片可保存</string>
-    <string name="msg_saved_to_gallery">无损 PNG 已保存至相册 (Pictures/Koishi)</string>
+    <string name="msg_saved_to_gallery">无损 PNG 已保存至相册 (Pictures/Koishi/ImageObfuscation)</string>
     <string name="msg_save_failed">保存失败</string>
     <string name="msg_saved_all_to_gallery">已将全部 %1$d 张图片保存至相册！</string>
     <string name="msg_oom_error">内存不足，图片分辨率过高</string>
@@ -166,7 +166,7 @@
     <string name="qr_menu_reset">重置为默认</string>
     <string name="qr_menu_clear_logo">清除 Logo</string>
     <string name="qr_menu_clear_bg">清除背景图</string>
-    <string name="qr_saved_success">二维码已保存至相册 (Pictures/Koishi)</string>
+    <string name="qr_saved_success">二维码已保存至相册 (Pictures/Koishi/QrCode)</string>
     <string name="qr_empty_content_warning">二维码内容不能为空</string>
 
     <!-- QR Scan Activity -->
@@ -235,7 +235,7 @@
     <string name="stitching_compress_toggle">压缩输出体积</string>
     <string name="stitching_compress_desc">优化文件体积便于分享</string>
     <string name="stitching_save_to_gallery">保存到相册</string>
-    <string name="stitching_saved_success">已成功保存至相册 (Pictures/Koishi)</string>
+    <string name="stitching_saved_success">已成功保存至相册 (Pictures/Koishi/ImageStitching)</string>
     <string name="stitching_saved_failed">保存失败: %1$s</string>
     <string name="stitching_preview_title">拼接结果预览</string>
     <string name="stitching_dimensions">尺寸: %1$d × %2$d px</string>
@@ -263,7 +263,8 @@
     <string name="grid_split_custom_summary">%1$dx%2$d 切为 %3$d 个图片</string>
     <string name="grid_split_btn_crop">裁剪</string>
     <string name="grid_split_processing">正在切图并保存至相册...</string>
-    <string name="grid_split_saved_success">已成功切分并保存 %1$d 张图片至相册 (Pictures/Koishi)</string>
+    <string name="grid_split_saved_success">已成功切分并保存 %1$d 张图片至相册 (Pictures/Koishi/GridSplit)</string>
+    <string name="grid_split_saved_partial">已保存 %1$d / %2$d 张切片至相册 (Pictures/Koishi/GridSplit)</string>
     <string name="grid_split_saved_failed">切图保存失败: %1$s</string>
     <string name="grid_split_load_failed">加载图片失败: %1$s</string>
     <string name="grid_split_no_image">请先选择需要切分的图片</string>
@@ -406,13 +407,41 @@
     <string name="watermark_preset_audit">仅供审核</string>
     <string name="watermark_preset_repost">严禁转载</string>
     <string name="watermark_empty_bg_prompt">点击下方或此处选取背景图片</string>
-    <string name="watermark_saved_success">已成功保存水印图至相册 (Pictures/Koishi)</string>
+    <string name="watermark_saved_success">已成功保存水印图至相册 (Pictures/Koishi/Watermark)</string>
     <string name="watermark_save_failed">保存图片至相册失败</string>
     <string name="watermark_need_bg_prompt">请先选取一张背景图</string>
     <string name="watermark_need_wm_img_prompt">请选取水印图片</string>
     <string name="watermark_processing">正在生成高精度水印图片...</string>
     <string name="watermark_save">保存</string>
     <string name="watermark_crop_bg_action">裁剪背景图</string>
+
+    <!-- Image Sketch Tool -->
+    <string name="tool_image_sketch_name">图片素描</string>
+    <string name="tool_image_sketch_desc">高斯模糊结合颜色减淡，一键把照片变成铅笔素描线稿</string>
+    <string name="image_sketch_title">图片素描</string>
+    <string name="image_sketch_empty_prompt">点击下方按钮选取图片，生成素描线稿</string>
+    <string name="image_sketch_pick_image">选择图片</string>
+    <string name="image_sketch_param_title">算法参数</string>
+    <string name="image_sketch_source_resolution">源图 %1$d × %2$d px</string>
+    <string name="image_sketch_reset_params">重置参数</string>
+    <string name="image_sketch_radius_label">模糊半径</string>
+    <string name="image_sketch_radius_value">%1$d px</string>
+    <string name="image_sketch_radius_hint">半径越大线条越凝练；偶数半径会自动取相邻奇数</string>
+    <string name="image_sketch_step_grayscale">灰度化</string>
+    <string name="image_sketch_step_invert">反相</string>
+    <string name="image_sketch_step_blur">高斯模糊</string>
+    <string name="image_sketch_step_dodge">颜色减淡</string>
+    <string name="image_sketch_zoom_hint">点击放大</string>
+    <string name="image_sketch_save">保存素描</string>
+    <string name="image_sketch_need_image">请先选取一张图片</string>
+    <string name="image_sketch_load_failed">图片加载失败</string>
+    <string name="image_sketch_process_failed">素描生成失败，请重试</string>
+    <string name="image_sketch_saved_success">已保存素描图至相册 (Pictures/Koishi/ImageSketch)</string>
+    <string name="image_sketch_save_failed">保存图片至相册失败</string>
+    <string name="image_sketch_help_title">图片素描原理解析</string>
+    <string name="image_sketch_help_p1">【处理流程】先把图片转为灰度图，再对灰度图取反相（255 减灰度值），随后对反相图做高斯模糊，得到的模糊反相图与原灰度图一起送入颜色减淡公式混合，最终输出铅笔素描效果。</string>
+    <string name="image_sketch_help_p2">【核心公式】结果 = min(255, 灰度 × 255 ÷ (255 − 模糊值 + 1e-5))。平坦区域中模糊值约等于自身反相值，相除后趋近于 255（纯白）；而边缘处两者差异明显，除法结果骤降，于是勾勒出深色线条。</string>
+    <string name="image_sketch_help_p3">【参数建议】模糊半径决定线条的粗细与保留的细节量，取值范围 1 ~ 100，默认 15。半径越小越接近原图细节，半径越大画面越干净凝练。为便于对称取样，偶数半径会被自动调整为相邻奇数。</string>
 
     <!-- Today in History Tool -->
     <string name="history_title">历史上的今天</string>

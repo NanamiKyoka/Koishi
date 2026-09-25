@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.image_obfuscation.engine.ImageObfuscator
 import com.nanami.koishi.feature.tools.image_obfuscation.engine.ObfuscationAction
 import com.nanami.koishi.feature.tools.image_obfuscation.engine.ObfuscationMode
@@ -511,7 +512,7 @@ class ImageObfuscationViewModel(
                 val values = ContentValues().apply {
                     put(MediaStore.Images.Media.DISPLAY_NAME, filename)
                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + AlbumFolders.IMAGE_OBFUSCATION)
                     put(MediaStore.Images.Media.IS_PENDING, 1)
                 }
 
@@ -528,7 +529,7 @@ class ImageObfuscationViewModel(
                 true
             } else {
                 @Suppress("DEPRECATION")
-                val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Koishi")
+                val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), AlbumFolders.IMAGE_OBFUSCATION)
                 if (!dir.exists()) dir.mkdirs()
                 val targetFile = File(dir, filename)
                 FileOutputStream(targetFile).use { out ->

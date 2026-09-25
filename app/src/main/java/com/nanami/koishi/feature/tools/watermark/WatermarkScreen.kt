@@ -88,6 +88,7 @@ import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.core.designsystem.component.ClassicColorPickerDialog
 import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.watermark.engine.WatermarkFont
 import com.nanami.koishi.feature.tools.watermark.engine.WatermarkType
 import kotlin.math.roundToInt
@@ -151,6 +152,7 @@ fun WatermarkScreen(
         ImagePreviewDialog(
             images = listOf(state.previewBitmap),
             title = stringResource(R.string.watermark_title),
+            albumFolder = AlbumFolders.WATERMARK,
             onDismissRequest = { showPreviewDialog = false }
         )
     }

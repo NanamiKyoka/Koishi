@@ -70,6 +70,7 @@ import coil.ImageLoader
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.nanami.koishi.core.util.AlbumFolders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -89,6 +90,7 @@ fun ImagePreviewDialog(
     images: List<Any>,
     initialIndex: Int = 0,
     title: String = "图片预览",
+    albumFolder: String = AlbumFolders.ROOT,
     onIndexChanged: ((Int) -> Unit)? = null,
     onDismissRequest: () -> Unit
 ) {
@@ -202,7 +204,7 @@ fun ImagePreviewDialog(
                             val currentItem = images.getOrNull(pagerState.currentPage)
                             if (currentItem != null) {
                                 coroutineScope.launch {
-                                    val success = saveItemToGallery(context, currentItem)
+                                    val success = saveItemToGallery(context, currentItem, albumFolder)
                                     Toast.makeText(
                                         context,
                                         if (success) "已保存到相册" else "保存失败",
@@ -257,6 +259,7 @@ fun ImagePreviewDialog(
     bitmap: Bitmap? = null,
     uri: Uri? = null,
     title: String = "图片预览",
+    albumFolder: String = AlbumFolders.ROOT,
     onDismissRequest: () -> Unit
 ) {
     val items = remember(bitmap, uri) {
@@ -266,6 +269,7 @@ fun ImagePreviewDialog(
         images = items,
         initialIndex = 0,
         title = title,
+        albumFolder = albumFolder,
         onDismissRequest = onDismissRequest
     )
 }
@@ -648,7 +652,7 @@ private fun decodeSampledBitmapFromUri(context: Context, uri: Uri): Bitmap? {
 /**
  * 通用图片保存至系统相册 (适配 Android 10+ / API 29+ Scoped Storage 与 MediaStore IS_PENDING 机制)
  */
-private suspend fun saveItemToGallery(context: Context, item: Any): Boolean = withContext(Dispatchers.IO) {
+private suspend fun saveItemToGallery(context: Context, item: Any, albumFolder: String): Boolean = withContext(Dispatchers.IO) {
     try {
         val resolver = context.contentResolver
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
@@ -677,7 +681,7 @@ private suspend fun saveItemToGallery(context: Context, item: Any): Boolean = wi
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + albumFolder)
             put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
 

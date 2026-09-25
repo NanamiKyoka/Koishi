@@ -10,6 +10,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nanami.koishi.R
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.grid_split.engine.GridSplitEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +28,10 @@ class GridSplitViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val _uiState = MutableStateFlow(GridSplitUiState())
     val uiState: StateFlow<GridSplitUiState> = _uiState.asStateFlow()
+
+    private fun getString(resId: Int, vararg args: Any): String {
+        return getApplication<Application>().getString(resId, *args)
+    }
 
     fun onEvent(event: GridSplitUiEvent) {
         when (event) {
@@ -199,7 +205,7 @@ class GridSplitViewModel(application: Application) : AndroidViewModel(applicatio
                             val values = ContentValues().apply {
                                 put(MediaStore.Images.Media.DISPLAY_NAME, filename)
                                 put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+                                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + AlbumFolders.GRID_SPLIT)
                                 put(MediaStore.Images.Media.IS_PENDING, 1)
                             }
 
@@ -218,7 +224,7 @@ class GridSplitViewModel(application: Application) : AndroidViewModel(applicatio
                         } else {
                             val dir = File(
                                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                                "Koishi"
+                                AlbumFolders.GRID_SPLIT
                             )
                             if (!dir.exists()) dir.mkdirs()
                             val destFile = File(dir, filename)
@@ -248,9 +254,9 @@ class GridSplitViewModel(application: Application) : AndroidViewModel(applicatio
                         it.copy(
                             isProcessing = false,
                             userMessage = if (savedCount == totalCount) {
-                                "已成功切分并保存 $savedCount 张图片至相册 (Pictures/Koishi)"
+                                getString(R.string.grid_split_saved_success, savedCount)
                             } else {
-                                "已保存 $savedCount / $totalCount 张图片至相册"
+                                getString(R.string.grid_split_saved_partial, savedCount, totalCount)
                             }
                         )
                     }
@@ -259,7 +265,7 @@ class GridSplitViewModel(application: Application) : AndroidViewModel(applicatio
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     _uiState.update {
-                        it.copy(isProcessing = false, userMessage = "切分保存失败: ${e.message}")
+                        it.copy(isProcessing = false, userMessage = getString(R.string.grid_split_saved_failed, e.localizedMessage ?: ""))
                     }
                 }
             }

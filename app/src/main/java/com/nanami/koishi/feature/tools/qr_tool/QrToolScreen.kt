@@ -34,16 +34,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Notes
+import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.QrCodeScanner
 import androidx.compose.material.icons.rounded.Square
-import androidx.compose.material.icons.rounded.TagFaces
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -89,6 +88,7 @@ import com.nanami.koishi.R
 import com.nanami.koishi.core.image.crop.ImageCropActivity
 import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.qr_tool.components.ColorPickerDialog
 import com.nanami.koishi.feature.tools.qr_tool.components.ThemePickerBottomSheet
 import com.nanami.koishi.feature.tools.qr_tool.engine.QrDotStyle
@@ -531,7 +531,7 @@ fun QrToolRoute(
                         .weight(1f)
                         .height(48.dp)
                 ) {
-                    Icon(imageVector = Icons.Rounded.TagFaces, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Rounded.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = if (uiState.logoBitmap != null) "更换Logo" else stringResource(R.string.qr_btn_set_logo),
@@ -550,7 +550,7 @@ fun QrToolRoute(
                         .weight(1f)
                         .height(48.dp)
                 ) {
-                    Icon(imageVector = Icons.Rounded.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Rounded.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = if (uiState.bgBitmap != null) "更换背景" else stringResource(R.string.qr_btn_set_bg),
@@ -650,6 +650,7 @@ fun QrToolRoute(
             ImagePreviewDialog(
                 bitmap = uiState.qrBitmap,
                 title = stringResource(R.string.tool_qr_code_name),
+                albumFolder = AlbumFolders.QR_CODE,
                 onDismissRequest = { showPreview = false }
             )
         }

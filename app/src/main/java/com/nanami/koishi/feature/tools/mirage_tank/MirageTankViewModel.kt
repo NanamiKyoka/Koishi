@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankEngine
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankMode
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankParams
@@ -326,7 +327,7 @@ class MirageTankViewModel(
                 val values = ContentValues().apply {
                     put(MediaStore.Images.Media.DISPLAY_NAME, filename)
                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi/MirageTank")
+                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + AlbumFolders.MIRAGE_TANK)
                     put(MediaStore.Images.Media.IS_PENDING, 1)
                 }
 
@@ -345,7 +346,7 @@ class MirageTankViewModel(
                 @Suppress("DEPRECATION")
                 val dir = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    "Koishi/MirageTank"
+                    AlbumFolders.MIRAGE_TANK
                 )
                 if (!dir.exists()) dir.mkdirs()
                 val targetFile = File(dir, filename)

@@ -60,6 +60,12 @@ data object MirageTankRoute
 data object WatermarkRoute
 
 /**
+ * 图片素描独立小工具强类型路由
+ */
+@Serializable
+data object ImageSketchRoute
+
+/**
  * 历史上的今天独立小工具强类型路由
  */
 @Serializable

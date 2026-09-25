@@ -11,6 +11,8 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nanami.koishi.R
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.image_stitching.engine.ImageStitchingEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,6 +34,10 @@ class ImageStitchingViewModel(application: Application) : AndroidViewModel(appli
     val uiState: StateFlow<ImageStitchingUiState> = _uiState.asStateFlow()
 
     private var subtitlePreviewJob: Job? = null
+
+    private fun getString(resId: Int, vararg args: Any): String {
+        return getApplication<Application>().getString(resId, *args)
+    }
 
     fun onEvent(event: ImageStitchingUiEvent) {
         when (event) {
@@ -283,12 +289,13 @@ class ImageStitchingViewModel(application: Application) : AndroidViewModel(appli
             val filename = "stitch_${System.currentTimeMillis()}.${format.extension}"
 
             var isSuccess = false
+            var errorMessage: String? = null
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val values = ContentValues().apply {
                         put(MediaStore.Images.Media.DISPLAY_NAME, filename)
                         put(MediaStore.Images.Media.MIME_TYPE, format.mimeType)
-                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + AlbumFolders.IMAGE_STITCHING)
                         put(MediaStore.Images.Media.IS_PENDING, 1)
                     }
 
@@ -306,7 +313,7 @@ class ImageStitchingViewModel(application: Application) : AndroidViewModel(appli
                         isSuccess = true
                     }
                 } else {
-                    val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Koishi")
+                    val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), AlbumFolders.IMAGE_STITCHING)
                     if (!dir.exists()) dir.mkdirs()
                     val destFile = File(dir, filename)
                     FileOutputStream(destFile).use { outStream ->
@@ -321,13 +328,18 @@ class ImageStitchingViewModel(application: Application) : AndroidViewModel(appli
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                errorMessage = e.localizedMessage
             }
 
             withContext(Dispatchers.Main) {
                 _uiState.update {
                     it.copy(
                         isProcessing = false,
-                        userMessage = if (isSuccess) "已成功保存至相册 (Pictures/Koishi)" else "保存图像失败"
+                        userMessage = if (isSuccess) {
+                            getString(R.string.stitching_saved_success)
+                        } else {
+                            getString(R.string.stitching_saved_failed, errorMessage ?: "")
+                        }
                     )
                 }
             }

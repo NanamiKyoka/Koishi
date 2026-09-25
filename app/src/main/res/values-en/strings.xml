@@ -133,7 +133,7 @@
     <string name="msg_restored_current">Restored to original image</string>
     <string name="msg_restored_all">Restored all images</string>
     <string name="msg_no_image_to_save">No image to save</string>
-    <string name="msg_saved_to_gallery">Lossless PNG saved to gallery (Pictures/Koishi)</string>
+    <string name="msg_saved_to_gallery">Lossless PNG saved to gallery (Pictures/Koishi/ImageObfuscation)</string>
     <string name="msg_save_failed">Failed to save</string>
     <string name="msg_saved_all_to_gallery">Saved all %1$d images to gallery!</string>
     <string name="msg_oom_error">Out of memory: image resolution too high</string>
@@ -166,7 +166,7 @@
     <string name="qr_menu_reset">Reset to Defaults</string>
     <string name="qr_menu_clear_logo">Clear Logo</string>
     <string name="qr_menu_clear_bg">Clear Background</string>
-    <string name="qr_saved_success">QR Code saved to gallery (Pictures/Koishi)</string>
+    <string name="qr_saved_success">QR Code saved to gallery (Pictures/Koishi/QrCode)</string>
     <string name="qr_empty_content_warning">QR code content cannot be empty</string>
 
     <!-- QR Scan Activity -->
@@ -234,7 +234,7 @@
     <string name="stitching_compress_toggle">Compress Output Size</string>
     <string name="stitching_compress_desc">Optimize file size for easy sharing</string>
     <string name="stitching_save_to_gallery">Save to Gallery</string>
-    <string name="stitching_saved_success">Successfully saved to gallery (Pictures/Koishi)</string>
+    <string name="stitching_saved_success">Successfully saved to gallery (Pictures/Koishi/ImageStitching)</string>
     <string name="stitching_saved_failed">Save failed: %1$s</string>
     <string name="stitching_preview_title">Stitching Result</string>
     <string name="stitching_dimensions">Dimensions: %1$d × %2$d px</string>
@@ -262,7 +262,8 @@
     <string name="grid_split_custom_summary">%1$dx%2$d sliced into %3$d images</string>
     <string name="grid_split_btn_crop">Slice</string>
     <string name="grid_split_processing">Slicing and saving to gallery...</string>
-    <string name="grid_split_saved_success">Successfully sliced and saved %1$d images to gallery (Pictures/Koishi)</string>
+    <string name="grid_split_saved_success">Successfully sliced and saved %1$d images to gallery (Pictures/Koishi/GridSplit)</string>
+    <string name="grid_split_saved_partial">Saved %1$d / %2$d slices to gallery (Pictures/Koishi/GridSplit)</string>
     <string name="grid_split_saved_failed">Failed to save slices: %1$s</string>
     <string name="grid_split_load_failed">Failed to load image: %1$s</string>
     <string name="grid_split_no_image">Please select an image first</string>
@@ -405,13 +406,41 @@
     <string name="watermark_preset_audit">Audit Only</string>
     <string name="watermark_preset_repost">Do Not Repost</string>
     <string name="watermark_empty_bg_prompt">Tap here or below to select background image</string>
-    <string name="watermark_saved_success">Successfully saved watermark image to gallery (Pictures/Koishi)</string>
+    <string name="watermark_saved_success">Successfully saved watermark image to gallery (Pictures/Koishi/Watermark)</string>
     <string name="watermark_save_failed">Failed to save image to gallery</string>
     <string name="watermark_need_bg_prompt">Please select a background image first</string>
     <string name="watermark_need_wm_img_prompt">Please select a watermark image</string>
     <string name="watermark_processing">Generating high-resolution watermark image...</string>
     <string name="watermark_save">Save</string>
     <string name="watermark_crop_bg_action">Crop Background</string>
+
+    <!-- Image Sketch Tool -->
+    <string name="tool_image_sketch_name">Image Sketch</string>
+    <string name="tool_image_sketch_desc">Turn photos into pencil sketches with Gaussian blur and color dodge blending</string>
+    <string name="image_sketch_title">Image Sketch</string>
+    <string name="image_sketch_empty_prompt">Tap the button below to pick an image and generate a sketch</string>
+    <string name="image_sketch_pick_image">Pick Image</string>
+    <string name="image_sketch_param_title">Algorithm Parameters</string>
+    <string name="image_sketch_source_resolution">Source %1$d × %2$d px</string>
+    <string name="image_sketch_reset_params">Reset</string>
+    <string name="image_sketch_radius_label">Blur Radius</string>
+    <string name="image_sketch_radius_value">%1$d px</string>
+    <string name="image_sketch_radius_hint">A larger radius gives cleaner lines; even values snap to the nearest odd number</string>
+    <string name="image_sketch_step_grayscale">Grayscale</string>
+    <string name="image_sketch_step_invert">Invert</string>
+    <string name="image_sketch_step_blur">Gaussian Blur</string>
+    <string name="image_sketch_step_dodge">Color Dodge</string>
+    <string name="image_sketch_zoom_hint">Tap to zoom</string>
+    <string name="image_sketch_save">Save Sketch</string>
+    <string name="image_sketch_need_image">Please pick an image first</string>
+    <string name="image_sketch_load_failed">Failed to load image</string>
+    <string name="image_sketch_process_failed">Failed to generate sketch, please retry</string>
+    <string name="image_sketch_saved_success">Sketch saved to gallery (Pictures/Koishi/ImageSketch)</string>
+    <string name="image_sketch_save_failed">Failed to save image to gallery</string>
+    <string name="image_sketch_help_title">How Image Sketch Works</string>
+    <string name="image_sketch_help_p1">First the image is converted to grayscale, then inverted (255 minus the gray value). The inverted image is blurred with a Gaussian kernel, and the blurred inverted image is blended with the original grayscale image through the color dodge formula to produce the pencil sketch.</string>
+    <string name="image_sketch_help_p2">Core formula: result = min(255, gray × 255 ÷ (255 − blurred + 1e-5)). In flat regions the blurred value is close to the inverted gray, so the division approaches 255 (pure white); along edges the two diverge sharply and the result drops, drawing the dark pencil lines.</string>
+    <string name="image_sketch_help_p3">The blur radius controls line weight and retained detail, ranging from 1 to 100 with a default of 15. Smaller radii keep more original detail while larger radii yield cleaner, more abstract lines. To keep the sampling kernel symmetric, even radii are automatically adjusted to the nearest odd value.</string>
 
     <!-- Today in History Tool -->
     <string name="history_title">Today in History</string>

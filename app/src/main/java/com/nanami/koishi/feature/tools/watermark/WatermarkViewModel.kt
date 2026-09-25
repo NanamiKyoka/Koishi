@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.watermark.engine.WatermarkConfig
 import com.nanami.koishi.feature.tools.watermark.engine.WatermarkEngine
 import com.nanami.koishi.feature.tools.watermark.engine.WatermarkFont
@@ -267,7 +268,7 @@ class WatermarkViewModel(
                         val values = ContentValues().apply {
                             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
                             put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+                            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + AlbumFolders.WATERMARK)
                             put(MediaStore.Images.Media.IS_PENDING, 1)
                         }
                         val resolver = context.contentResolver
@@ -283,7 +284,7 @@ class WatermarkViewModel(
                             savedSuccessfully = true
                         }
                     } else {
-                        val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Koishi")
+                        val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), AlbumFolders.WATERMARK)
                         if (!dir.exists()) dir.mkdirs()
                         val destFile = File(dir, filename)
                         FileOutputStream(destFile).use { out ->

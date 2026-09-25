@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.qr_tool.components.QrThemePreset
 import com.nanami.koishi.feature.tools.qr_tool.engine.QrConfig
 import com.nanami.koishi.feature.tools.qr_tool.engine.QrDotStyle
@@ -302,7 +303,7 @@ class QrToolViewModel(
                     val values = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
                         put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Koishi")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + AlbumFolders.QR_CODE)
                         put(MediaStore.MediaColumns.IS_PENDING, 1)
                     }
                     val resolver = context.contentResolver
@@ -318,7 +319,7 @@ class QrToolViewModel(
                     }
                 } else {
                     @Suppress("DEPRECATION")
-                    val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Koishi")
+                    val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), AlbumFolders.QR_CODE)
                     if (!dir.exists()) dir.mkdirs()
                     val file = File(dir, filename)
                     FileOutputStream(file).use { os ->

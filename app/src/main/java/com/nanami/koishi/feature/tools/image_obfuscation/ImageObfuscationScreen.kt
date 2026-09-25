@@ -32,7 +32,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.RotateRight
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Check
@@ -81,6 +80,7 @@ import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.image_obfuscation.engine.ObfuscationMode
 
 @Composable
@@ -355,6 +355,7 @@ fun ImageObfuscationScreen(
             images = previewImages,
             initialIndex = initialIdx,
             title = stringResource(R.string.preview_image),
+            albumFolder = AlbumFolders.IMAGE_OBFUSCATION,
             onIndexChanged = { newIndex ->
                 if (newIndex in uiState.images.indices && newIndex != uiState.selectedIndex) {
                     onEvent(ImageObfuscationUiEvent.OnSelectImageIndex(newIndex))
@@ -556,7 +557,7 @@ private fun ThumbnailRow(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Add,
+                    imageVector = Icons.Rounded.AddPhotoAlternate,
                     contentDescription = stringResource(R.string.add_more_images),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp)
