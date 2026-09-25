@@ -24,12 +24,6 @@ enum class SearchEngineEnum(
         descRes = R.string.image_search_engine_trace_moe_desc,
         homeUrl = "https://trace.moe/"
     ),
-    ASCII2D(
-        id = "ascii2d",
-        displayNameRes = R.string.image_search_engine_ascii2d,
-        descRes = R.string.image_search_engine_ascii2d_desc,
-        homeUrl = "https://ascii2d.net/"
-    ),
     GOOGLE_LENS(
         id = "google_lens",
         displayNameRes = R.string.image_search_engine_google_lens,
@@ -47,7 +41,8 @@ enum class EngineSearchStatus {
     SUCCESS,
     EMPTY,
     ERROR,
-    FALLBACK_REQUIRED
+    FALLBACK_REQUIRED,
+    CONFIG_REQUIRED
 }
 
 /**

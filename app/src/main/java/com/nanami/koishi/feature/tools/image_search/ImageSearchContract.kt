@@ -15,7 +15,6 @@ data class ImageSearchUiState(
     val selectedEngines: Set<SearchEngineEnum> = setOf(
         SearchEngineEnum.SAUCENAO,
         SearchEngineEnum.TRACE_MOE,
-        SearchEngineEnum.ASCII2D,
         SearchEngineEnum.GOOGLE_LENS
     ),
     val collapsedEngines: Set<SearchEngineEnum> = emptySet(),

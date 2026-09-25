@@ -183,7 +183,7 @@ fun ImageSearchScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 第一步：图片选择与预览卡片
+            // 图片选择与预览卡片
             ImagePreviewCard(
                 state = state,
                 onPickImage = {
@@ -236,7 +236,7 @@ fun ImageSearchScreen(
                 }
             }
 
-            // 第三步：多源搜索结果异步并发与折叠/展开展示区
+            // 多源搜索结果异步并发与折叠/展开展示区
             AnimatedVisibility(visible = state.engineStates.isNotEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -251,6 +251,9 @@ fun ImageSearchScreen(
                                 isCollapsed = isCollapsed,
                                 onToggleCollapse = { onEvent(ImageSearchUiEvent.OnToggleEngineCollapse(engine)) },
                                 onOpenUrl = { url -> openWebUrl(context, url) },
+                                onConfigureEngine = {
+                                    onEvent(ImageSearchUiEvent.OnShowApiKeyDialog(true))
+                                },
                                 onSearchGoogleLens = {
                                     launchGoogleLens(context, state.selectedImageUri)
                                 }
@@ -507,6 +510,7 @@ private fun EngineResultSection(
     isCollapsed: Boolean,
     onToggleCollapse: () -> Unit,
     onOpenUrl: (String) -> Unit,
+    onConfigureEngine: () -> Unit,
     onSearchGoogleLens: () -> Unit
 ) {
     Card(
@@ -661,6 +665,49 @@ private fun EngineResultSection(
                                 }
                             }
                         }
+                        EngineSearchStatus.CONFIG_REQUIRED -> {
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Key,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = engineState.errorMessageRes?.let { stringResource(it) }
+                                                ?: stringResource(R.string.image_search_engine_status_config_required),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+
+                                    Button(
+                                        onClick = onConfigureEngine,
+                                        shape = PillShape
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Key,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(stringResource(R.string.image_search_saucenao_configure_action))
+                                    }
+                                }
+                            }
+                        }
                         EngineSearchStatus.FALLBACK_REQUIRED -> {
                             Surface(
                                 shape = RoundedCornerShape(16.dp),
@@ -766,7 +813,6 @@ private fun SearchResultCard(
                     val displayTitle = item.title.ifBlank {
                         when (item.engine) {
                             SearchEngineEnum.TRACE_MOE -> stringResource(R.string.image_search_unknown_anime)
-                            SearchEngineEnum.ASCII2D -> stringResource(R.string.image_search_unknown_work)
                             else -> stringResource(R.string.image_search_unknown_title)
                         }
                     }
@@ -1036,6 +1082,11 @@ private fun launchGoogleLens(context: Context, imageUri: Uri?) {
  * 使用 Custom Tabs 打开链接，如不支持则唤起系统浏览器
  */
 private fun openWebUrl(context: Context, url: String) {
+    // 防御：解析层已过滤非 http(s) 候选，这里再兜一层，避免把自然语言文本当成网址
+    if (!url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
+        Toast.makeText(context, context.getString(R.string.image_search_error_browser), Toast.LENGTH_SHORT).show()
+        return
+    }
     try {
         val uri = Uri.parse(url)
         val customTabsIntent = CustomTabsIntent.Builder()

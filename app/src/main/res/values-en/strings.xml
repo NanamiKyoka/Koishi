@@ -274,7 +274,7 @@
 
     <!-- Image Search Tool -->
     <string name="tool_image_search_name">Image Search</string>
-    <string name="tool_image_search_desc">Concurrent reverse image search aggregating SauceNAO, trace.moe, ascii2d, and Google Lens</string>
+    <string name="tool_image_search_desc">Concurrent reverse image search aggregating SauceNAO, trace.moe, and Google Lens</string>
     <string name="image_search_title">Image Search</string>
     <string name="image_search_select_image">Select Image</string>
     <string name="image_search_change_image">Change Image</string>
@@ -304,11 +304,9 @@
     <string name="image_search_engine_status_fallback">Request restricted or verification required; open the web version directly</string>
     <string name="image_search_engine_saucenao">SauceNAO</string>
     <string name="image_search_engine_trace_moe">trace.moe</string>
-    <string name="image_search_engine_ascii2d">ascii2d</string>
     <string name="image_search_engine_google_lens">Google Lens</string>
     <string name="image_search_engine_saucenao_desc">Identify Pixiv/Twitter artwork, author, and source</string>
     <string name="image_search_engine_trace_moe_desc">Identify anime scene screenshots with exact title &amp; timestamp</string>
-    <string name="image_search_engine_ascii2d_desc">Fan art, color &amp; feature matching reverse search</string>
     <string name="image_search_engine_google_lens_desc">Google multimodal visual search across the web</string>
     <string name="image_search_google_lens_action">Search with Google Lens</string>
     <string name="image_search_need_image">Please select an image to search</string>
@@ -321,13 +319,14 @@
     <string name="image_search_error_quota_exceeded">Search quota exhausted</string>
     <string name="image_search_error_server_resp">Server response error (HTTP %1$d)</string>
     <string name="image_search_error_network">Network connection error, please retry</string>
-    <string name="image_search_error_cloudflare">Blocked by Cloudflare protection</string>
+    <string name="image_search_saucenao_requires_key">SauceNAO is unavailable without an API Key. Configure one to search</string>
+    <string name="image_search_saucenao_configure_action">Configure API Key</string>
+    <string name="image_search_engine_status_config_required">Configuration required</string>
     <string name="image_search_error_read_image">Cannot read selected image</string>
     <string name="image_search_error_load_image">Failed to load image: %1$s</string>
     <string name="image_search_error_browser">Cannot open browser or Google app</string>
     <string name="image_search_unknown_title">Unknown Title</string>
     <string name="image_search_unknown_anime">Unknown Anime</string>
-    <string name="image_search_unknown_work">Unknown Artwork</string>
     <string name="image_search_google_lens_title">Google Lens Visual Search</string>
     <string name="image_search_google_lens_desc_short">Use Google Lens app or web to find similar visual results</string>
     <string name="image_search_label_spec">Spec</string>

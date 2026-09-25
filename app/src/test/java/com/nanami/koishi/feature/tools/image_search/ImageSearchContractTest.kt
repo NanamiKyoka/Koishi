@@ -18,7 +18,7 @@ class ImageSearchContractTest {
     @Test
     fun testInitialUiState() {
         val state = ImageSearchUiState()
-        assertEquals(4, state.selectedEngines.size)
+        assertEquals(3, state.selectedEngines.size)
         assertFalse("无图片时不能搜索", state.canSearch)
         assertFalse("初始无结果", state.hasResults)
         assertFalse(state.isSearching)
@@ -66,10 +66,9 @@ class ImageSearchContractTest {
     @Test
     fun testSearchEnginesEnumCompleteness() {
         val engines = SearchEngineEnum.entries
-        assertEquals(4, engines.size)
+        assertEquals(3, engines.size)
         assertTrue(engines.any { it == SearchEngineEnum.SAUCENAO })
         assertTrue(engines.any { it == SearchEngineEnum.TRACE_MOE })
-        assertTrue(engines.any { it == SearchEngineEnum.ASCII2D })
         assertTrue(engines.any { it == SearchEngineEnum.GOOGLE_LENS })
     }
 }

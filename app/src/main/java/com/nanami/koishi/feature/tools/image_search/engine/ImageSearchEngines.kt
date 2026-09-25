@@ -1,15 +1,12 @@
 package com.nanami.koishi.feature.tools.image_search.engine
 
 import com.nanami.koishi.R
-import com.nanami.koishi.feature.tools.image_search.engine.parser.Ascii2dCloudflareException
-import com.nanami.koishi.feature.tools.image_search.engine.parser.Ascii2dParser
 import com.nanami.koishi.feature.tools.image_search.engine.parser.SauceNaoException
 import com.nanami.koishi.feature.tools.image_search.engine.parser.SauceNaoParser
 import com.nanami.koishi.feature.tools.image_search.engine.parser.TraceMoeParser
 import com.nanami.koishi.feature.tools.image_search.model.EngineSearchState
 import com.nanami.koishi.feature.tools.image_search.model.EngineSearchStatus
 import com.nanami.koishi.feature.tools.image_search.model.SearchEngineEnum
-import com.nanami.koishi.feature.tools.image_search.model.SearchResultItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -27,6 +24,10 @@ object ImageSearchEngines {
 
     private const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
 
+    private const val SAUCENAO_HOME_URL = "https://saucenao.com/"
+    private const val TRACE_MOE_HOME_URL = "https://trace.moe/"
+    private const val GOOGLE_LENS_HOME_URL = "https://lens.google.com/"
+
     private val httpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -37,82 +38,96 @@ object ImageSearchEngines {
             .build()
     }
 
+    private fun isNetworkError(e: Exception): Boolean =
+        e is SocketException || e is SocketTimeoutException || e is UnknownHostException || e is IOException
+
     /**
-     * SauceNAO 检索引擎
+     * SauceNAO 检索引擎。
+     *
+     * 未配置 API Key 时官方匿名账号不允许 API 调用（返回 status -1），
+     * 因此这里直接判定为不可用，不发起请求，仅提供网页版降级入口。
      */
-    suspend fun searchSauceNao(imageBytes: ByteArray, apiKey: String?): EngineSearchState = withContext(Dispatchers.IO) {
-        val fallbackWebUrl = "https://saucenao.com/"
-        try {
-            val multipartBuilder = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("db", "999")
-                .addFormDataPart("output_type", "2")
-                .addFormDataPart("numres", "12")
-                .addFormDataPart(
-                    "file",
-                    "search.jpg",
-                    imageBytes.toRequestBody("image/jpeg".toMediaType())
-                )
+    suspend fun searchSauceNao(imageBytes: ByteArray, apiKey: String?): EngineSearchState {
+        val trimmedKey = apiKey?.trim().orEmpty()
+        if (trimmedKey.isEmpty()) {
+            return EngineSearchState(
+                engine = SearchEngineEnum.SAUCENAO,
+                status = EngineSearchStatus.CONFIG_REQUIRED,
+                errorMessageRes = R.string.image_search_saucenao_requires_key,
+                fallbackUrl = SAUCENAO_HOME_URL
+            )
+        }
 
-            if (!apiKey.isNullOrBlank()) {
-                multipartBuilder.addFormDataPart("api_key", apiKey.trim())
-            }
+        return withContext(Dispatchers.IO) {
+            try {
+                val multipartBuilder = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("db", "999")
+                    .addFormDataPart("output_type", "2")
+                    .addFormDataPart("numres", "12")
+                    .addFormDataPart(
+                        "file",
+                        "search.jpg",
+                        imageBytes.toRequestBody("image/jpeg".toMediaType())
+                    )
+                    .addFormDataPart("api_key", trimmedKey)
 
-            val request = Request.Builder()
-                .url("https://saucenao.com/search.php")
-                .header("User-Agent", USER_AGENT)
-                .post(multipartBuilder.build())
-                .build()
+                val request = Request.Builder()
+                    .url("https://saucenao.com/search.php")
+                    .header("User-Agent", USER_AGENT)
+                    .post(multipartBuilder.build())
+                    .build()
 
-            val response = httpClient.newCall(request).execute()
-            val responseBody = response.body?.string().orEmpty()
+                val response = httpClient.newCall(request).execute()
+                val responseBody = response.body?.string().orEmpty()
 
-            if (!response.isSuccessful) {
-                return@withContext EngineSearchState(
+                if (!response.isSuccessful) {
+                    return@withContext EngineSearchState(
+                        engine = SearchEngineEnum.SAUCENAO,
+                        status = EngineSearchStatus.FALLBACK_REQUIRED,
+                        errorMessageRes = R.string.image_search_error_server_resp,
+                        fallbackUrl = SAUCENAO_HOME_URL
+                    )
+                }
+
+                val results = SauceNaoParser.parse(responseBody)
+                if (results.isEmpty()) {
+                    EngineSearchState(
+                        engine = SearchEngineEnum.SAUCENAO,
+                        status = EngineSearchStatus.EMPTY,
+                        fallbackUrl = SAUCENAO_HOME_URL
+                    )
+                } else {
+                    EngineSearchState(
+                        engine = SearchEngineEnum.SAUCENAO,
+                        status = EngineSearchStatus.SUCCESS,
+                        results = results,
+                        fallbackUrl = SAUCENAO_HOME_URL
+                    )
+                }
+            } catch (e: SauceNaoException) {
+                val resId = when (e.statusCode) {
+                    -1 -> R.string.image_search_error_rate_limit
+                    -2 -> R.string.image_search_error_invalid_key
+                    -3 -> R.string.image_search_error_quota_exceeded
+                    else -> R.string.image_search_error_server_resp
+                }
+                EngineSearchState(
                     engine = SearchEngineEnum.SAUCENAO,
                     status = EngineSearchStatus.FALLBACK_REQUIRED,
-                    errorMessageRes = R.string.image_search_error_server_resp,
-                    fallbackUrl = fallbackWebUrl
+                    errorMessageRes = resId,
+                    fallbackUrl = SAUCENAO_HOME_URL
                 )
-            }
-
-            val results = SauceNaoParser.parse(responseBody)
-            if (results.isEmpty()) {
+            } catch (e: Exception) {
+                val networkError = isNetworkError(e)
                 EngineSearchState(
                     engine = SearchEngineEnum.SAUCENAO,
-                    status = EngineSearchStatus.EMPTY,
-                    fallbackUrl = fallbackWebUrl
-                )
-            } else {
-                EngineSearchState(
-                    engine = SearchEngineEnum.SAUCENAO,
-                    status = EngineSearchStatus.SUCCESS,
-                    results = results,
-                    fallbackUrl = fallbackWebUrl
+                    status = EngineSearchStatus.FALLBACK_REQUIRED,
+                    errorMessageRes = if (networkError) R.string.image_search_error_network else R.string.image_search_error_server_resp,
+                    errorMessage = if (networkError) null else e.localizedMessage,
+                    fallbackUrl = SAUCENAO_HOME_URL
                 )
             }
-        } catch (e: SauceNaoException) {
-            val resId = when (e.statusCode) {
-                -1 -> R.string.image_search_error_rate_limit
-                -2 -> R.string.image_search_error_invalid_key
-                -3 -> R.string.image_search_error_quota_exceeded
-                else -> R.string.image_search_error_server_resp
-            }
-            EngineSearchState(
-                engine = SearchEngineEnum.SAUCENAO,
-                status = EngineSearchStatus.FALLBACK_REQUIRED,
-                errorMessageRes = resId,
-                fallbackUrl = fallbackWebUrl
-            )
-        } catch (e: Exception) {
-            val isNetworkErr = e is SocketException || e is SocketTimeoutException || e is UnknownHostException || e is IOException
-            EngineSearchState(
-                engine = SearchEngineEnum.SAUCENAO,
-                status = EngineSearchStatus.FALLBACK_REQUIRED,
-                errorMessageRes = if (isNetworkErr) R.string.image_search_error_network else R.string.image_search_error_server_resp,
-                errorMessage = e.localizedMessage,
-                fallbackUrl = fallbackWebUrl
-            )
         }
     }
 
@@ -120,7 +135,6 @@ object ImageSearchEngines {
      * trace.moe 检索引擎
      */
     suspend fun searchTraceMoe(imageBytes: ByteArray): EngineSearchState = withContext(Dispatchers.IO) {
-        val fallbackWebUrl = "https://trace.moe/"
         try {
             val requestBody = imageBytes.toRequestBody("image/jpeg".toMediaType())
             val request = Request.Builder()
@@ -138,7 +152,7 @@ object ImageSearchEngines {
                     engine = SearchEngineEnum.TRACE_MOE,
                     status = EngineSearchStatus.ERROR,
                     errorMessageRes = R.string.image_search_error_server_resp,
-                    fallbackUrl = fallbackWebUrl
+                    fallbackUrl = TRACE_MOE_HOME_URL
                 )
             }
 
@@ -147,104 +161,23 @@ object ImageSearchEngines {
                 EngineSearchState(
                     engine = SearchEngineEnum.TRACE_MOE,
                     status = EngineSearchStatus.EMPTY,
-                    fallbackUrl = fallbackWebUrl
+                    fallbackUrl = TRACE_MOE_HOME_URL
                 )
             } else {
                 EngineSearchState(
                     engine = SearchEngineEnum.TRACE_MOE,
                     status = EngineSearchStatus.SUCCESS,
                     results = results,
-                    fallbackUrl = fallbackWebUrl
+                    fallbackUrl = TRACE_MOE_HOME_URL
                 )
             }
         } catch (e: Exception) {
-            val isNetworkErr = e is SocketException || e is SocketTimeoutException || e is UnknownHostException || e is IOException
             EngineSearchState(
                 engine = SearchEngineEnum.TRACE_MOE,
                 status = EngineSearchStatus.ERROR,
-                errorMessageRes = if (isNetworkErr) R.string.image_search_error_network else null,
-                errorMessage = if (!isNetworkErr) e.localizedMessage else null,
-                fallbackUrl = fallbackWebUrl
-            )
-        }
-    }
-
-    /**
-     * ascii2d 检索引擎（抓取 + 降级处理）
-     */
-    suspend fun searchAscii2d(imageBytes: ByteArray): EngineSearchState = withContext(Dispatchers.IO) {
-        val defaultFallbackUrl = "https://ascii2d.net/"
-        try {
-            val multipart = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart(
-                    "file",
-                    "upload.jpg",
-                    imageBytes.toRequestBody("image/jpeg".toMediaType())
-                )
-                .build()
-
-            val request = Request.Builder()
-                .url("https://ascii2d.net/search/file")
-                .header("User-Agent", USER_AGENT)
-                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-                .header("Origin", "https://ascii2d.net")
-                .header("Referer", "https://ascii2d.net/")
-                .post(multipart)
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            val finalUrl = response.request.url.toString()
-            val html = response.body?.string().orEmpty()
-
-            if (response.code == 403 || Ascii2dParser.isCloudflareBlocked(html)) {
-                return@withContext EngineSearchState(
-                    engine = SearchEngineEnum.ASCII2D,
-                    status = EngineSearchStatus.FALLBACK_REQUIRED,
-                    errorMessageRes = R.string.image_search_error_cloudflare,
-                    fallbackUrl = if (finalUrl.contains("/search/")) finalUrl else defaultFallbackUrl
-                )
-            }
-
-            if (!response.isSuccessful) {
-                return@withContext EngineSearchState(
-                    engine = SearchEngineEnum.ASCII2D,
-                    status = EngineSearchStatus.FALLBACK_REQUIRED,
-                    errorMessageRes = R.string.image_search_error_server_resp,
-                    fallbackUrl = defaultFallbackUrl
-                )
-            }
-
-            val results = Ascii2dParser.parse(html, finalUrl)
-            if (results.isEmpty()) {
-                EngineSearchState(
-                    engine = SearchEngineEnum.ASCII2D,
-                    status = EngineSearchStatus.EMPTY,
-                    fallbackUrl = finalUrl
-                )
-            } else {
-                EngineSearchState(
-                    engine = SearchEngineEnum.ASCII2D,
-                    status = EngineSearchStatus.SUCCESS,
-                    results = results,
-                    fallbackUrl = finalUrl
-                )
-            }
-        } catch (_: Ascii2dCloudflareException) {
-            EngineSearchState(
-                engine = SearchEngineEnum.ASCII2D,
-                status = EngineSearchStatus.FALLBACK_REQUIRED,
-                errorMessageRes = R.string.image_search_error_cloudflare,
-                fallbackUrl = defaultFallbackUrl
-            )
-        } catch (e: Exception) {
-            val isNetworkErr = e is SocketException || e is SocketTimeoutException || e is UnknownHostException || e is IOException
-            EngineSearchState(
-                engine = SearchEngineEnum.ASCII2D,
-                status = EngineSearchStatus.FALLBACK_REQUIRED,
-                errorMessageRes = if (isNetworkErr) R.string.image_search_error_network else null,
-                errorMessage = if (!isNetworkErr) e.localizedMessage else null,
-                fallbackUrl = defaultFallbackUrl
+                errorMessageRes = if (isNetworkError(e)) R.string.image_search_error_network else null,
+                errorMessage = if (isNetworkError(e)) null else e.localizedMessage,
+                fallbackUrl = TRACE_MOE_HOME_URL
             )
         }
     }
@@ -252,12 +185,9 @@ object ImageSearchEngines {
     /**
      * Google Lens 检索引擎
      */
-    fun createGoogleLensState(): EngineSearchState {
-        val lensUrl = "https://lens.google.com/"
-        return EngineSearchState(
-            engine = SearchEngineEnum.GOOGLE_LENS,
-            status = EngineSearchStatus.SUCCESS,
-            fallbackUrl = lensUrl
-        )
-    }
+    fun createGoogleLensState(): EngineSearchState = EngineSearchState(
+        engine = SearchEngineEnum.GOOGLE_LENS,
+        status = EngineSearchStatus.SUCCESS,
+        fallbackUrl = GOOGLE_LENS_HOME_URL
+    )
 }

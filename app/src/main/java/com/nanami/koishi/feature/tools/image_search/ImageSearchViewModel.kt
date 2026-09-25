@@ -36,7 +36,24 @@ class ImageSearchViewModel(application: Application) : AndroidViewModel(applicat
     init {
         viewModelScope.launch {
             settings.dataFlow.collect { stored ->
-                _uiState.update { it.copy(sauceNaoApiKey = stored.sauceNaoApiKey) }
+                _uiState.update { state ->
+                    val keyChanged = state.sauceNaoApiKey != stored.sauceNaoApiKey
+                    val updatedStates = if (keyChanged && state.engineStates.isNotEmpty()) {
+                        state.engineStates.mapValues { (engine, engineState) ->
+                            if (engine == SearchEngineEnum.SAUCENAO) {
+                                EngineSearchState(engine = engine, status = EngineSearchStatus.IDLE)
+                            } else {
+                                engineState
+                            }
+                        }
+                    } else {
+                        state.engineStates
+                    }
+                    state.copy(
+                        sauceNaoApiKey = stored.sauceNaoApiKey,
+                        engineStates = updatedStates
+                    )
+                }
             }
         }
     }
@@ -194,9 +211,6 @@ class ImageSearchViewModel(application: Application) : AndroidViewModel(applicat
                         }
                         SearchEngineEnum.TRACE_MOE -> {
                             ImageSearchEngines.searchTraceMoe(imageBytes)
-                        }
-                        SearchEngineEnum.ASCII2D -> {
-                            ImageSearchEngines.searchAscii2d(imageBytes)
                         }
                         SearchEngineEnum.GOOGLE_LENS -> {
                             ImageSearchEngines.createGoogleLensState()
