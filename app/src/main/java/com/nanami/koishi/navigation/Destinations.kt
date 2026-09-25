@@ -79,3 +79,6 @@ data object DecisionMakerRoute
 
 @Serializable
 data object RulerRoute
+
+@Serializable
+data object CurrencyConverterRoute

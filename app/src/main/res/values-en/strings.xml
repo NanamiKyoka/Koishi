@@ -19,6 +19,7 @@
     <string name="category_all">All</string>
     <string name="category_life">Life Apps</string>
     <string name="category_image_apps">Image Apps</string>
+    <string name="category_calculation">Calculation</string>
     <string name="tools_count_summary">%1$d tools</string>
     <string name="empty_search_title">No tools found for \"%1$s\"</string>
     <string name="empty_category_title">No tools in this category</string>
@@ -608,4 +609,34 @@
     <string name="ruler_unit_cm">cm</string>
     <string name="ruler_unit_mm">mm</string>
     <string name="ruler_unit_deg">°</string>
+
+    <!-- Currency Converter -->
+    <string name="tool_currency_converter_name">Currency Converter</string>
+    <string name="tool_currency_converter_desc">Simultaneous multi-currency conversion with real-time rate updates and precious metals</string>
+    <string name="currency_converter_title">Currency Converter</string>
+    <string name="currency_converter_rates_date">Rate date: %1$s</string>
+    <string name="currency_converter_last_updated">Updated at %1$s</string>
+    <string name="currency_converter_update_rates">Update Rates</string>
+    <string name="currency_converter_refreshing">Updating exchange rates…</string>
+    <string name="currency_converter_refresh_success">Exchange rates updated</string>
+    <string name="currency_converter_refresh_failed">Update failed, using cached rates</string>
+    <string name="currency_converter_add_currency">Add Currency</string>
+    <string name="currency_converter_add_currency_title">Add Currency &amp; Metals</string>
+    <string name="currency_converter_search_placeholder">Search code, name, or symbol (e.g. USD, Gold, ¥)</string>
+    <string name="currency_converter_tab_all">All</string>
+    <string name="currency_converter_tab_fiat">Fiat</string>
+    <string name="currency_converter_tab_metals">Precious Metals</string>
+    <string name="currency_converter_empty_search">No matching currency or precious metal found</string>
+    <string name="currency_converter_already_added">Added</string>
+    <string name="currency_converter_added_success">Added %1$s</string>
+    <string name="currency_converter_removed_success">Removed %1$s</string>
+    <string name="currency_converter_min_limit_hint">Keep at least 2 currencies for conversion</string>
+    <string name="currency_converter_delete_action">Delete</string>
+    <string name="currency_converter_set_as_base">Set as base</string>
+    <string name="currency_converter_unit_rate_format">1 %1$s ≈ %2$s %3$s</string>
+    <string name="currency_converter_metal_badge">Precious Metal</string>
+    <string name="currency_converter_copy_amount">Copy Amount</string>
+    <string name="currency_converter_amount_copied">Amount copied</string>
+    <string name="currency_converter_clear_input">Clear</string>
+    <string name="currency_converter_network_unavailable">Network unavailable, please check your connection</string>
 </resources>

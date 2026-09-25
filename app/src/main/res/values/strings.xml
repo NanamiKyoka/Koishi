@@ -19,6 +19,7 @@
     <string name="category_all">全部</string>
     <string name="category_life">生活应用</string>
     <string name="category_image_apps">图片应用</string>
+    <string name="category_calculation">计算工具</string>
     <string name="tools_count_summary">共 %1$d 个工具</string>
     <string name="empty_search_title">未找到与 \"%1$s\" 相关的工具</string>
     <string name="empty_category_title">当前分类暂无工具</string>
@@ -569,7 +570,7 @@
     <!-- Crash Report Screen -->
     <string name="crash_title">应用遇到意外错误</string>
     <string name="crash_subtitle_default">发生未捕获的运行时异常</string>
-    <string name="crash_btn_copy">复制错误详情</string>
+    <string name="crash_btn_copy">复制详情</string>
     <string name="crash_copied_toast">已复制错误详情到剪贴板</string>
     <string name="crash_btn_restart">重启应用</string>
     <string name="crash_no_report">未获取到崩溃日志详情</string>
@@ -609,4 +610,34 @@
     <string name="ruler_unit_cm">cm</string>
     <string name="ruler_unit_mm">mm</string>
     <string name="ruler_unit_deg">°</string>
+
+    <!-- Currency Converter -->
+    <string name="tool_currency_converter_name">汇率换算</string>
+    <string name="tool_currency_converter_desc">多币种同时实时换算，支持货币与贵金属搜索、汇率即时更新</string>
+    <string name="currency_converter_title">汇率换算</string>
+    <string name="currency_converter_rates_date">汇率日期：%1$s</string>
+    <string name="currency_converter_last_updated">更新于 %1$s</string>
+    <string name="currency_converter_update_rates">更新汇率</string>
+    <string name="currency_converter_refreshing">正在获取最新汇率…</string>
+    <string name="currency_converter_refresh_success">汇率已更新至最新</string>
+    <string name="currency_converter_refresh_failed">汇率更新失败，已使用本地数据</string>
+    <string name="currency_converter_add_currency">添加货币</string>
+    <string name="currency_converter_add_currency_title">添加货币与贵金属</string>
+    <string name="currency_converter_search_placeholder">搜索代码、名称或符号（如 USD、黄金、¥）</string>
+    <string name="currency_converter_tab_all">全部</string>
+    <string name="currency_converter_tab_fiat">法定货币</string>
+    <string name="currency_converter_tab_metals">贵金属</string>
+    <string name="currency_converter_empty_search">未找到匹配的货币或贵金属</string>
+    <string name="currency_converter_already_added">已添加</string>
+    <string name="currency_converter_added_success">已添加 %1$s</string>
+    <string name="currency_converter_removed_success">已移除 %1$s</string>
+    <string name="currency_converter_min_limit_hint">至少需要保留 2 种货币进行换算</string>
+    <string name="currency_converter_delete_action">删除</string>
+    <string name="currency_converter_set_as_base">设为基准货币</string>
+    <string name="currency_converter_unit_rate_format">1 %1$s ≈ %2$s %3$s</string>
+    <string name="currency_converter_metal_badge">贵金属</string>
+    <string name="currency_converter_copy_amount">复制金额</string>
+    <string name="currency_converter_amount_copied">金额已复制</string>
+    <string name="currency_converter_clear_input">清空</string>
+    <string name="currency_converter_network_unavailable">网络不可用，请检查网络连接</string>
 </resources>

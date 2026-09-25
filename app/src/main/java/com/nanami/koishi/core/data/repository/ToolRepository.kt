@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
 import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Contrast
+import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
@@ -124,6 +125,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_ruler_desc,
                 icon = Icons.Rounded.Straighten,
                 category = ToolCategory.LIFE,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "currency_converter",
+                nameRes = R.string.tool_currency_converter_name,
+                descriptionRes = R.string.tool_currency_converter_desc,
+                icon = Icons.Rounded.CurrencyExchange,
+                category = ToolCategory.CALCULATION,
                 isFavorite = false,
                 hasDot = true
             )

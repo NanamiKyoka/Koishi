@@ -40,3 +40,8 @@
 -keepclasseswithmembers class com.nanami.koishi.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+-keepclassmembers class * extends androidx.lifecycle.ViewModel {
+    public <init>(...);
+}
+

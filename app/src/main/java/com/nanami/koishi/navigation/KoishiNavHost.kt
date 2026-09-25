@@ -56,6 +56,7 @@ fun KoishiNavHost(
                         "today_in_history" -> navController.navigate(TodayInHistoryRoute)
                         "decision_maker" -> navController.navigate(DecisionMakerRoute)
                         "ruler" -> navController.navigate(RulerRoute)
+                        "currency_converter" -> navController.navigate(CurrencyConverterRoute)
                     }
                 }
             )
@@ -149,6 +150,14 @@ fun KoishiNavHost(
                     val intent = com.nanami.koishi.feature.tools.ruler.RulerActivity.createIntent(context, mode)
                     context.startActivity(intent)
                 }
+            )
+        }
+
+        composable<CurrencyConverterRoute> {
+            val currencyConverterViewModel: com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel = viewModel()
+            com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterRoute(
+                viewModel = currencyConverterViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 
