@@ -70,6 +70,8 @@
     <string name="settings_version">Version</string>
     <string name="settings_about_desc">A lightweight, elegant Modern Material 3 Toolbox</string>
     <string name="settings_developer">Developer</string>
+    <string name="settings_project_url" translatable="false">https://github.com/NanamiKyoka/Koishi</string>
+    <string name="settings_developer_url" translatable="false">https://github.com/NanamiKyoka</string>
     <string name="dialog_cancel">Cancel</string>
 
     <!-- Image Obfuscation Screen -->

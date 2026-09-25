@@ -1,5 +1,9 @@
 package com.nanami.koishi.feature.settings
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nanami.koishi.BuildConfig
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.theme.ThemeMode
 import com.nanami.koishi.core.designsystem.theme.isDarkTheme
@@ -48,6 +54,8 @@ fun SettingsScreen(
     onEvent: (SettingsUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     if (uiState.showLanguageDialog) {
         LanguageSelectionDialog(
             currentLanguage = uiState.language,
@@ -117,18 +125,20 @@ fun SettingsScreen(
 
             SettingsCategoryHeader(title = stringResource(R.string.settings_category_about))
 
+            val projectUrl = stringResource(R.string.settings_project_url)
             SettingsClickableItem(
                 icon = Icons.Rounded.Info,
                 title = "Koishi",
-                subtitle = "${stringResource(R.string.settings_version)} 0.0.1\n${stringResource(R.string.settings_about_desc)}",
-                onClick = {}
+                subtitle = "${stringResource(R.string.settings_version)} ${BuildConfig.VERSION_NAME}\n${stringResource(R.string.settings_about_desc)}",
+                onClick = { openWebPage(context, projectUrl) }
             )
 
+            val developerUrl = stringResource(R.string.settings_developer_url)
             SettingsClickableItem(
                 icon = Icons.Rounded.Person,
                 title = stringResource(R.string.settings_developer),
                 subtitle = "NanamiKyoka",
-                onClick = {}
+                onClick = { openWebPage(context, developerUrl) }
             )
         }
     }
@@ -261,4 +271,19 @@ private fun LanguageSelectionDialog(
             }
         }
     )
+}
+
+private fun openWebPage(context: Context, url: String) {
+    try {
+        CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(url))
+    } catch (_: Exception) {
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+        } catch (_: Exception) {
+        }
+    }
 }

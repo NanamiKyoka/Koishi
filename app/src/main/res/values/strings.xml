@@ -70,6 +70,8 @@
     <string name="settings_version">版本</string>
     <string name="settings_about_desc">轻量、优雅的现代 Material 3 工具箱</string>
     <string name="settings_developer">开发者</string>
+    <string name="settings_project_url" translatable="false">https://github.com/NanamiKyoka/Koishi</string>
+    <string name="settings_developer_url" translatable="false">https://github.com/NanamiKyoka</string>
     <string name="dialog_cancel">取消</string>
 
     <!-- Image Obfuscation Screen -->

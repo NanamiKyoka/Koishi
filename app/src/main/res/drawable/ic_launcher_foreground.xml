@@ -3,7 +3,7 @@
     android:height="108dp"
     android:viewportWidth="432"
     android:viewportHeight="432">
-  <!-- 中间为日文平假名“こ”（Koishi 恋），对齐 NComicR / Mihon “な”字的书法手写弧线美学，采用墨绿色 -->
+  <!-- 中间为日文平假名“こ”（Koishi 恋） -->
   <path
       android:fillColor="#102E20"
       android:fillType="evenOdd"
