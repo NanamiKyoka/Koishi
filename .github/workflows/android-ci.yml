@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
 
@@ -29,45 +29,29 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install SDK components
-        run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platform-tools" "build-tools;36.0.0" > /dev/null
-          # compileSdk 37 对应的平台包名可能是 android-37 或带次版本的 android-37.0
-          for pkg in "platforms;android-37" "platforms;android-37.0"; do
-            if sdkmanager "$pkg" > /dev/null 2>&1; then
-              echo "Installed $pkg"
-              break
-            fi
-          done
-          ls "$ANDROID_HOME/platforms"
-
-      - name: Set up Gradle
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Run Checks & Unit Tests
+        run: ./gradlew lintDebug testDebugUnitTest --stacktrace
 
-      - name: Run unit tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
-      - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
-
-      - name: Upload debug APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: koishi-debug-apk
+          name: debug-apk
           path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
 
-      - name: Upload test report
+      - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-report
-          path: app/build/reports/tests/testDebugUnitTest/
-          if-no-files-found: ignore
+          name: test-reports
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results*.html

@@ -6,6 +6,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -15,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -29,36 +33,20 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install SDK components
-        run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platform-tools" "build-tools;36.0.0" > /dev/null
-          # compileSdk 37 对应的平台包名可能是 android-37 或带次版本的 android-37.0
-          for pkg in "platforms;android-37" "platforms;android-37.0"; do
-            if sdkmanager "$pkg" > /dev/null 2>&1; then
-              echo "Installed $pkg"
-              break
-            fi
-          done
-          ls "$ANDROID_HOME/platforms"
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Configure signing
+      - name: Configure Keystore
+        if: env.KEYSTORE_BASE64 != ''
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::warning::未配置签名 Secrets，本次将产出未签名 APK"
-            exit 0
-          fi
           echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
           {
             echo "storeFile=release.keystore"
@@ -67,39 +55,40 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > keystore.properties
 
-      - name: Check version consistency
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          echo "tag=$TAG_VERSION versionName=$VERSION_NAME"
-          if [ "$TAG_VERSION" != "$VERSION_NAME" ]; then
-            echo "::warning::Tag ($TAG_VERSION) 与 versionName ($VERSION_NAME) 不一致，请确认是否需要同步更新 app/build.gradle.kts"
-          fi
-
-      - name: Build release APK
+      - name: Build Release APK
         run: ./gradlew :app:assembleRelease --stacktrace
 
-      - name: Collect release artifacts
+      - name: Clean Sensitive Credentials
+        if: always()
+        run: |
+          rm -f release.keystore keystore.properties
+
+      - name: Collect Artifact
         id: apk
         run: |
-          ls -lh app/build/outputs/apk/release/
-          APK_PATH=$(ls app/build/outputs/apk/release/*.apk | head -1)
-          echo "path=$APK_PATH" >> "$GITHUB_OUTPUT"
-          if [ -n "${GITHUB_REF_NAME}" ] && [[ "${GITHUB_REF_NAME}" == v* ]]; then
-            OUTPUT_NAME="Koishi-${GITHUB_REF_NAME}.apk"
-          else
-            OUTPUT_NAME="Koishi-unsigned.apk"
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::未找到生成的 APK 文件"
+            exit 1
           fi
+          OUTPUT_NAME="Koishi-${GITHUB_REF_NAME}.apk"
           cp "$APK_PATH" "$OUTPUT_NAME"
           echo "named=$OUTPUT_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Upload APK artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: koishi-release-apk
           path: ${{ steps.apk.outputs.named }}
           if-no-files-found: error
+
+      - name: Generate Changelog
+        uses: orhun/git-cliff-action@v4
+        id: changelog
+        with:
+          args: --verbose --latest --strip header --template github
+        env:
+          OUTPUT: RELEASE_CHANGELOG.md
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -107,6 +96,6 @@ jobs:
         with:
           name: Koishi ${{ github.ref_name }}
           files: ${{ steps.apk.outputs.named }}
-          generate_release_notes: true
+          body_path: RELEASE_CHANGELOG.md
           draft: false
           prerelease: false
