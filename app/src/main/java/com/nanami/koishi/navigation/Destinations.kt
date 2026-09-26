@@ -97,3 +97,9 @@ data object BiliCoverRoute
  */
 @Serializable
 data object MemeMakerRoute
+
+/**
+ * 轻应用独立小工具强类型路由
+ */
+@Serializable
+data object MiniAppsRoute

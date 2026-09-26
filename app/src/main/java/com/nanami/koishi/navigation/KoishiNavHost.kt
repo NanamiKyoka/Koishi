@@ -21,6 +21,8 @@ import com.nanami.koishi.feature.tools.image_sketch.ImageSketchRoute
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
+import com.nanami.koishi.feature.tools.mini_apps.MiniAppsRoute
+import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
@@ -63,6 +65,7 @@ fun KoishiNavHost(
                         "video_to_gif" -> navController.navigate(VideoToGifRoute)
                         "bili_cover" -> navController.navigate(BiliCoverRoute)
                         "meme_maker" -> navController.navigate(MemeMakerRoute)
+                        "mini_apps" -> navController.navigate(MiniAppsRoute)
                     }
                 }
             )
@@ -187,6 +190,14 @@ fun KoishiNavHost(
             val memeMakerViewModel: com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel = viewModel()
             com.nanami.koishi.feature.tools.meme_maker.MemeMakerRoute(
                 viewModel = memeMakerViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<MiniAppsRoute> {
+            val miniAppsViewModel: MiniAppsViewModel = viewModel()
+            MiniAppsRoute(
+                viewModel = miniAppsViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

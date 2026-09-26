@@ -151,7 +151,8 @@ class RepositoryCrudTest {
             Triple("today_in_history", ToolCategory.LIFE, true),
             Triple("decision_maker", ToolCategory.LIFE, true),
             Triple("ruler", ToolCategory.LIFE, true),
-            Triple("currency_converter", ToolCategory.CALCULATION, true)
+            Triple("currency_converter", ToolCategory.CALCULATION, true),
+            Triple("mini_apps", ToolCategory.OTHER, true)
         )
 
         assertEquals(expected.size, tools.size)

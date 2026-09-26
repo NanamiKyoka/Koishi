@@ -2,6 +2,7 @@ package com.nanami.koishi.core.data.repository
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Contrast
@@ -164,6 +165,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_currency_converter_desc,
                 icon = Icons.Rounded.CurrencyExchange,
                 category = ToolCategory.CALCULATION,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "mini_apps",
+                nameRes = R.string.tool_mini_apps_name,
+                descriptionRes = R.string.tool_mini_apps_desc,
+                icon = Icons.Rounded.Apps,
+                category = ToolCategory.OTHER,
                 isFavorite = false,
                 hasDot = true
             )
