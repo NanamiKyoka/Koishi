@@ -30,8 +30,7 @@ data class MemeStickerAsset(
 /**
  * 远程素材包的下载、解压与本地素材索引。
  *
- * 素材列表始终以本地磁盘为唯一依据：文件被清掉后对应条目自然从列表中消失，
- * 不会留下打不开的幽灵记录，也不会在用户未主动操作时重新下载。
+ * 素材列表始终以本地磁盘为唯一依据
  */
 class MemeAssetRepository(private val context: Context) {
 
@@ -42,8 +41,9 @@ class MemeAssetRepository(private val context: Context) {
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .callTimeout(25, TimeUnit.SECONDS)
             .followRedirects(true)
             .followSslRedirects(true)
             .build()
@@ -118,7 +118,12 @@ class MemeAssetRepository(private val context: Context) {
         runCatching { packDir(packId).deleteRecursively() }
     }
 
+    /**
+     * 空清单不做清理：清单拉取失败或内容不完整时，包 id 集合会退化成空集，
+     * 继续执行会把整个素材目录当成"未知包"删掉，包括用户刚下载好的文件
+     */
     fun pruneUnknownPacks(packs: List<MemeAssetPack>) {
+        if (packs.isEmpty()) return
         val known = packs.map { it.id }.toSet()
         val root = File(context.filesDir, ASSET_DIR_NAME)
         root.listFiles()?.forEach { dir ->

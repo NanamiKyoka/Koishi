@@ -16,7 +16,9 @@ import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalSticker
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalStickerRepository
+import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetPack
 import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetRepository
+import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetSource
 import com.nanami.koishi.feature.tools.meme_maker.engine.MemeRenderer
 import com.nanami.koishi.feature.tools.meme_maker.engine.PlacedSticker
 import com.nanami.koishi.feature.tools.meme_maker.engine.StickerKind
@@ -116,15 +118,30 @@ class MemeMakerViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    /**
+     * 标签先落到内置清单上，本地已有素材立刻可见；远程清单只作为后台增量，
+     * 回来后替换掉内置项，避免网络请求把首屏拖成一段空白等待
+     */
     private fun refreshLibrary() {
         viewModelScope.launch {
-            val packs = assetRepository.loadManifest()
-            assetRepository.pruneUnknownPacks(packs)
-            val assets = withContext(Dispatchers.IO) { assetRepository.listAssets(packs) }
-            val localStickers = pruneLocalStickers()
-            _uiState.update {
-                it.copy(packs = packs, assets = assets, localStickers = localStickers)
-            }
+            val builtIn = MemeAssetSource.BUILT_IN_PACKS
+            publishLibrary(builtIn, prune = false)
+            val remote = assetRepository.loadManifest()
+            if (remote == builtIn) return@launch
+            publishLibrary(remote, prune = true)
+        }
+    }
+
+    /**
+     * prune 只在清单确定可信时开启：清单为空意味着没拿到可用描述，
+     * 此时清理会把已下载的素材目录连同文件一起删掉
+     */
+    private suspend fun publishLibrary(packs: List<MemeAssetPack>, prune: Boolean) {
+        val assets = withContext(Dispatchers.IO) { assetRepository.listAssets(packs) }
+        val localStickers = pruneLocalStickers()
+        if (prune) assetRepository.pruneUnknownPacks(packs)
+        _uiState.update {
+            it.copy(packs = packs, assets = assets, localStickers = localStickers)
         }
     }
 
