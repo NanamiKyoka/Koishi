@@ -13,6 +13,7 @@ import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
+import androidx.compose.material.icons.rounded.MonitorWeight
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material.icons.rounded.ViewCarousel
@@ -164,6 +165,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_currency_converter_name,
                 descriptionRes = R.string.tool_currency_converter_desc,
                 icon = Icons.Rounded.CurrencyExchange,
+                category = ToolCategory.CALCULATION,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "bmi_calculator",
+                nameRes = R.string.tool_bmi_calculator_name,
+                descriptionRes = R.string.tool_bmi_calculator_desc,
+                icon = Icons.Rounded.MonitorWeight,
                 category = ToolCategory.CALCULATION,
                 isFavorite = false,
                 hasDot = true

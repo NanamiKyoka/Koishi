@@ -83,6 +83,12 @@ data object RulerRoute
 @Serializable
 data object CurrencyConverterRoute
 
+/**
+ * BMI 计算独立小工具强类型路由
+ */
+@Serializable
+data object BmiCalculatorRoute
+
 @Serializable
 data object VideoToGifRoute
 

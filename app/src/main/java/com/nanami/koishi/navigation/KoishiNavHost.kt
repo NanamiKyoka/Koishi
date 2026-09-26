@@ -62,6 +62,7 @@ fun KoishiNavHost(
                         "decision_maker" -> navController.navigate(DecisionMakerRoute)
                         "ruler" -> navController.navigate(RulerRoute)
                         "currency_converter" -> navController.navigate(CurrencyConverterRoute)
+                        "bmi_calculator" -> navController.navigate(BmiCalculatorRoute)
                         "video_to_gif" -> navController.navigate(VideoToGifRoute)
                         "bili_cover" -> navController.navigate(BiliCoverRoute)
                         "meme_maker" -> navController.navigate(MemeMakerRoute)
@@ -166,6 +167,14 @@ fun KoishiNavHost(
             val currencyConverterViewModel: com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel = viewModel()
             com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterRoute(
                 viewModel = currencyConverterViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<BmiCalculatorRoute> {
+            val bmiCalculatorViewModel: com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel = viewModel()
+            com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorRoute(
+                viewModel = bmiCalculatorViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
