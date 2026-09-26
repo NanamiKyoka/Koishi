@@ -67,6 +67,11 @@ Koishi 是一个**纯本地**的 Android 工具箱。所有图片处理都在设
 | 🔍 **以图搜图** | SauceNAO、trace.moe、Google Lens 多源并发反向识图，支持自带 SauceNAO API Key |
 | 💧 **水印图** | 文字与图片水印全屏平铺，字体族、颜色、旋转、缩放、间距自由微调 |
 | ✏️ **图片素描** | 灰度 → 反相 → 高斯模糊 → 颜色减淡，一键生成铅笔线稿，模糊半径可调 |
+| 🎞️ **视频转GIF** | 视频区间裁剪、分辨率缩放与帧率调整，快速生成小体积 GIF 动图 |
+| 📺 **B站封面获取** | 粘贴 av号、BV号或视频、专栏、直播链接，一键提取未压缩原图封面 |
+| 🩵 **表情包制作** | 柴郡猫头贴纸与文字贴图自由叠加，支持拖动缩放旋转，一键导出成图 |
+
+> 🩵 表情包制作的柴郡贴纸素材不随应用打包，首次使用时从仓库 `res/meme` 按需下载到本地。
 
 ### 生活应用
 
@@ -74,6 +79,13 @@ Koishi 是一个**纯本地**的 Android 工具箱。所有图片处理都在设
 | --- | --- |
 | 📅 **历史上的今天** | 时间轴浏览当日历史事件，支持日期跳转、详情展开与配图，可配置 ShowAPI 提升数据稳定性 |
 | 🎲 **做个决定** | 大转盘与摇签筒双模式，选项权重可调，主题支持增删改与 JSON 导入导出 |
+| 📏 **尺子** | 屏幕直尺与量角器，基于 ID-1 卡完成像素校准，配合相机测量实物角度 |
+
+### 计算应用
+
+| 工具 | 简介 |
+| --- | --- |
+| 💱 **汇率换算** | 多币种同时实时换算，支持货币与贵金属搜索、汇率即时更新 |
 
 > 新增工具只需在 `core/data/repository/ToolRepository.kt` 注册 `ToolItem`，
 > 并在 `navigation/KoishiNavHost.kt` 挂载对应路由，主页与搜索会自动收录。
@@ -176,7 +188,7 @@ Koishi/
 
 `Kotlin` · `Jetpack Compose` · `Material 3` · `Navigation Compose` · `Room` · `Coroutines / Flow` ·
 `kotlinx.serialization` · `OkHttp` · `Jsoup` · `Coil` · `material-kolor` · `qrcode-kotlin` ·
-`ML Kit Barcode Scanning` · `CameraX` · `AndroidX Browser (Custom Tabs)`
+`ML Kit Barcode Scanning` · `CameraX` · `Media3 Transformer` · `AndroidX Browser (Custom Tabs)`
 
 ## 开源协议
 

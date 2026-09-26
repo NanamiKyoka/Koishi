@@ -62,6 +62,7 @@ fun KoishiNavHost(
                         "currency_converter" -> navController.navigate(CurrencyConverterRoute)
                         "video_to_gif" -> navController.navigate(VideoToGifRoute)
                         "bili_cover" -> navController.navigate(BiliCoverRoute)
+                        "meme_maker" -> navController.navigate(MemeMakerRoute)
                     }
                 }
             )
@@ -178,6 +179,14 @@ fun KoishiNavHost(
             val biliCoverViewModel: com.nanami.koishi.feature.tools.bili_cover.BiliCoverViewModel = viewModel()
             com.nanami.koishi.feature.tools.bili_cover.BiliCoverRoute(
                 viewModel = biliCoverViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<MemeMakerRoute> {
+            val memeMakerViewModel: com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel = viewModel()
+            com.nanami.koishi.feature.tools.meme_maker.MemeMakerRoute(
+                viewModel = memeMakerViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

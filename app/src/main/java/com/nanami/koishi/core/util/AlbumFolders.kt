@@ -22,4 +22,5 @@ object AlbumFolders {
     const val IMAGE_SKETCH = "$ROOT/ImageSketch"
     const val VIDEO_TO_GIF = "$ROOT/VideoToGif"
     const val BILI_COVER = "$ROOT/BiliCover"
+    const val MEME_MAKER = "$ROOT/MemeMaker"
 }

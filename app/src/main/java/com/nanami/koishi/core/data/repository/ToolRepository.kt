@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.CurrencyExchange
+import androidx.compose.material.icons.rounded.EmojiEmotions
 import androidx.compose.material.icons.rounded.Gif
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HistoryEdu
@@ -117,6 +118,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_bili_cover_name,
                 descriptionRes = R.string.tool_bili_cover_desc,
                 icon = Icons.Rounded.Wallpaper,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "meme_maker",
+                nameRes = R.string.tool_meme_maker_name,
+                descriptionRes = R.string.tool_meme_maker_desc,
+                icon = Icons.Rounded.EmojiEmotions,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true

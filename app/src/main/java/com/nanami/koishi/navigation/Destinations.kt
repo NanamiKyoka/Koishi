@@ -91,3 +91,9 @@ data object VideoToGifRoute
  */
 @Serializable
 data object BiliCoverRoute
+
+/**
+ * 表情包制作独立小工具强类型路由
+ */
+@Serializable
+data object MemeMakerRoute
