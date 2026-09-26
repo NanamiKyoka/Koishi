@@ -30,13 +30,16 @@ object LocaleHelper {
     }
 
     fun updateAppResourcesLocale(context: Context) {
-        val targetLocale = getTargetLocale(context) ?: Locale.getDefault()
-        val resources = context.resources
-        val config = Configuration(resources.configuration).apply {
-            setLocale(targetLocale)
-            setLayoutDirection(targetLocale)
+        val targetLocale = getTargetLocale(context)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val localeManager = context.getSystemService(android.app.LocaleManager::class.java)
+            val localeList = if (targetLocale != null) {
+                android.os.LocaleList(targetLocale)
+            } else {
+                android.os.LocaleList.getEmptyLocaleList()
+            }
+            localeManager?.applicationLocales = localeList
         }
-        resources.updateConfiguration(config, resources.displayMetrics)
     }
 
     fun wrapWithActivity(
