@@ -64,22 +64,31 @@ import com.nanami.koishi.feature.favorites.FavoritesScreen
 import com.nanami.koishi.feature.home.components.CategorySectionCard
 import com.nanami.koishi.feature.home.components.SearchInputField
 import com.nanami.koishi.feature.home.components.SearchResultItem
+import com.nanami.koishi.feature.home.poetry.PoetryDetailDialog
+import com.nanami.koishi.feature.home.poetry.PoetryHeadline
+import com.nanami.koishi.feature.home.poetry.PoetryUiEvent
+import com.nanami.koishi.feature.home.poetry.PoetryUiState
+import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsScreen
 import com.nanami.koishi.feature.settings.SettingsViewModel
 
 @Composable
 fun HomeRoute(
     viewModel: HomeViewModel,
+    poetryViewModel: PoetryViewModel,
     settingsViewModel: SettingsViewModel,
     onNavigateToTool: (ToolItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    val poetryState by poetryViewModel.uiState.collectAsStateWithLifecycle()
 
     HomeScreen(
         uiState = uiState,
         onEvent = viewModel::onEvent,
+        poetryState = poetryState,
+        onPoetryEvent = poetryViewModel::onEvent,
         onToolClick = onNavigateToTool,
         settingsContent = {
             SettingsScreen(
@@ -95,6 +104,8 @@ fun HomeRoute(
 fun HomeScreen(
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
+    poetryState: PoetryUiState,
+    onPoetryEvent: (PoetryUiEvent) -> Unit,
     onToolClick: (ToolItem) -> Unit,
     settingsContent: @Composable () -> Unit,
     modifier: Modifier = Modifier
@@ -185,6 +196,8 @@ fun HomeScreen(
                     ToolboxTabContent(
                         uiState = uiState,
                         onEvent = onEvent,
+                        poetryState = poetryState,
+                        onPoetryEvent = onPoetryEvent,
                         onToolClick = onToolClick
                     )
                 }
@@ -194,12 +207,24 @@ fun HomeScreen(
             }
         }
     }
+
+    val sentence = poetryState.sentence
+    if (poetryState.detailVisible && sentence != null) {
+        PoetryDetailDialog(
+            sentence = sentence,
+            isRefreshing = poetryState.isRefreshing,
+            onRefresh = { onPoetryEvent(PoetryUiEvent.OnRefresh) },
+            onDismiss = { onPoetryEvent(PoetryUiEvent.OnDismissDetail) }
+        )
+    }
 }
 
 @Composable
 private fun ToolboxTabContent(
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
+    poetryState: PoetryUiState,
+    onPoetryEvent: (PoetryUiEvent) -> Unit,
     onToolClick: (ToolItem) -> Unit
 ) {
     if (uiState.isSearchActive) {
@@ -212,6 +237,8 @@ private fun ToolboxTabContent(
         ToolboxOverview(
             uiState = uiState,
             onEvent = onEvent,
+            poetryState = poetryState,
+            onPoetryEvent = onPoetryEvent,
             onToolClick = onToolClick
         )
     }
@@ -546,17 +573,29 @@ private fun EmptySearchResult(
 private fun ToolboxOverview(
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
+    poetryState: PoetryUiState,
+    onPoetryEvent: (PoetryUiEvent) -> Unit,
     onToolClick: (ToolItem) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    PoetryHeadline(
+                        sentence = poetryState.sentence,
+                        onClick = { onPoetryEvent(PoetryUiEvent.OnOpenDetail) },
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                }
             },
             actions = {
                 IconButton(onClick = { onEvent(HomeUiEvent.OnSearchActiveChange(true)) }) {

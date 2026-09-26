@@ -27,6 +27,15 @@
     <string name="add_favorite">Add to favorites</string>
     <string name="remove_favorite">Remove from favorites</string>
 
+    <!-- Hitokoto Headline -->
+    <string name="hitokoto_dialog_title">Hitokoto</string>
+    <string name="hitokoto_refresh">Another one</string>
+    <string name="hitokoto_open_website">View on Hitokoto</string>
+    <string name="hitokoto_author_label">Author</string>
+    <string name="hitokoto_source_label">Source</string>
+    <string name="hitokoto_unknown">Unknown</string>
+    <string name="hitokoto_browser_failed">No browser available</string>
+
     <!-- Tools -->
     <string name="tool_image_obfuscation_name">Image Obfuscation</string>
     <string name="tool_image_obfuscation_desc">Lossless scramble and restore images with Tomato Hilbert, Logistic map, and MD5</string>

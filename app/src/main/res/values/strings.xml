@@ -27,6 +27,15 @@
     <string name="add_favorite">加入收藏</string>
     <string name="remove_favorite">取消收藏</string>
 
+    <!-- Hitokoto Headline -->
+    <string name="hitokoto_dialog_title">一言</string>
+    <string name="hitokoto_refresh">换一句</string>
+    <string name="hitokoto_open_website">前往一言</string>
+    <string name="hitokoto_author_label">作者</string>
+    <string name="hitokoto_source_label">来源</string>
+    <string name="hitokoto_unknown">佚名</string>
+    <string name="hitokoto_browser_failed">无法打开浏览器</string>
+
     <!-- Tools -->
     <string name="tool_image_obfuscation_name">图片混淆</string>
     <string name="tool_image_obfuscation_desc">番茄混淆、PicEncrypt 混沌映射与 MD5 置乱打乱及无损还原</string>

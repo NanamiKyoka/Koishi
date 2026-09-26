@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
+import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerRoute
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerViewModel
@@ -40,8 +41,10 @@ fun KoishiNavHost(
     ) {
         composable<HomeRoute> {
             val homeViewModel: HomeViewModel = viewModel()
+            val poetryViewModel: PoetryViewModel = viewModel()
             HomeRoute(
                 viewModel = homeViewModel,
+                poetryViewModel = poetryViewModel,
                 settingsViewModel = settingsViewModel,
                 onNavigateToTool = { tool ->
                     when (tool.id) {
