@@ -1,5 +1,6 @@
 package com.nanami.koishi.core.data.repository
 
+import com.nanami.koishi.core.model.ToolCategory
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -134,69 +135,45 @@ class RepositoryCrudTest {
         val repo = InMemoryToolRepository()
         val tools = repo.availableTools.first()
 
-        assertEquals(14, tools.size)
-        assertEquals("image_stitching", tools[0].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[0].category)
-        assertFalse(tools[0].isFavorite)
-        assertTrue(tools[0].hasDot)
+        // 期望的工具目录：按展示顺序排列 (id, category, hasDot)
+        val expected = listOf(
+            Triple("image_stitching", ToolCategory.IMAGE_APPS, true),
+            Triple("grid_split", ToolCategory.IMAGE_APPS, true),
+            Triple("image_obfuscation", ToolCategory.IMAGE_APPS, false),
+            Triple("mirage_tank", ToolCategory.IMAGE_APPS, true),
+            Triple("qr_code", ToolCategory.IMAGE_APPS, false),
+            Triple("image_search", ToolCategory.IMAGE_APPS, true),
+            Triple("watermark", ToolCategory.IMAGE_APPS, true),
+            Triple("image_sketch", ToolCategory.IMAGE_APPS, true),
+            Triple("video_to_gif", ToolCategory.IMAGE_APPS, true),
+            Triple("bili_cover", ToolCategory.IMAGE_APPS, true),
+            Triple("meme_maker", ToolCategory.IMAGE_APPS, true),
+            Triple("today_in_history", ToolCategory.LIFE, true),
+            Triple("decision_maker", ToolCategory.LIFE, true),
+            Triple("ruler", ToolCategory.LIFE, true),
+            Triple("currency_converter", ToolCategory.CALCULATION, true)
+        )
 
-        assertEquals("grid_split", tools[1].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[1].category)
-        assertFalse(tools[1].isFavorite)
-        assertTrue(tools[1].hasDot)
+        assertEquals(expected.size, tools.size)
+        assertEquals(expected.map { it.first }, tools.map { it.id })
 
-        assertEquals("image_obfuscation", tools[2].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[2].category)
-        assertFalse(tools[2].isFavorite)
+        // 逐个校验分类、默认收藏状态与红点标记，并按 id 校验检索能力
+        expected.forEachIndexed { index, (id, category, hasDot) ->
+            val tool = tools[index]
+            assertEquals("工具 $id 的分类不符", category, tool.category)
+            assertFalse("工具 $id 不应默认收藏", tool.isFavorite)
+            assertEquals("工具 $id 的红点标记不符", hasDot, tool.hasDot)
+            assertEquals("getToolById 未能取回 $id", tool, repo.getToolById(id))
+        }
 
-        assertEquals("mirage_tank", tools[3].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[3].category)
-        assertFalse(tools[3].isFavorite)
-        assertTrue(tools[3].hasDot)
+        // 不存在的工具应返回 null
+        assertEquals(null, repo.getToolById("not_a_real_tool"))
+    }
 
-        assertEquals("qr_code", tools[4].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[4].category)
-        assertFalse(tools[4].isFavorite)
-
-        assertEquals("image_search", tools[5].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[5].category)
-        assertFalse(tools[5].isFavorite)
-        assertTrue(tools[5].hasDot)
-
-        assertEquals("watermark", tools[6].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[6].category)
-        assertFalse(tools[6].isFavorite)
-        assertTrue(tools[6].hasDot)
-
-        assertEquals("image_sketch", tools[7].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[7].category)
-        assertFalse(tools[7].isFavorite)
-        assertTrue(tools[7].hasDot)
-
-        assertEquals("video_to_gif", tools[8].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[8].category)
-        assertFalse(tools[8].isFavorite)
-        assertTrue(tools[8].hasDot)
-
-        assertEquals("bili_cover", tools[9].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.IMAGE_APPS, tools[9].category)
-        assertFalse(tools[9].isFavorite)
-        assertTrue(tools[9].hasDot)
-
-        assertEquals("today_in_history", tools[10].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[10].category)
-        assertFalse(tools[10].isFavorite)
-        assertTrue(tools[10].hasDot)
-
-        assertEquals("decision_maker", tools[11].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[11].category)
-        assertFalse(tools[11].isFavorite)
-        assertTrue(tools[11].hasDot)
-
-        assertEquals("ruler", tools[12].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.LIFE, tools[12].category)
-
-        assertEquals("currency_converter", tools[13].id)
-        assertEquals(com.nanami.koishi.core.model.ToolCategory.CALCULATION, tools[13].category)
+    @Test
+    fun testToolIdsAreUnique() = runBlocking {
+        val repo = InMemoryToolRepository()
+        val ids = repo.availableTools.first().map { it.id }
+        assertEquals(ids.size, ids.toSet().size)
     }
 }

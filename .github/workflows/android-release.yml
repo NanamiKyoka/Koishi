@@ -55,8 +55,11 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > keystore.properties
 
-      - name: Build Release APK & Bundle
-        run: ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
+      - name: Build Release APKs
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Build Release Bundle
+        run: ./gradlew :app:bundleRelease --stacktrace
 
       - name: Clean Sensitive Credentials
         if: always()

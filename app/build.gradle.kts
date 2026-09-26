@@ -30,9 +30,18 @@ android {
         }
     }
 
+    // ABI 分包仅用于 assembleDebug / assembleRelease 产出可直接安装的 APK。
+    // bundleRelease（AAB）必须关闭 ABI split，否则 minifyReleaseWithR8 会为每个 ABI
+    // 各产出一份 shrunk-resources，导致 buildReleasePreBundle 报
+    // "Multiple shrunk-resources files found"。见 issuetracker.google.com/402800800。
+    val isBundleBuild = gradle.startParameter.taskNames.any { task ->
+        val name = task.substringAfterLast(':')
+        name.contains("bundle", ignoreCase = true)
+    }
+
     splits {
         abi {
-            isEnable = true
+            isEnable = !isBundleBuild
             reset()
             include("arm64-v8a", "armeabi-v7a")
             isUniversalApk = true
