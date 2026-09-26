@@ -117,6 +117,7 @@ jobs:
           args: --verbose --latest --strip header
         env:
           OUTPUT: RELEASE_CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: Check Changelog Status
         id: changelog_check
