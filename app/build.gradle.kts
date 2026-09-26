@@ -152,6 +152,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.webkit)
 
     // Media3 Transformer & ExoPlayer
     implementation(libs.androidx.media3.transformer)
