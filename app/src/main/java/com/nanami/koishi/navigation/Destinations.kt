@@ -85,3 +85,9 @@ data object CurrencyConverterRoute
 
 @Serializable
 data object VideoToGifRoute
+
+/**
+ * B站封面获取独立小工具强类型路由
+ */
+@Serializable
+data object BiliCoverRoute

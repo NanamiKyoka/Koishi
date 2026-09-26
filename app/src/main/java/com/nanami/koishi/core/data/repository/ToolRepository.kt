@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.ImageSearch
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material.icons.rounded.ViewCarousel
+import androidx.compose.material.icons.rounded.Wallpaper
 import com.nanami.koishi.R
 import com.nanami.koishi.core.model.ToolCategory
 import com.nanami.koishi.core.model.ToolItem
@@ -107,6 +108,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_video_to_gif_name,
                 descriptionRes = R.string.tool_video_to_gif_desc,
                 icon = Icons.Rounded.Gif,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "bili_cover",
+                nameRes = R.string.tool_bili_cover_name,
+                descriptionRes = R.string.tool_bili_cover_desc,
+                icon = Icons.Rounded.Wallpaper,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true
