@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
@@ -46,6 +47,7 @@ import com.nanami.koishi.core.designsystem.theme.ThemeMode
 import com.nanami.koishi.core.designsystem.theme.isDarkTheme
 import com.nanami.koishi.feature.settings.components.AppThemePicker
 import com.nanami.koishi.feature.settings.components.ThemeModeSelector
+import com.nanami.koishi.feature.settings.components.WebDavSyncDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +63,19 @@ fun SettingsScreen(
             currentLanguage = uiState.language,
             onSelect = { onEvent(SettingsUiEvent.OnLanguageSelected(it)) },
             onDismiss = { onEvent(SettingsUiEvent.OnShowLanguageDialog(false)) }
+        )
+    }
+
+    if (uiState.showWebDavDialog) {
+        WebDavSyncDialog(
+            config = uiState.webDavConfig,
+            syncState = uiState.webDavSyncState,
+            onUpdateConfig = { onEvent(SettingsUiEvent.OnUpdateWebDavConfig(it)) },
+            onTestConnection = { onEvent(SettingsUiEvent.OnTestWebDavConnection) },
+            onBackup = { onEvent(SettingsUiEvent.OnWebDavBackup) },
+            onRestore = { onEvent(SettingsUiEvent.OnWebDavRestore) },
+            onDismissStatus = { onEvent(SettingsUiEvent.OnDismissWebDavStatus) },
+            onDismiss = { onEvent(SettingsUiEvent.OnShowWebDavDialog(false)) }
         )
     }
 
@@ -119,6 +134,17 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_language),
                 subtitle = stringResource(uiState.language.titleRes),
                 onClick = { onEvent(SettingsUiEvent.OnShowLanguageDialog(true)) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SettingsCategoryHeader(title = stringResource(R.string.settings_category_data))
+
+            SettingsClickableItem(
+                icon = Icons.Rounded.CloudSync,
+                title = stringResource(R.string.settings_webdav_sync),
+                subtitle = stringResource(R.string.settings_webdav_sync_desc),
+                onClick = { onEvent(SettingsUiEvent.OnShowWebDavDialog(true)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

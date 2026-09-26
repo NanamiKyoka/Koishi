@@ -22,6 +22,8 @@ class FakeToolStorageDao : ToolStorageDao {
 
     override fun observeAll(): Flow<List<ToolStorageEntity>> = rows.map { it.values.toList() }
 
+    override suspend fun getAll(): List<ToolStorageEntity> = rows.value.values.toList()
+
     override suspend fun find(toolId: String): ToolStorageEntity? {
         if (readDelayMillis > 0) delay(readDelayMillis)
         return rows.value[toolId]

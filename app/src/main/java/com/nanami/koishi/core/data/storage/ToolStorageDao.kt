@@ -15,6 +15,9 @@ interface ToolStorageDao {
     @Query("SELECT * FROM tool_storage")
     fun observeAll(): Flow<List<ToolStorageEntity>>
 
+    @Query("SELECT * FROM tool_storage")
+    suspend fun getAll(): List<ToolStorageEntity>
+
     @Query("SELECT * FROM tool_storage WHERE tool_id = :toolId LIMIT 1")
     suspend fun find(toolId: String): ToolStorageEntity?
 

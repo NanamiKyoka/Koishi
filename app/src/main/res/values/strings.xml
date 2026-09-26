@@ -85,6 +85,38 @@
     <string name="settings_project_url" translatable="false">https://github.com/NanamiKyoka/Koishi</string>
     <string name="settings_developer_url" translatable="false">https://github.com/NanamiKyoka</string>
     <string name="dialog_cancel">取消</string>
+    <string name="dialog_confirm">确认</string>
+
+    <!-- WebDAV Sync -->
+    <string name="settings_category_data">数据与同步</string>
+    <string name="settings_webdav_sync">WebDAV 数据同步</string>
+    <string name="settings_webdav_sync_desc">备份与恢复设置、收藏及工具数据</string>
+    <string name="webdav_dialog_title">WebDAV 同步</string>
+    <string name="webdav_server_url">服务器地址</string>
+    <string name="webdav_server_url_hint">例如 https://dav.example.com/</string>
+    <string name="webdav_username">用户名</string>
+    <string name="webdav_password">密码</string>
+    <string name="webdav_sync_sensitive">同步 API 密钥等敏感数据</string>
+    <string name="webdav_sync_sensitive_desc">包含以图搜图、历史上的今天等第三方 API 密钥。勾选后才会在备份与恢复中同步密钥</string>
+    <string name="webdav_test_connection">测试连接</string>
+    <string name="webdav_backup_now">立即备份</string>
+    <string name="webdav_restore_now">云端恢复</string>
+    <string name="webdav_last_backup">最近备份：%1$s</string>
+    <string name="webdav_last_restore">最近恢复：%1$s</string>
+    <string name="webdav_never_synced">从未</string>
+    <string name="webdav_status_testing">正在测试连接…</string>
+    <string name="webdav_status_backing_up">正在上传备份…</string>
+    <string name="webdav_status_restoring">正在从云端恢复…</string>
+    <string name="webdav_success_test">连接成功！</string>
+    <string name="webdav_success_backup">备份上传成功！</string>
+    <string name="webdav_success_restore">数据已成功恢复并生效！</string>
+    <string name="webdav_error_empty_fields">请填写服务器地址、用户名和密码</string>
+    <string name="webdav_error_unauthorized">认证失败，请检查用户名或密码</string>
+    <string name="webdav_error_not_found">云端未找到备份文件</string>
+    <string name="webdav_error_network">网络连接失败，请检查网络或地址</string>
+    <string name="webdav_error_failed">操作失败：%1$s</string>
+    <string name="webdav_restore_confirm_title">确认恢复数据？</string>
+    <string name="webdav_restore_confirm_msg">从云端恢复将覆盖本地当前的偏好设置与工具数据，是否继续？</string>
 
     <!-- Image Obfuscation Screen -->
     <string name="image_obfuscation_title">图片混淆</string>

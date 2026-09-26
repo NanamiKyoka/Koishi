@@ -85,6 +85,38 @@
     <string name="settings_project_url" translatable="false">https://github.com/NanamiKyoka/Koishi</string>
     <string name="settings_developer_url" translatable="false">https://github.com/NanamiKyoka</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_confirm">Confirm</string>
+
+    <!-- WebDAV Sync -->
+    <string name="settings_category_data">Data &amp; Sync</string>
+    <string name="settings_webdav_sync">WebDAV Data Sync</string>
+    <string name="settings_webdav_sync_desc">Backup and restore settings, favorites and tool data</string>
+    <string name="webdav_dialog_title">WebDAV Sync</string>
+    <string name="webdav_server_url">Server URL</string>
+    <string name="webdav_server_url_hint">e.g. https://dav.example.com/</string>
+    <string name="webdav_username">Username</string>
+    <string name="webdav_password">Password</string>
+    <string name="webdav_sync_sensitive">Sync API keys and sensitive data</string>
+    <string name="webdav_sync_sensitive_desc">Includes third-party API keys such as SauceNAO and ShowAPI. Only sync when checked</string>
+    <string name="webdav_test_connection">Test Connection</string>
+    <string name="webdav_backup_now">Backup Now</string>
+    <string name="webdav_restore_now">Restore from Cloud</string>
+    <string name="webdav_last_backup">Last backup: %1$s</string>
+    <string name="webdav_last_restore">Last restore: %1$s</string>
+    <string name="webdav_never_synced">Never</string>
+    <string name="webdav_status_testing">Testing connection…</string>
+    <string name="webdav_status_backing_up">Uploading backup…</string>
+    <string name="webdav_status_restoring">Restoring from cloud…</string>
+    <string name="webdav_success_test">Connection successful!</string>
+    <string name="webdav_success_backup">Backup uploaded successfully!</string>
+    <string name="webdav_success_restore">Data restored successfully!</string>
+    <string name="webdav_error_empty_fields">Please enter server URL, username, and password</string>
+    <string name="webdav_error_unauthorized">Authentication failed, please check username or password</string>
+    <string name="webdav_error_not_found">No backup file found on cloud</string>
+    <string name="webdav_error_network">Network connection failed, please check network or server URL</string>
+    <string name="webdav_error_failed">Operation failed: %1$s</string>
+    <string name="webdav_restore_confirm_title">Confirm Restore?</string>
+    <string name="webdav_restore_confirm_msg">Restoring from cloud will overwrite local preferences and tool data. Continue?</string>
 
     <!-- Image Obfuscation Screen -->
     <string name="image_obfuscation_title">Tomato Image Obfuscation</string>

@@ -39,9 +39,18 @@ class SharedPreferencesSearchHistoryRepository(
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    // 默认不放任何默认历史记录，初始为空列表
     private val _history = MutableStateFlow(loadHistory())
     override val searchHistory: Flow<List<String>> = _history.asStateFlow()
+
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == KEY_SEARCH_HISTORY) {
+            _history.value = loadHistory()
+        }
+    }
+
+    init {
+        prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+    }
 
     private fun loadHistory(): List<String> {
         val rawJson = prefs.getString(KEY_SEARCH_HISTORY, null) ?: return emptyList()

@@ -40,9 +40,18 @@ class SharedPreferencesToolFavoritesRepository(
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    // 默认不放任何默认收藏，初始为空集合
     private val _favoriteIds = MutableStateFlow(loadFavorites())
     override val favoriteToolIds: Flow<Set<String>> = _favoriteIds.asStateFlow()
+
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == KEY_FAVORITES) {
+            _favoriteIds.value = loadFavorites()
+        }
+    }
+
+    init {
+        prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+    }
 
     private fun loadFavorites(): Set<String> {
         return prefs.getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
