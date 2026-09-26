@@ -17,14 +17,17 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import com.nanami.koishi.KoishiApp
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeViewModel @JvmOverloads constructor(
     application: Application,
     private val toolRepository: ToolRepository = InMemoryToolRepository(),
-    private val favoritesRepository: ToolFavoritesRepository = SharedPreferencesToolFavoritesRepository(application),
-    private val searchHistoryRepository: SearchHistoryRepository = SharedPreferencesSearchHistoryRepository(application)
+    private val favoritesRepository: ToolFavoritesRepository = (application as? KoishiApp)?.favoritesRepository
+        ?: SharedPreferencesToolFavoritesRepository(application),
+    private val searchHistoryRepository: SearchHistoryRepository = (application as? KoishiApp)?.searchHistoryRepository
+        ?: SharedPreferencesSearchHistoryRepository(application)
 ) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(MainTab.TOOLBOX)

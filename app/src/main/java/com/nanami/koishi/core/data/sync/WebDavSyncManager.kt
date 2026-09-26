@@ -136,7 +136,7 @@ class WebDavSyncManager(
             context.getSharedPreferences("koishi_settings", Context.MODE_PRIVATE)
                 .edit()
                 .putInt("language", lang.ordinal)
-                .apply()
+                .commit()
         }
 
         CropPreferences.setConstrainToImage(context, pref.cropConstrainToImage)
@@ -144,12 +144,15 @@ class WebDavSyncManager(
         context.getSharedPreferences("koishi_favorites", Context.MODE_PRIVATE)
             .edit()
             .putStringSet("favorite_tool_ids", backup.favorites)
-            .apply()
+            .commit()
 
         context.getSharedPreferences("koishi_search", Context.MODE_PRIVATE)
             .edit()
             .putString("history_list_json", json.encodeToString(backup.searchHistory))
-            .apply()
+            .commit()
+
+        val entitiesToUpsert = mutableListOf<ToolStorageEntity>()
+        val now = System.currentTimeMillis()
 
         for ((toolId, payloadJson) in backup.toolStorage) {
             if (toolId.startsWith("today_in_history:day:")) continue
@@ -192,13 +195,22 @@ class WebDavSyncManager(
                 else -> payloadJson
             }
 
-            dao.upsert(
+            entitiesToUpsert.add(
                 ToolStorageEntity(
                     toolId = toolId,
                     payloadJson = finalPayload,
-                    updatedAt = System.currentTimeMillis()
+                    updatedAt = now
                 )
             )
         }
+
+        if (entitiesToUpsert.isNotEmpty()) {
+            dao.upsertAll(entitiesToUpsert)
+        }
+
+        val app = context.applicationContext as? com.nanami.koishi.KoishiApp
+        app?.favoritesRepository?.reload()
+        app?.searchHistoryRepository?.reload()
+        com.nanami.koishi.core.util.LocaleHelper.updateAppResourcesLocale(context.applicationContext)
     }
 }

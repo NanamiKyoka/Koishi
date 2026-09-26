@@ -30,6 +30,9 @@ interface ToolFavoritesRepository {
 
     /** 清空全部收藏 (Batch Delete) */
     suspend fun clearAllFavorites()
+
+    /** 强制重新加载最新收藏列表 */
+    suspend fun reload()
 }
 
 class SharedPreferencesToolFavoritesRepository(
@@ -53,8 +56,13 @@ class SharedPreferencesToolFavoritesRepository(
         prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 
+    override suspend fun reload() = withContext(ioDispatcher) {
+        _favoriteIds.value = loadFavorites()
+    }
+
     private fun loadFavorites(): Set<String> {
-        return prefs.getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
+        val raw = prefs.getStringSet(KEY_FAVORITES, emptySet()) ?: emptySet()
+        return raw.toSet()
     }
 
     override fun isFavorite(toolId: String): Boolean {

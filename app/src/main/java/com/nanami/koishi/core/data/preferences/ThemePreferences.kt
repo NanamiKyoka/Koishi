@@ -25,15 +25,15 @@ object ThemePreferences {
     fun isAmoled(context: Context): Boolean = preferences(context).getBoolean(KEY_AMOLED, false)
 
     fun setThemeMode(context: Context, mode: ThemeMode) {
-        preferences(context).edit().putInt(KEY_THEME_MODE, mode.ordinal).apply()
+        preferences(context).edit().putInt(KEY_THEME_MODE, mode.ordinal).commit()
     }
 
     fun setAppTheme(context: Context, theme: AppTheme) {
-        preferences(context).edit().putString(KEY_APP_THEME, theme.name).apply()
+        preferences(context).edit().putString(KEY_APP_THEME, theme.name).commit()
     }
 
     fun setAmoled(context: Context, enabled: Boolean) {
-        preferences(context).edit().putBoolean(KEY_AMOLED, enabled).apply()
+        preferences(context).edit().putBoolean(KEY_AMOLED, enabled).commit()
     }
 
     private fun preferences(context: Context): SharedPreferences =

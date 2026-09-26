@@ -64,7 +64,9 @@ class MainActivity : ComponentActivity() {
                     Surface(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        KoishiNavHost(settingsViewModel = settingsViewModel)
+                        androidx.compose.runtime.key(settingsState.refreshKey) {
+                            KoishiNavHost(settingsViewModel = settingsViewModel)
+                        }
                     }
                 }
             }

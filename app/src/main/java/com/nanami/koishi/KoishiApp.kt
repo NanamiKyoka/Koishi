@@ -21,6 +21,14 @@ class KoishiApp : Application(), ImageLoaderFactory {
         ToolStorageDatabase.get(this).toolStorageDao()
     }
 
+    val favoritesRepository: com.nanami.koishi.core.data.repository.ToolFavoritesRepository by lazy {
+        com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository(this)
+    }
+
+    val searchHistoryRepository: com.nanami.koishi.core.data.repository.SearchHistoryRepository by lazy {
+        com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepository(this)
+    }
+
     override fun onCreate() {
         super.onCreate()
         GlobalCrashHandler.initialize(this)

@@ -29,7 +29,8 @@ data class SettingsUiState(
     val showLanguageDialog: Boolean = false,
     val showWebDavDialog: Boolean = false,
     val webDavConfig: WebDavConfig = WebDavConfig(),
-    val webDavSyncState: WebDavSyncUiState = WebDavSyncUiState.Idle
+    val webDavSyncState: WebDavSyncUiState = WebDavSyncUiState.Idle,
+    val refreshKey: Long = 0L
 )
 
 sealed interface SettingsUiEvent {

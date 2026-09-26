@@ -149,7 +149,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 _uiState.update {
                     updated.copy(
                         showWebDavDialog = true,
-                        webDavSyncState = WebDavSyncUiState.Success(R.string.webdav_success_restore)
+                        webDavSyncState = WebDavSyncUiState.Success(R.string.webdav_success_restore),
+                        refreshKey = System.currentTimeMillis()
                     )
                 }
             } catch (e: WebDavAuthException) {

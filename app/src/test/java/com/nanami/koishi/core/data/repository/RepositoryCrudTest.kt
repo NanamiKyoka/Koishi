@@ -37,6 +37,10 @@ class RepositoryCrudTest {
             _favorites = emptySet()
             _flow.value = _favorites
         }
+
+        override suspend fun reload() {
+            _flow.value = _favorites
+        }
     }
 
     private class TestSearchHistoryRepository(
@@ -60,6 +64,10 @@ class RepositoryCrudTest {
 
         override suspend fun clearAllSearchHistory() {
             _list = emptyList()
+            _flow.value = _list
+        }
+
+        override suspend fun reload() {
             _flow.value = _list
         }
     }

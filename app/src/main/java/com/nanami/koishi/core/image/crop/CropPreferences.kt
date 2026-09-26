@@ -22,6 +22,6 @@ object CropPreferences {
      */
     fun setConstrainToImage(context: Context, constrain: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_CONSTRAIN_TO_IMAGE, constrain).apply()
+        prefs.edit().putBoolean(KEY_CONSTRAIN_TO_IMAGE, constrain).commit()
     }
 }

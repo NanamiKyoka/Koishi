@@ -29,6 +29,16 @@ object LocaleHelper {
         return baseContext.createConfigurationContext(config)
     }
 
+    fun updateAppResourcesLocale(context: Context) {
+        val targetLocale = getTargetLocale(context) ?: Locale.getDefault()
+        val resources = context.resources
+        val config = Configuration(resources.configuration).apply {
+            setLocale(targetLocale)
+            setLayoutDirection(targetLocale)
+        }
+        resources.updateConfiguration(config, resources.displayMetrics)
+    }
+
     fun wrapWithActivity(
         activityContext: Context,
         effectiveConfig: Configuration,

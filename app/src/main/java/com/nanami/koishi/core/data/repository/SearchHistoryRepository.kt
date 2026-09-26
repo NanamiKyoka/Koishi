@@ -26,6 +26,9 @@ interface SearchHistoryRepository {
 
     /** 清空全部搜索历史 (Batch Delete) */
     suspend fun clearAllSearchHistory()
+
+    /** 强制重新加载最新搜索历史列表 */
+    suspend fun reload()
 }
 
 class SharedPreferencesSearchHistoryRepository(
@@ -52,10 +55,14 @@ class SharedPreferencesSearchHistoryRepository(
         prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 
+    override suspend fun reload() = withContext(ioDispatcher) {
+        _history.value = loadHistory()
+    }
+
     private fun loadHistory(): List<String> {
         val rawJson = prefs.getString(KEY_SEARCH_HISTORY, null) ?: return emptyList()
         return try {
-            json.decodeFromString<List<String>>(rawJson)
+            json.decodeFromString<List<String>>(rawJson).toList()
         } catch (e: Exception) {
             emptyList()
         }
