@@ -955,4 +955,45 @@
     <string name="bmi_range_normal">18.5 ~ 23.9</string>
     <string name="bmi_range_overweight">24.0 ~ 27.9</string>
     <string name="bmi_range_obese">≥ 28.0</string>
+
+    <!-- Color Picker Tool -->
+    <string name="tool_color_picker_name">Color Picker</string>
+    <string name="tool_color_picker_desc">Pick colors from photos in real time with fine cursor tuning, loupe magnifier and favorites</string>
+    <string name="color_picker_title">Color Picker</string>
+    <string name="color_picker_tab_picker">Image Picker</string>
+    <string name="color_picker_tab_favorites">Saved Colors</string>
+    <string name="color_picker_upload_title">Select an image to pick color</string>
+    <string name="color_picker_upload_desc">Tap the button below or this area to upload a photo</string>
+    <string name="color_picker_select_image">Choose Photo</string>
+    <string name="color_picker_change_image">Change Photo</string>
+    <string name="color_picker_clear_image">Remove Photo</string>
+    <string name="color_picker_zoom_title">Magnification</string>
+    <string name="color_picker_zoom_desc">Drag the slider or choose a preset</string>
+    <string name="color_picker_zoom_min_max">Min 1x, Max 16x</string>
+    <string name="color_picker_zoom_current">Current: %1$.1fx</string>
+    <string name="color_picker_nudge_up">Nudge Up</string>
+    <string name="color_picker_nudge_down">Nudge Down</string>
+    <string name="color_picker_nudge_left">Nudge Left</string>
+    <string name="color_picker_nudge_right">Nudge Right</string>
+    <string name="color_picker_favorite_added">Saved color %1$s</string>
+    <string name="color_picker_favorite_removed">Removed color %1$s</string>
+    <string name="color_picker_copied_hex">Copied HEX: %1$s</string>
+    <string name="color_picker_copied_rgb">Copied RGB: %1$s</string>
+    <string name="color_picker_copied_value">Copied: %1$s</string>
+    <string name="color_picker_favorites_empty">No saved colors yet</string>
+    <string name="color_picker_favorites_empty_desc">Tap the heart icon in the color picker to save colors you like</string>
+    <string name="color_picker_clear_favorites">Clear All Favorites</string>
+    <string name="color_picker_clear_favorites_confirm">Are you sure you want to clear all saved colors? This action cannot be undone.</string>
+    <string name="color_picker_clear_favorites_cleared">All saved colors cleared</string>
+    <string name="color_picker_confirm_clear">Clear</string>
+    <string name="color_picker_delete_favorite">Delete</string>
+    <string name="color_picker_color_details">Color Details</string>
+    <string name="color_picker_copy_color">Copy</string>
+    <string name="color_picker_pixel_at">Pixel at %1$s</string>
+    <string name="color_picker_format_hex">HEX</string>
+    <string name="color_picker_format_rgb">RGB</string>
+    <string name="color_picker_format_hsl">HSL</string>
+    <string name="color_picker_format_argb">ARGB</string>
+    <string name="color_picker_format_compose">Compose Color</string>
+    <string name="color_picker_format_xml">Android XML</string>
 </resources>

@@ -5,6 +5,7 @@ import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.bili_cover.BiliCoverViewModel
 import com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel
+import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
 import com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerViewModel
 import com.nanami.koishi.feature.tools.grid_split.GridSplitViewModel
@@ -30,6 +31,7 @@ val viewModelModule = module {
 
     viewModel { BiliCoverViewModel(get(), get()) }
     viewModel { BmiCalculatorViewModel(get(), get()) }
+    viewModel { ColorPickerViewModel(get(), get()) }
     viewModel { CurrencyConverterViewModel(get(), get()) }
     viewModel { DecisionMakerViewModel(get(), get(), get()) }
     viewModel { GridSplitViewModel(get()) }

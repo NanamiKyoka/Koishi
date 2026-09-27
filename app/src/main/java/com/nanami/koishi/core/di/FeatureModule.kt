@@ -4,6 +4,7 @@ import com.nanami.koishi.feature.home.poetry.HitokotoCache
 import com.nanami.koishi.feature.home.poetry.HitokotoRepository
 import com.nanami.koishi.feature.tools.bili_cover.engine.BiliCoverSettingsRepository
 import com.nanami.koishi.feature.tools.bmi_calculator.engine.BmiRepository
+import com.nanami.koishi.feature.tools.color_picker.engine.ColorPickerRepository
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyConverterRepository
 import com.nanami.koishi.feature.tools.decision_maker.engine.BuiltInPresets
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionArchiveStore
@@ -25,6 +26,7 @@ val featureModule = module {
     single { HitokotoRepository(get()) }
 
     single { BmiRepository(get()) }
+    single { ColorPickerRepository(get()) }
     single { CurrencyConverterRepository(get()) }
 
     single { BiliCoverSettingsRepository(get()) }

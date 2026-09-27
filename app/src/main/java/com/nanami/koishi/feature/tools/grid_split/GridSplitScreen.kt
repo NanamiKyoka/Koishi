@@ -47,10 +47,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -173,26 +174,49 @@ fun GridSplitScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 1. 顶部模式切换 (MD3 Tab 切换)
-            PrimaryTabRow(
-                selectedTabIndex = if (state.mode == GridSplitMode.SQUARE) 0 else 1,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Tab(
+                SegmentedButton(
                     selected = state.mode == GridSplitMode.SQUARE,
                     onClick = { onEvent(GridSplitUiEvent.OnModeChanged(GridSplitMode.SQUARE)) },
-                    text = { Text(stringResource(R.string.grid_split_tab_square), fontWeight = FontWeight.SemiBold) },
-                    icon = { Icon(Icons.Rounded.Grid3x3, contentDescription = null) }
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Grid3x3,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = stringResource(R.string.grid_split_tab_square),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 )
-                Tab(
+                SegmentedButton(
                     selected = state.mode == GridSplitMode.CUSTOM,
                     onClick = { onEvent(GridSplitUiEvent.OnModeChanged(GridSplitMode.CUSTOM)) },
-                    text = { Text(stringResource(R.string.grid_split_tab_custom), fontWeight = FontWeight.SemiBold) },
-                    icon = { Icon(Icons.Rounded.ViewModule, contentDescription = null) }
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.ViewModule,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = stringResource(R.string.grid_split_tab_custom),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 )
             }
 
-            // 2. 中间图片与网格预览区域 (OverlayView)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -201,12 +225,10 @@ fun GridSplitScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (state.previewBitmap == null) {
-                    // 未选择图片时的占位区域
                     GridPlaceholderCard(
                         onSelectImage = launchImagePicker
                     )
                 } else {
-                    // 已选图片：图片内容 + 网格虚线蒙层 (OverlayView)
                     GridImageWithOverlay(
                         state = state,
                         modifier = Modifier.fillMaxSize()
@@ -214,7 +236,6 @@ fun GridSplitScreen(
                 }
             }
 
-            // 3. 底部参数控制面板
             GridControlPanel(
                 state = state,
                 onEvent = onEvent,

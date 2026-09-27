@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.AutoFixHigh
 import androidx.compose.material.icons.rounded.Casino
+import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.EmojiEmotions
@@ -129,6 +130,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_meme_maker_name,
                 descriptionRes = R.string.tool_meme_maker_desc,
                 icon = Icons.Rounded.EmojiEmotions,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "color_picker",
+                nameRes = R.string.tool_color_picker_name,
+                descriptionRes = R.string.tool_color_picker_desc,
+                icon = Icons.Rounded.Colorize,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true

@@ -11,6 +11,8 @@ import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
+import com.nanami.koishi.feature.tools.color_picker.ColorPickerRoute
+import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerRoute
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerViewModel
 import com.nanami.koishi.feature.tools.grid_split.GridSplitRoute
@@ -66,6 +68,7 @@ fun KoishiNavHost(
                         "video_to_gif" -> navController.navigate(VideoToGifRoute)
                         "bili_cover" -> navController.navigate(BiliCoverRoute)
                         "meme_maker" -> navController.navigate(MemeMakerRoute)
+                        "color_picker" -> navController.navigate(ColorPickerRoute)
                         "mini_apps" -> navController.navigate(MiniAppsRoute)
                     }
                 }
@@ -207,6 +210,14 @@ fun KoishiNavHost(
             val miniAppsViewModel: MiniAppsViewModel = koinViewModel()
             MiniAppsRoute(
                 viewModel = miniAppsViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<ColorPickerRoute> {
+            val colorPickerViewModel: ColorPickerViewModel = koinViewModel()
+            ColorPickerRoute(
+                viewModel = colorPickerViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

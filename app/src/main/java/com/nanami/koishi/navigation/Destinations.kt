@@ -109,3 +109,6 @@ data object MemeMakerRoute
  */
 @Serializable
 data object MiniAppsRoute
+
+@Serializable
+data object ColorPickerRoute

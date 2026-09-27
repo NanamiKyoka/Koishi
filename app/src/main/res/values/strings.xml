@@ -956,4 +956,45 @@
     <string name="bmi_range_normal">18.5 ~ 23.9</string>
     <string name="bmi_range_overweight">24.0 ~ 27.9</string>
     <string name="bmi_range_obese">≥ 28.0</string>
+
+    <!-- Color Picker Tool -->
+    <string name="tool_color_picker_name">取色器</string>
+    <string name="tool_color_picker_desc">上传图片实时取色、微调光标、高倍放大镜与收藏颜色</string>
+    <string name="color_picker_title">取色器</string>
+    <string name="color_picker_tab_picker">图片取色</string>
+    <string name="color_picker_tab_favorites">颜色收藏</string>
+    <string name="color_picker_upload_title">选择图片开始取色</string>
+    <string name="color_picker_upload_desc">点击下方按钮或此区域上传照片</string>
+    <string name="color_picker_select_image">选择图片</string>
+    <string name="color_picker_change_image">更换图片</string>
+    <string name="color_picker_clear_image">清除图片</string>
+    <string name="color_picker_zoom_title">调节放大倍率</string>
+    <string name="color_picker_zoom_desc">拖动滑块或选择预设倍率</string>
+    <string name="color_picker_zoom_min_max">最小 1x，最大 16x</string>
+    <string name="color_picker_zoom_current">当前倍率：%1$.1fx</string>
+    <string name="color_picker_nudge_up">向上微调</string>
+    <string name="color_picker_nudge_down">向下微调</string>
+    <string name="color_picker_nudge_left">向左微调</string>
+    <string name="color_picker_nudge_right">向右微调</string>
+    <string name="color_picker_favorite_added">已收藏颜色 %1$s</string>
+    <string name="color_picker_favorite_removed">已取消收藏 %1$s</string>
+    <string name="color_picker_copied_hex">已复制 HEX：%1$s</string>
+    <string name="color_picker_copied_rgb">已复制 RGB：%1$s</string>
+    <string name="color_picker_copied_value">已复制：%1$s</string>
+    <string name="color_picker_favorites_empty">暂无收藏颜色</string>
+    <string name="color_picker_favorites_empty_desc">在取色器中点击爱心图标即可收藏颜色</string>
+    <string name="color_picker_clear_favorites">清空全部收藏</string>
+    <string name="color_picker_clear_favorites_confirm">确定要清空全部收藏的颜色吗？此操作无法撤销。</string>
+    <string name="color_picker_clear_favorites_cleared">已清空全部收藏颜色</string>
+    <string name="color_picker_confirm_clear">清空</string>
+    <string name="color_picker_delete_favorite">删除收藏</string>
+    <string name="color_picker_color_details">颜色详情</string>
+    <string name="color_picker_copy_color">复制</string>
+    <string name="color_picker_pixel_at">Pixel at %1$s</string>
+    <string name="color_picker_format_hex">HEX</string>
+    <string name="color_picker_format_rgb">RGB</string>
+    <string name="color_picker_format_hsl">HSL</string>
+    <string name="color_picker_format_argb">ARGB</string>
+    <string name="color_picker_format_compose">Compose Color</string>
+    <string name="color_picker_format_xml">Android XML</string>
 </resources>
