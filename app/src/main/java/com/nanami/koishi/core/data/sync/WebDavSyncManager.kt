@@ -3,6 +3,8 @@ package com.nanami.koishi.core.data.sync
 import android.content.Context
 import com.nanami.koishi.BuildConfig
 import com.nanami.koishi.core.data.preferences.ThemePreferences
+import com.nanami.koishi.core.data.repository.SearchHistoryRepository
+import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.storage.ToolStorageDao
 import com.nanami.koishi.core.data.storage.ToolStorageEntity
 import com.nanami.koishi.core.data.sync.model.KoishiBackup
@@ -23,6 +25,8 @@ import kotlinx.serialization.json.Json
 class WebDavSyncManager(
     private val context: Context,
     private val dao: ToolStorageDao,
+    private val favoritesRepository: ToolFavoritesRepository,
+    private val searchHistoryRepository: SearchHistoryRepository,
     private val client: WebDavClient = WebDavClient()
 ) {
 
@@ -208,9 +212,8 @@ class WebDavSyncManager(
             dao.upsertAll(entitiesToUpsert)
         }
 
-        val app = context.applicationContext as? com.nanami.koishi.KoishiApp
-        app?.favoritesRepository?.reload()
-        app?.searchHistoryRepository?.reload()
+        favoritesRepository.reload()
+        searchHistoryRepository.reload()
         com.nanami.koishi.core.util.LocaleHelper.updateAppResourcesLocale(context.applicationContext)
     }
 }

@@ -5,15 +5,12 @@ import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
-import com.nanami.koishi.feature.tools.decision_maker.engine.BuiltInPresets
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionArchiveStore
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionIds
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionMode
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionPhase
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionRepository
-import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionStorageRepository
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionTopic
 import com.nanami.koishi.feature.tools.decision_maker.engine.TopicImportResult
 import com.nanami.koishi.feature.tools.decision_maker.engine.WeightedPicker
@@ -27,14 +24,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class DecisionMakerViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val dao = (application as KoishiApp).toolStorageDao
-    private val repository = DecisionRepository(
-        builtInTopics = { BuiltInPresets.build(application) },
-        storage = DecisionStorageRepository(dao)
-    )
-    private val archiveStore = DecisionArchiveStore(application)
+class DecisionMakerViewModel(
+    application: Application,
+    private val repository: DecisionRepository,
+    private val archiveStore: DecisionArchiveStore
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(DecisionMakerUiState())
     val uiState: StateFlow<DecisionMakerUiState> = _uiState.asStateFlow()

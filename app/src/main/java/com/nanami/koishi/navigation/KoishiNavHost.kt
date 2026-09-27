@@ -2,11 +2,11 @@ package com.nanami.koishi.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.koin.androidx.compose.koinViewModel
 import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.home.poetry.PoetryViewModel
@@ -42,8 +42,8 @@ fun KoishiNavHost(
         modifier = modifier
     ) {
         composable<HomeRoute> {
-            val homeViewModel: HomeViewModel = viewModel()
-            val poetryViewModel: PoetryViewModel = viewModel()
+            val homeViewModel: HomeViewModel = koinViewModel()
+            val poetryViewModel: PoetryViewModel = koinViewModel()
             HomeRoute(
                 viewModel = homeViewModel,
                 poetryViewModel = poetryViewModel,
@@ -73,7 +73,7 @@ fun KoishiNavHost(
         }
 
         composable<ImageSearchRoute> {
-            val imageSearchViewModel: com.nanami.koishi.feature.tools.image_search.ImageSearchViewModel = viewModel()
+            val imageSearchViewModel: com.nanami.koishi.feature.tools.image_search.ImageSearchViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.image_search.ImageSearchRoute(
                 viewModel = imageSearchViewModel,
                 onBack = { navController.popBackStack() }
@@ -81,7 +81,7 @@ fun KoishiNavHost(
         }
 
         composable<ImageStitchingRoute> {
-            val stitchingViewModel: com.nanami.koishi.feature.tools.image_stitching.ImageStitchingViewModel = viewModel()
+            val stitchingViewModel: com.nanami.koishi.feature.tools.image_stitching.ImageStitchingViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.image_stitching.ImageStitchingRoute(
                 viewModel = stitchingViewModel,
                 onBack = { navController.popBackStack() }
@@ -89,7 +89,7 @@ fun KoishiNavHost(
         }
 
         composable<GridSplitRoute> {
-            val gridSplitViewModel: GridSplitViewModel = viewModel()
+            val gridSplitViewModel: GridSplitViewModel = koinViewModel()
             GridSplitRoute(
                 viewModel = gridSplitViewModel,
                 onBack = { navController.popBackStack() }
@@ -97,7 +97,7 @@ fun KoishiNavHost(
         }
 
         composable<ImageObfuscationRoute> {
-            val obfuscationViewModel: ImageObfuscationViewModel = viewModel()
+            val obfuscationViewModel: ImageObfuscationViewModel = koinViewModel()
             ImageObfuscationRoute(
                 viewModel = obfuscationViewModel,
                 onBack = { navController.popBackStack() }
@@ -105,7 +105,7 @@ fun KoishiNavHost(
         }
 
         composable<MirageTankRoute> {
-            val mirageTankViewModel: MirageTankViewModel = viewModel()
+            val mirageTankViewModel: MirageTankViewModel = koinViewModel()
             MirageTankRoute(
                 viewModel = mirageTankViewModel,
                 onBack = { navController.popBackStack() }
@@ -113,7 +113,7 @@ fun KoishiNavHost(
         }
 
         composable<QrToolRoute> {
-            val qrToolViewModel: QrToolViewModel = viewModel()
+            val qrToolViewModel: QrToolViewModel = koinViewModel()
             QrToolRoute(
                 viewModel = qrToolViewModel,
                 onBack = { navController.popBackStack() }
@@ -121,7 +121,7 @@ fun KoishiNavHost(
         }
 
         composable<WatermarkRoute> {
-            val watermarkViewModel: WatermarkViewModel = viewModel()
+            val watermarkViewModel: WatermarkViewModel = koinViewModel()
             WatermarkRoute(
                 viewModel = watermarkViewModel,
                 onBack = { navController.popBackStack() }
@@ -129,7 +129,7 @@ fun KoishiNavHost(
         }
 
         composable<ImageSketchRoute> {
-            val imageSketchViewModel: ImageSketchViewModel = viewModel()
+            val imageSketchViewModel: ImageSketchViewModel = koinViewModel()
             ImageSketchRoute(
                 viewModel = imageSketchViewModel,
                 onBack = { navController.popBackStack() }
@@ -137,7 +137,7 @@ fun KoishiNavHost(
         }
 
         composable<TodayInHistoryRoute> {
-            val historyViewModel: TodayInHistoryViewModel = viewModel()
+            val historyViewModel: TodayInHistoryViewModel = koinViewModel()
             TodayInHistoryRoute(
                 viewModel = historyViewModel,
                 onBack = { navController.popBackStack() }
@@ -145,7 +145,7 @@ fun KoishiNavHost(
         }
 
         composable<DecisionMakerRoute> {
-            val decisionViewModel: DecisionMakerViewModel = viewModel()
+            val decisionViewModel: DecisionMakerViewModel = koinViewModel()
             DecisionMakerRoute(
                 viewModel = decisionViewModel,
                 onBack = { navController.popBackStack() }
@@ -164,7 +164,7 @@ fun KoishiNavHost(
         }
 
         composable<CurrencyConverterRoute> {
-            val currencyConverterViewModel: com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel = viewModel()
+            val currencyConverterViewModel: com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterRoute(
                 viewModel = currencyConverterViewModel,
                 onBack = { navController.popBackStack() }
@@ -172,7 +172,7 @@ fun KoishiNavHost(
         }
 
         composable<BmiCalculatorRoute> {
-            val bmiCalculatorViewModel: com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel = viewModel()
+            val bmiCalculatorViewModel: com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorRoute(
                 viewModel = bmiCalculatorViewModel,
                 onBack = { navController.popBackStack() }
@@ -180,7 +180,7 @@ fun KoishiNavHost(
         }
 
         composable<VideoToGifRoute> {
-            val videoToGifViewModel: com.nanami.koishi.feature.tools.video_to_gif.VideoToGifViewModel = viewModel()
+            val videoToGifViewModel: com.nanami.koishi.feature.tools.video_to_gif.VideoToGifViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.video_to_gif.VideoToGifRoute(
                 viewModel = videoToGifViewModel,
                 onBack = { navController.popBackStack() }
@@ -188,7 +188,7 @@ fun KoishiNavHost(
         }
 
         composable<BiliCoverRoute> {
-            val biliCoverViewModel: com.nanami.koishi.feature.tools.bili_cover.BiliCoverViewModel = viewModel()
+            val biliCoverViewModel: com.nanami.koishi.feature.tools.bili_cover.BiliCoverViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.bili_cover.BiliCoverRoute(
                 viewModel = biliCoverViewModel,
                 onBack = { navController.popBackStack() }
@@ -196,7 +196,7 @@ fun KoishiNavHost(
         }
 
         composable<MemeMakerRoute> {
-            val memeMakerViewModel: com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel = viewModel()
+            val memeMakerViewModel: com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.meme_maker.MemeMakerRoute(
                 viewModel = memeMakerViewModel,
                 onBack = { navController.popBackStack() }
@@ -204,7 +204,7 @@ fun KoishiNavHost(
         }
 
         composable<MiniAppsRoute> {
-            val miniAppsViewModel: MiniAppsViewModel = viewModel()
+            val miniAppsViewModel: MiniAppsViewModel = koinViewModel()
             MiniAppsRoute(
                 viewModel = miniAppsViewModel,
                 onBack = { navController.popBackStack() }

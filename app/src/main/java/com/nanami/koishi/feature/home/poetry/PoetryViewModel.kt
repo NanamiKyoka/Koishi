@@ -3,7 +3,6 @@ package com.nanami.koishi.feature.home.poetry
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,11 +10,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class PoetryViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = HitokotoRepository(
-        HitokotoCache((application as KoishiApp).toolStorageDao)
-    )
+class PoetryViewModel(
+    application: Application,
+    private val repository: HitokotoRepository
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(PoetryUiState())
     val uiState: StateFlow<PoetryUiState> = _uiState.asStateFlow()

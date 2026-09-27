@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
-import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import com.nanami.koishi.feature.tools.bmi_calculator.engine.BmiCalculator
 import com.nanami.koishi.feature.tools.bmi_calculator.engine.BmiCalculatorData
 import com.nanami.koishi.feature.tools.bmi_calculator.engine.BmiRecord
@@ -35,11 +34,9 @@ data class BmiPanelState(
     val messageHasUndo: Boolean
 )
 
-class BmiCalculatorViewModel @JvmOverloads constructor(
+class BmiCalculatorViewModel(
     application: Application,
-    private val repository: BmiRepository = BmiRepository(
-        ToolStorageDatabase.get(application).toolStorageDao()
-    )
+    private val repository: BmiRepository
 ) : AndroidViewModel(application) {
 
     private val _heightInput = MutableStateFlow("")

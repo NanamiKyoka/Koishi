@@ -3,10 +3,7 @@ package com.nanami.koishi.feature.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.core.data.repository.InMemoryToolRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
-import com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepository
-import com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
 import com.nanami.koishi.core.model.ToolCategory
@@ -17,17 +14,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import com.nanami.koishi.KoishiApp
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeViewModel @JvmOverloads constructor(
+class HomeViewModel(
     application: Application,
-    private val toolRepository: ToolRepository = InMemoryToolRepository(),
-    private val favoritesRepository: ToolFavoritesRepository = (application as? KoishiApp)?.favoritesRepository
-        ?: SharedPreferencesToolFavoritesRepository(application),
-    private val searchHistoryRepository: SearchHistoryRepository = (application as? KoishiApp)?.searchHistoryRepository
-        ?: SharedPreferencesSearchHistoryRepository(application)
+    private val toolRepository: ToolRepository,
+    private val favoritesRepository: ToolFavoritesRepository,
+    private val searchHistoryRepository: SearchHistoryRepository
 ) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(MainTab.TOOLBOX)

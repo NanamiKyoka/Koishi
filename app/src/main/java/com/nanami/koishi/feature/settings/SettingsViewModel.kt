@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.data.preferences.ThemePreferences
 import com.nanami.koishi.core.data.sync.WebDavAuthException
@@ -19,14 +18,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+class SettingsViewModel(
+    application: Application,
+    private val syncManager: WebDavSyncManager
+) : AndroidViewModel(application) {
 
     private val context = application.applicationContext
     private val prefs = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
-    private val syncManager = WebDavSyncManager(
-        context = context,
-        dao = (application as KoishiApp).toolStorageDao
-    )
 
     private val _uiState = MutableStateFlow(loadSettings())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()

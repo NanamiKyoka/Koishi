@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.mini_apps.engine.MiniAppAddResult
 import com.nanami.koishi.feature.tools.mini_apps.engine.MiniAppStore
@@ -14,9 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MiniAppsViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val store = MiniAppStore((application as KoishiApp).toolStorageDao)
+class MiniAppsViewModel(
+    application: Application,
+    private val store: MiniAppStore
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(MiniAppsUiState())
     val uiState: StateFlow<MiniAppsUiState> = _uiState.asStateFlow()

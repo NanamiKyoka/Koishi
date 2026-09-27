@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.bili_cover.engine.BiliCoverDownloader
 import com.nanami.koishi.feature.tools.bili_cover.engine.BiliCoverEngines
@@ -25,9 +24,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class BiliCoverViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val settings = BiliCoverSettingsRepository((application as KoishiApp).toolStorageDao)
+class BiliCoverViewModel(
+    application: Application,
+    private val settings: BiliCoverSettingsRepository
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(BiliCoverUiState())
     val uiState: StateFlow<BiliCoverUiState> = _uiState.asStateFlow()

@@ -3,9 +3,7 @@ package com.nanami.koishi.feature.tools.today_in_history
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
-import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryCache
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryException
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryLoadResult
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryRepository
@@ -19,10 +17,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class TodayInHistoryViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val settings = HistorySettingsRepository((application as KoishiApp).toolStorageDao)
-    private val repository = HistoryRepository(settings, HistoryCache((application as KoishiApp).toolStorageDao))
+class TodayInHistoryViewModel(
+    application: Application,
+    private val settings: HistorySettingsRepository,
+    private val repository: HistoryRepository
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(TodayInHistoryUiState())
     val uiState: StateFlow<TodayInHistoryUiState> = _uiState.asStateFlow()

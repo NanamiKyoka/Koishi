@@ -5,7 +5,6 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
-import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyApi
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyConstants
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyConverterData
@@ -36,11 +35,9 @@ private data class SearchAndFilterState(
     val message: UserMessage?
 )
 
-class CurrencyConverterViewModel @JvmOverloads constructor(
+class CurrencyConverterViewModel(
     application: Application,
-    private val repository: CurrencyConverterRepository = CurrencyConverterRepository(
-        ToolStorageDatabase.get(application).toolStorageDao()
-    )
+    private val repository: CurrencyConverterRepository
 ) : AndroidViewModel(application) {
 
     private val isChineseLocale: Boolean

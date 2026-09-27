@@ -178,6 +178,7 @@ Koishi/
 │       │   │   ├── crash/             # 崩溃捕获与兜底页
 │       │   │   ├── data/              # Room 统一存储、缓存、仓储
 │       │   │   ├── designsystem/      # 主题、配色方案、通用组件
+│       │   │   ├── di/                # Koin 依赖注入模块
 │       │   │   ├── image/             # 裁剪、预览等图片基础能力
 │       │   │   ├── model/             # ToolItem / ToolCategory 等模型
 │       │   │   └── util/              # 语言包装、相册目录等工具
@@ -193,7 +194,7 @@ Koishi/
 
 ### 技术栈
 
-`Kotlin` · `Jetpack Compose` · `Material 3` · `Navigation Compose` · `Room` · `Coroutines / Flow` ·
+`Kotlin` · `Jetpack Compose` · `Material 3` · `Navigation Compose` · `Room` · `Koin` · `Coroutines / Flow` ·
 `kotlinx.serialization` · `OkHttp` · `Jsoup` · `Coil` · `material-kolor` · `qrcode-kotlin` ·
 `ML Kit Barcode Scanning` · `CameraX` · `Media3 Transformer` · `AndroidX Browser (Custom Tabs)`
 

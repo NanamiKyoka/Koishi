@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.nanami.koishi.KoishiApp
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchEngines
 import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchSettingsRepository
@@ -24,11 +23,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
-class ImageSearchViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val settings = ImageSearchSettingsRepository(
-        (application as KoishiApp).toolStorageDao
-    )
+class ImageSearchViewModel(
+    application: Application,
+    private val settings: ImageSearchSettingsRepository
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(ImageSearchUiState())
     val uiState: StateFlow<ImageSearchUiState> = _uiState.asStateFlow()

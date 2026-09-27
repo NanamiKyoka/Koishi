@@ -31,13 +31,13 @@ import java.util.Locale
 import kotlin.math.min
 
 class VideoToGifViewModel(
-    application: Application
+    application: Application,
+    private val engine: VideoToGifEngine
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(VideoToGifUiState())
     val uiState: StateFlow<VideoToGifUiState> = _uiState.asStateFlow()
 
-    private val engine = VideoToGifEngine(application)
     private var convertJob: Job? = null
 
     private fun getString(resId: Int, vararg args: Any): String {

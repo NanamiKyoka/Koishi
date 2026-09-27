@@ -8,8 +8,13 @@ import coil.memory.MemoryCache
 import com.nanami.koishi.core.crash.GlobalCrashHandler
 import com.nanami.koishi.core.data.cache.TempImageCleaner
 import com.nanami.koishi.core.data.cache.TempImageStore
-import com.nanami.koishi.core.data.storage.ToolStorageDao
-import com.nanami.koishi.core.data.storage.ToolStorageDatabase
+import com.nanami.koishi.core.di.coreDataModule
+import com.nanami.koishi.core.di.featureModule
+import com.nanami.koishi.core.di.viewModelModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 import java.io.File
 
 /**
@@ -17,20 +22,13 @@ import java.io.File
  */
 class KoishiApp : Application(), ImageLoaderFactory {
 
-    val toolStorageDao: ToolStorageDao by lazy {
-        ToolStorageDatabase.get(this).toolStorageDao()
-    }
-
-    val favoritesRepository: com.nanami.koishi.core.data.repository.ToolFavoritesRepository by lazy {
-        com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository(this)
-    }
-
-    val searchHistoryRepository: com.nanami.koishi.core.data.repository.SearchHistoryRepository by lazy {
-        com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepository(this)
-    }
-
     override fun onCreate() {
         super.onCreate()
+        startKoin {
+            androidLogger(Level.ERROR)
+            androidContext(this@KoishiApp)
+            modules(coreDataModule, featureModule, viewModelModule)
+        }
         GlobalCrashHandler.initialize(this)
         TempImageCleaner(this).install()
     }

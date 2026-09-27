@@ -132,6 +132,10 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
 
+    // Koin 依赖注入
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
     // Jetpack Compose & MD3
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -172,6 +176,8 @@ dependencies {
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.koin.test)
+    testImplementation(libs.koin.test.junit4)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)
     androidTestImplementation(platform(libs.androidx.compose.bom))

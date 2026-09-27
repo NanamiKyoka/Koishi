@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
@@ -23,11 +22,10 @@ import com.nanami.koishi.core.util.LocaleHelper
 import com.nanami.koishi.feature.settings.AppLanguage
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.navigation.KoishiNavHost
+import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-
-    private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.applyLocale(newBase))
@@ -38,6 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val settingsViewModel: SettingsViewModel = koinViewModel()
             val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
             val targetLocale = when (settingsState.language) {

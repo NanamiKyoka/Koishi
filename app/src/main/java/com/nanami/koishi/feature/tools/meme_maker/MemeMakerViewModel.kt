@@ -12,7 +12,6 @@ import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.R
-import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalSticker
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalStickerRepository
@@ -36,16 +35,14 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-class MemeMakerViewModel(application: Application) : AndroidViewModel(application) {
+class MemeMakerViewModel(
+    application: Application,
+    private val assetRepository: MemeAssetRepository,
+    private val localStickerRepository: MemeLocalStickerRepository
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(MemeMakerUiState())
     val uiState: StateFlow<MemeMakerUiState> = _uiState.asStateFlow()
-
-    private val assetRepository = MemeAssetRepository(application)
-
-    private val localStickerRepository = MemeLocalStickerRepository(
-        ToolStorageDatabase.get(application).toolStorageDao()
-    )
 
     private val backgroundCache = mutableMapOf<String, Bitmap>()
 
