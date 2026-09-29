@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
+import androidx.compose.material.icons.rounded.LocalPostOffice
 import androidx.compose.material.icons.rounded.MonitorWeight
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Straighten
@@ -185,6 +186,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_bmi_calculator_desc,
                 icon = Icons.Rounded.MonitorWeight,
                 category = ToolCategory.CALCULATION,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "postal_code",
+                nameRes = R.string.tool_postal_code_name,
+                descriptionRes = R.string.tool_postal_code_desc,
+                icon = Icons.Rounded.LocalPostOffice,
+                category = ToolCategory.QUERY,
                 isFavorite = false,
                 hasDot = true
             ),

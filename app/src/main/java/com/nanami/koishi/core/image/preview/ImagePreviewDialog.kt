@@ -62,6 +62,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -93,6 +94,7 @@ fun ImagePreviewDialog(
     initialIndex: Int = 0,
     title: String = "图片预览",
     albumFolder: String = AlbumFolders.ROOT,
+    showSaveButton: Boolean = true,
     onIndexChanged: ((Int) -> Unit)? = null,
     onDismissRequest: () -> Unit
 ) {
@@ -195,37 +197,42 @@ fun ImagePreviewDialog(
                     Text(
                         text = displayTitle,
                         color = Color.White,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    if (showSaveButton) {
+                        Spacer(modifier = Modifier.size(12.dp))
 
-                    // 保存当前显示的图片到相册
-                    Surface(
-                        onClick = {
-                            val currentItem = images.getOrNull(pagerState.currentPage)
-                            if (currentItem != null) {
-                                coroutineScope.launch {
-                                    val success = saveItemToGallery(context, currentItem, albumFolder)
-                                    Toast.makeText(
-                                        context,
-                                        if (success) "已保存到相册" else "保存失败",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                        // 保存当前显示的图片到相册
+                        Surface(
+                            onClick = {
+                                val currentItem = images.getOrNull(pagerState.currentPage)
+                                if (currentItem != null) {
+                                    coroutineScope.launch {
+                                        val success = saveItemToGallery(context, currentItem, albumFolder)
+                                        Toast.makeText(
+                                            context,
+                                            if (success) "已保存到相册" else "保存失败",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
+                            },
+                            shape = CircleShape,
+                            color = Color.Black.copy(alpha = 0.5f),
+                            contentColor = Color.White,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Download,
+                                    contentDescription = "保存到相册",
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
-                        },
-                        shape = CircleShape,
-                        color = Color.Black.copy(alpha = 0.5f),
-                        contentColor = Color.White,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Rounded.Download,
-                                contentDescription = "保存到相册",
-                                modifier = Modifier.size(20.dp)
-                            )
                         }
                     }
                 }
@@ -262,6 +269,7 @@ fun ImagePreviewDialog(
     uri: Uri? = null,
     title: String = "图片预览",
     albumFolder: String = AlbumFolders.ROOT,
+    showSaveButton: Boolean = true,
     onDismissRequest: () -> Unit
 ) {
     val items = remember(bitmap, uri) {
@@ -272,6 +280,7 @@ fun ImagePreviewDialog(
         initialIndex = 0,
         title = title,
         albumFolder = albumFolder,
+        showSaveButton = showSaveButton,
         onDismissRequest = onDismissRequest
     )
 }
@@ -702,7 +711,13 @@ private suspend fun saveItemToGallery(context: Context, item: Any, albumFolder: 
                         } ?: false
                     }
                     is String -> {
-                        val bitmap = decodeSampledBitmapFromUrl(context, item)
+                        val request = ImageRequest.Builder(context)
+                            .data(item)
+                            .allowHardware(false)
+                            .build()
+                        val result = context.imageLoader.execute(request)
+                        val bitmap = (result as? SuccessResult)?.drawable?.toBitmap()
+                            ?: decodeSampledBitmapFromUrl(context, item)
                         if (bitmap != null) {
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
                             true

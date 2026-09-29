@@ -23,4 +23,5 @@ object AlbumFolders {
     const val VIDEO_TO_GIF = "$ROOT/VideoToGif"
     const val BILI_COVER = "$ROOT/BiliCover"
     const val MEME_MAKER = "$ROOT/MemeMaker"
+    const val TODAY_IN_HISTORY = "$ROOT/TodayInHistory"
 }

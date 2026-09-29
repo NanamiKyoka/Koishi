@@ -25,6 +25,8 @@ import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsRoute
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
+import com.nanami.koishi.feature.tools.postal_code.PostalCodeRoute
+import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
@@ -65,6 +67,7 @@ fun KoishiNavHost(
                         "ruler" -> navController.navigate(RulerRoute)
                         "currency_converter" -> navController.navigate(CurrencyConverterRoute)
                         "bmi_calculator" -> navController.navigate(BmiCalculatorRoute)
+                        "postal_code" -> navController.navigate(PostalCodeRoute)
                         "video_to_gif" -> navController.navigate(VideoToGifRoute)
                         "bili_cover" -> navController.navigate(BiliCoverRoute)
                         "meme_maker" -> navController.navigate(MemeMakerRoute)
@@ -178,6 +181,14 @@ fun KoishiNavHost(
             val bmiCalculatorViewModel: com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel = koinViewModel()
             com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorRoute(
                 viewModel = bmiCalculatorViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<PostalCodeRoute> {
+            val postalCodeViewModel: PostalCodeViewModel = koinViewModel()
+            PostalCodeRoute(
+                viewModel = postalCodeViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

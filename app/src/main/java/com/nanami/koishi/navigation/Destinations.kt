@@ -89,6 +89,12 @@ data object CurrencyConverterRoute
 @Serializable
 data object BmiCalculatorRoute
 
+/**
+ * 邮编查询独立小工具强类型路由
+ */
+@Serializable
+data object PostalCodeRoute
+
 @Serializable
 data object VideoToGifRoute
 

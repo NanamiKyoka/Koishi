@@ -16,6 +16,7 @@ import com.nanami.koishi.feature.tools.image_stitching.ImageStitchingViewModel
 import com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
+import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
 import com.nanami.koishi.feature.tools.video_to_gif.VideoToGifViewModel
@@ -42,6 +43,7 @@ val viewModelModule = module {
     viewModel { MemeMakerViewModel(get(), get(), get()) }
     viewModel { MiniAppsViewModel(get(), get()) }
     viewModel { MirageTankViewModel(get()) }
+    viewModel { PostalCodeViewModel(get(), get(), get(), get()) }
     viewModel { QrToolViewModel(get()) }
     viewModel { TodayInHistoryViewModel(get(), get(), get()) }
     viewModel { VideoToGifViewModel(get(), get()) }

@@ -86,6 +86,7 @@ import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.today_in_history.components.TimelineEmptyState
 import com.nanami.koishi.feature.tools.today_in_history.components.TimelineEventItem
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryEngines
@@ -136,6 +137,7 @@ fun TodayInHistoryScreen(
                 images = imageEvents.map { it.imageUrl },
                 initialIndex = index,
                 title = stringResource(R.string.history_title),
+                albumFolder = AlbumFolders.TODAY_IN_HISTORY,
                 onDismissRequest = { previewIndex = null }
             )
         }

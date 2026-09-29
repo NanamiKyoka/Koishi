@@ -162,6 +162,7 @@ class RepositoryCrudTest {
             Triple("ruler", ToolCategory.LIFE, true),
             Triple("currency_converter", ToolCategory.CALCULATION, true),
             Triple("bmi_calculator", ToolCategory.CALCULATION, true),
+            Triple("postal_code", ToolCategory.QUERY, true),
             Triple("mini_apps", ToolCategory.OTHER, true)
         )
 

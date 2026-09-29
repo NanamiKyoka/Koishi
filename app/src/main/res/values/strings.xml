@@ -20,6 +20,7 @@
     <string name="category_life">生活应用</string>
     <string name="category_image_apps">图片应用</string>
     <string name="category_calculation">计算工具</string>
+    <string name="category_query">查询应用</string>
     <string name="category_other">其他应用</string>
     <string name="tools_count_summary">共 %1$d 个工具</string>
     <string name="empty_search_title">未找到与 \"%1$s\" 相关的工具</string>
@@ -997,4 +998,64 @@
     <string name="color_picker_format_argb">ARGB</string>
     <string name="color_picker_format_compose">Compose Color</string>
     <string name="color_picker_format_xml">Android XML</string>
+
+    <!-- Postal Code Tool -->
+    <string name="tool_postal_code_name">邮编查询</string>
+    <string name="tool_postal_code_desc">邮编与地区双向互查，覆盖全国区县并支持十余个国家/地区</string>
+    <string name="postal_title">邮编查询</string>
+    <string name="postal_direction_code_to_region">邮编查地区</string>
+    <string name="postal_direction_region_to_code">地区查邮编</string>
+    <string name="postal_code_hint">输入邮政编码，如 100000</string>
+    <string name="postal_region_hint">输入区县名称，如 西山区</string>
+    <string name="postal_code_guide">输入邮政编码即可定位省、市、区县与街道；切换国家/地区还能查询美国、德国、日本等海外邮编</string>
+    <string name="postal_region_guide">输入区或县名称查询对应邮编，例如输入「西山区」即可查到云南省昆明市的完整邮编</string>
+    <string name="postal_search_action">查询</string>
+    <string name="postal_refresh">重新查询</string>
+    <string name="postal_dataset_title">先下载离线邮编库</string>
+    <string name="postal_dataset_desc">中国大陆邮编数据约 600 KB，下载一次后即可离线查询省、市、区县，无需任何密钥</string>
+    <string name="postal_dataset_download_action">下载离线数据</string>
+    <string name="postal_dataset_downloading">正在下载… %1$d%%</string>
+    <string name="postal_dataset_size_hint">下载后仅占约 95 KB 本地空间 · 数据基准 2023 年行政区划</string>
+    <string name="postal_dataset_failed_title">离线数据下载失败</string>
+    <string name="postal_dataset_ready">离线邮编库已就绪，现在可以离线查询</string>
+    <string name="postal_dataset_ready_label">离线数据 · %1$d 个区县</string>
+    <string name="postal_dataset_cleared">已清除离线数据</string>
+    <string name="postal_dataset_clear">清除离线数据</string>
+    <string name="postal_dataset_attribution">数据来源：tombcato/china-zipcode-data（MIT）</string>
+    <string name="postal_result_count">共 %1$d 条结果</string>
+    <string name="postal_source_cached">%1$s · 缓存</string>
+    <string name="postal_source_offline" translatable="false">离线数据</string>
+    <string name="postal_source_zippopotam" translatable="false">Zippopotam</string>
+    <string name="postal_copy_code">复制邮编</string>
+    <string name="postal_code_copied">邮编已复制</string>
+    <string name="postal_coordinates_format">坐标 %1$s, %2$s</string>
+    <string name="postal_history_title">最近查询</string>
+    <string name="postal_history_clear">清空</string>
+    <string name="postal_history_cleared">查询记录已清空</string>
+    <string name="postal_loading">正在查询…</string>
+    <string name="postal_empty_title">未查询到结果</string>
+    <string name="postal_empty_desc">请确认邮编或地区名称是否正确，也可以切换国家/地区后重试</string>
+    <string name="postal_error_title">查询失败</string>
+    <string name="postal_error_dataset_missing">离线数据不可用，请重新下载</string>
+    <string name="postal_error_not_found">未查询到匹配的邮编或地区</string>
+    <string name="postal_error_network">网络连接失败，请检查网络后重试</string>
+    <string name="postal_error_parse">数据解析失败，请稍后重试</string>
+    <string name="postal_error_server">服务异常，请稍后重试</string>
+    <string name="postal_retry">重试</string>
+    <string name="postal_country_cn">中国大陆</string>
+    <string name="postal_country_us">美国</string>
+    <string name="postal_country_de">德国</string>
+    <string name="postal_country_fr">法国</string>
+    <string name="postal_country_it">意大利</string>
+    <string name="postal_country_es">西班牙</string>
+    <string name="postal_country_nl">荷兰</string>
+    <string name="postal_country_at">奥地利</string>
+    <string name="postal_country_ch">瑞士</string>
+    <string name="postal_country_dk">丹麦</string>
+    <string name="postal_country_se">瑞典</string>
+    <string name="postal_country_ru">俄罗斯</string>
+    <string name="postal_country_jp">日本</string>
+    <string name="postal_country_in">印度</string>
+    <string name="postal_country_au">澳大利亚</string>
+    <string name="postal_country_mx">墨西哥</string>
 </resources>

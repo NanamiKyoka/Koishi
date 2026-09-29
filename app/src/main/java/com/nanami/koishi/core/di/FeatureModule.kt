@@ -14,6 +14,9 @@ import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchSettingsRe
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalStickerRepository
 import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetRepository
 import com.nanami.koishi.feature.tools.mini_apps.engine.MiniAppStore
+import com.nanami.koishi.feature.tools.postal_code.engine.PostalDatasetRepository
+import com.nanami.koishi.feature.tools.postal_code.engine.PostalRepository
+import com.nanami.koishi.feature.tools.postal_code.engine.PostalSettingsRepository
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryCache
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryRepository
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistorySettingsRepository
@@ -37,6 +40,10 @@ val featureModule = module {
     single { HistoryRepository(get(), get()) }
 
     single { MiniAppStore(get()) }
+
+    single { PostalSettingsRepository(get()) }
+    single { PostalDatasetRepository(get()) }
+    single { PostalRepository(get()) }
 
     single { DecisionStorageRepository(get()) }
     single { DecisionArchiveStore(get()) }
