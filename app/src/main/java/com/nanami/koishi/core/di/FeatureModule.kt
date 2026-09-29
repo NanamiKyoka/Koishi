@@ -21,6 +21,7 @@ import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryCache
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryRepository
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistorySettingsRepository
 import com.nanami.koishi.feature.tools.video_to_gif.engine.VideoToGifEngine
+import com.nanami.koishi.feature.tools.worth_calculator.engine.WorthRepository
 import org.koin.dsl.module
 
 val featureModule = module {
@@ -31,6 +32,7 @@ val featureModule = module {
     single { BmiRepository(get()) }
     single { ColorPickerRepository(get()) }
     single { CurrencyConverterRepository(get()) }
+    single { WorthRepository(get()) }
 
     single { BiliCoverSettingsRepository(get()) }
     single { ImageSearchSettingsRepository(get()) }

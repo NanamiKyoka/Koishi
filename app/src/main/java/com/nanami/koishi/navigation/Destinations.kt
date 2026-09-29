@@ -118,3 +118,6 @@ data object MiniAppsRoute
 
 @Serializable
 data object ColorPickerRoute
+
+@Serializable
+data object WorthCalculatorRoute

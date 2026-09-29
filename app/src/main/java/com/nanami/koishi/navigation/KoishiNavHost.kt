@@ -67,6 +67,7 @@ fun KoishiNavHost(
                         "ruler" -> navController.navigate(RulerRoute)
                         "currency_converter" -> navController.navigate(CurrencyConverterRoute)
                         "bmi_calculator" -> navController.navigate(BmiCalculatorRoute)
+                        "worth_calculator" -> navController.navigate(WorthCalculatorRoute)
                         "postal_code" -> navController.navigate(PostalCodeRoute)
                         "video_to_gif" -> navController.navigate(VideoToGifRoute)
                         "bili_cover" -> navController.navigate(BiliCoverRoute)
@@ -229,6 +230,14 @@ fun KoishiNavHost(
             val colorPickerViewModel: ColorPickerViewModel = koinViewModel()
             ColorPickerRoute(
                 viewModel = colorPickerViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<WorthCalculatorRoute> {
+            val worthCalculatorViewModel: com.nanami.koishi.feature.tools.worth_calculator.WorthCalculatorViewModel = koinViewModel()
+            com.nanami.koishi.feature.tools.worth_calculator.WorthCalculatorRoute(
+                viewModel = worthCalculatorViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -21,6 +21,7 @@ import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
 import com.nanami.koishi.feature.tools.video_to_gif.VideoToGifViewModel
 import com.nanami.koishi.feature.tools.watermark.WatermarkViewModel
+import com.nanami.koishi.feature.tools.worth_calculator.WorthCalculatorViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -48,4 +49,5 @@ val viewModelModule = module {
     viewModel { TodayInHistoryViewModel(get(), get(), get()) }
     viewModel { VideoToGifViewModel(get(), get()) }
     viewModel { WatermarkViewModel(get()) }
+    viewModel { WorthCalculatorViewModel(get()) }
 }

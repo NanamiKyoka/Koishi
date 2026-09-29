@@ -16,6 +16,7 @@ import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
 import androidx.compose.material.icons.rounded.LocalPostOffice
 import androidx.compose.material.icons.rounded.MonitorWeight
+import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material.icons.rounded.ViewCarousel
@@ -185,6 +186,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_bmi_calculator_name,
                 descriptionRes = R.string.tool_bmi_calculator_desc,
                 icon = Icons.Rounded.MonitorWeight,
+                category = ToolCategory.CALCULATION,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "worth_calculator",
+                nameRes = R.string.tool_worth_calculator_name,
+                descriptionRes = R.string.tool_worth_calculator_desc,
+                icon = Icons.Rounded.Payments,
                 category = ToolCategory.CALCULATION,
                 isFavorite = false,
                 hasDot = true
