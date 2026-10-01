@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import android.os.Build
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -47,6 +49,7 @@ import com.nanami.koishi.core.designsystem.theme.ThemeMode
 import com.nanami.koishi.core.designsystem.theme.isDarkTheme
 import com.nanami.koishi.feature.settings.components.AppThemePicker
 import com.nanami.koishi.feature.settings.components.ThemeModeSelector
+import com.nanami.koishi.feature.settings.components.UpdateDialog
 import com.nanami.koishi.feature.settings.components.WebDavSyncDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +79,37 @@ fun SettingsScreen(
             onRestore = { onEvent(SettingsUiEvent.OnWebDavRestore) },
             onDismissStatus = { onEvent(SettingsUiEvent.OnDismissWebDavStatus) },
             onDismiss = { onEvent(SettingsUiEvent.OnShowWebDavDialog(false)) }
+        )
+    }
+
+    if (uiState.updateState !is UpdateUiState.Idle) {
+        val canInstall = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.packageManager.canRequestPackageInstalls()
+        } else {
+            true
+        }
+        UpdateDialog(
+            state = uiState.updateState,
+            canInstallPackages = canInstall,
+            onDismiss = { onEvent(SettingsUiEvent.OnDismissUpdateDialog) },
+            onDownload = { onEvent(SettingsUiEvent.OnDownloadUpdate(it)) },
+            onCancelDownload = { onEvent(SettingsUiEvent.OnCancelDownload) },
+            onInstall = { onEvent(SettingsUiEvent.OnInstallUpdate(it)) },
+            onRequestPermission = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    try {
+                        val intent = Intent(
+                            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:${context.packageName}")
+                        ).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                    }
+                }
+            },
+            onOpenWebPage = { openWebPage(context, it) }
         )
     }
 
@@ -150,6 +184,13 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             SettingsCategoryHeader(title = stringResource(R.string.settings_category_about))
+
+            SettingsClickableItem(
+                icon = Icons.Rounded.SystemUpdate,
+                title = stringResource(R.string.settings_check_update),
+                subtitle = stringResource(R.string.settings_check_update_desc),
+                onClick = { onEvent(SettingsUiEvent.OnCheckForUpdate) }
+            )
 
             val projectUrl = stringResource(R.string.settings_project_url)
             SettingsClickableItem(
