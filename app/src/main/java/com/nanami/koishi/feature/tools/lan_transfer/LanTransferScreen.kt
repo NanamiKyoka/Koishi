@@ -246,6 +246,7 @@ fun LanTransferScreen(
                         alias = settings.alias,
                         pinEnabled = settings.pinEnabled,
                         pin = settings.pin,
+                        saveDirectory = settings.saveDirectory,
                         autoAccept = settings.autoAccept,
                         computeChecksums = settings.computeChecksums,
                         verifyChecksums = settings.verifyChecksums
@@ -535,6 +536,7 @@ private fun LanTransferSettingsDialog(
     var alias by remember(settings.alias) { mutableStateOf(settings.alias) }
     var pinEnabled by remember(settings.pinEnabled) { mutableStateOf(settings.pinEnabled) }
     var pin by remember(settings.pin) { mutableStateOf(settings.pin) }
+    var saveDirectory by remember(settings.saveDirectory) { mutableStateOf(settings.saveDirectory) }
     var autoAccept by remember(settings.autoAccept) { mutableStateOf(settings.autoAccept) }
     var computeChecksums by remember(settings.computeChecksums) { mutableStateOf(settings.computeChecksums) }
     var verifyChecksums by remember(settings.verifyChecksums) { mutableStateOf(settings.verifyChecksums) }
@@ -568,6 +570,13 @@ private fun LanTransferSettingsDialog(
                         singleLine = true
                     )
                 }
+                OutlinedTextField(
+                    value = saveDirectory,
+                    onValueChange = { saveDirectory = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.lan_transfer_save_directory)) },
+                    singleLine = true
+                )
                 SettingsToggleRow(
                     title = stringResource(R.string.lan_transfer_auto_accept),
                     checked = autoAccept,
@@ -593,6 +602,7 @@ private fun LanTransferSettingsDialog(
                             alias = alias,
                             pinEnabled = pinEnabled,
                             pin = pin,
+                            saveDirectory = saveDirectory,
                             autoAccept = autoAccept,
                             computeChecksums = computeChecksums,
                             verifyChecksums = verifyChecksums

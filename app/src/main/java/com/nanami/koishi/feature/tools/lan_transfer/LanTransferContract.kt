@@ -29,6 +29,7 @@ data class LanTransferSettingsUi(
     val alias: String = "",
     val pinEnabled: Boolean = false,
     val pin: String = "",
+    val saveDirectory: String = "Koishi",
     val autoAccept: Boolean = false,
     val computeChecksums: Boolean = false,
     val verifyChecksums: Boolean = true
@@ -59,6 +60,7 @@ sealed interface LanTransferUiEvent {
         val alias: String,
         val pinEnabled: Boolean,
         val pin: String,
+        val saveDirectory: String,
         val autoAccept: Boolean,
         val computeChecksums: Boolean,
         val verifyChecksums: Boolean

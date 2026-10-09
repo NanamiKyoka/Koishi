@@ -10,6 +10,7 @@ data class LanTransferSettings(
     val receiveEnabled: Boolean = false,
     val pinEnabled: Boolean = false,
     val pin: String = "",
+    val saveDirectory: String = "Koishi",
     val autoAcceptKnownDevices: Boolean = false,
     val computeChecksums: Boolean = false,
     val verifyChecksums: Boolean = true

@@ -17,21 +17,22 @@ import java.time.Instant
 
 class LanTransferFileStore(private val context: Context) {
 
-    fun open(file: TransferFileDto): PendingFile {
+    fun open(file: TransferFileDto, directoryName: String = DIRECTORY_NAME): PendingFile {
         val displayName = sanitize(file.fileName)
+        val directory = sanitizeDirectory(directoryName)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            openWithMediaStore(displayName, file)
+            openWithMediaStore(displayName, file, directory)
         } else {
-            openWithLegacyDirectory(displayName, file)
+            openWithLegacyDirectory(displayName, file, directory)
         }
     }
 
-    private fun openWithMediaStore(displayName: String, file: TransferFileDto): PendingFile {
+    private fun openWithMediaStore(displayName: String, file: TransferFileDto, directory: String): PendingFile {
         val resolver = context.contentResolver
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
             put(MediaStore.MediaColumns.MIME_TYPE, file.fileType.ifBlank { "application/octet-stream" })
-            put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$DIRECTORY_NAME")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$directory")
             put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
@@ -52,7 +53,7 @@ class LanTransferFileStore(private val context: Context) {
     }
 
     @Suppress("DEPRECATION")
-    private fun openWithLegacyDirectory(displayName: String, file: TransferFileDto): PendingFile {
+    private fun openWithLegacyDirectory(displayName: String, file: TransferFileDto, directoryName: String): PendingFile {
         val directory = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             DIRECTORY_NAME
@@ -122,6 +123,12 @@ class LanTransferFileStore(private val context: Context) {
         }
         return candidate
     }
+
+    private fun sanitizeDirectory(name: String): String = name
+        .replace('/', '_')
+        .replace('\\', '_')
+        .trim()
+        .ifBlank { DIRECTORY_NAME }
 
     private fun sanitize(name: String): String {
         val cleaned = name

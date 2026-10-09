@@ -1293,4 +1293,5 @@
     <string name="lan_transfer_verify_checksums">Verify SHA-256 on receive</string>
     <string name="lan_transfer_notification_incoming">%1$d incoming files</string>
     <string name="lan_transfer_notification_progress">Transferring %1$s (%2$d%%)</string>
+    <string name="lan_transfer_save_directory">Save subfolder</string>
 </resources>

@@ -197,6 +197,7 @@ class LanTransferEngine(
                     alias = event.alias.trim(),
                     pinEnabled = event.pinEnabled,
                     pin = event.pin.trim(),
+                    saveDirectory = event.saveDirectory.trim().ifBlank { "Koishi" },
                     autoAcceptKnownDevices = event.autoAccept,
                     computeChecksums = event.computeChecksums,
                     verifyChecksums = event.verifyChecksums
@@ -533,7 +534,7 @@ class LanTransferEngine(
         }
 
         override suspend fun openFileTarget(request: IncomingFileUpload): OutputStream {
-            val pending = fileStore.open(request.file)
+            val pending = fileStore.open(request.file, settingsRepository.currentData().saveDirectory)
             pendingOutputs["${request.sessionId}/${request.file.id}"] = pending
             return pending.output
         }
@@ -574,6 +575,7 @@ private fun LanTransferSettings.toUi(): LanTransferSettingsUi = LanTransferSetti
     alias = alias,
     pinEnabled = pinEnabled,
     pin = pin,
+    saveDirectory = saveDirectory,
     autoAccept = autoAcceptKnownDevices,
     computeChecksums = computeChecksums,
     verifyChecksums = verifyChecksums
