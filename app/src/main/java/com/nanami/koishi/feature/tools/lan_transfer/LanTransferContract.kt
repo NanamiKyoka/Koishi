@@ -15,7 +15,8 @@ data class TransferItemUi(
     val progress: Float,
     val status: TransferItemStatus,
     val sessionId: String? = null,
-    val canRetry: Boolean = false
+    val canRetry: Boolean = false,
+    val errorMessage: String? = null
 )
 
 data class IncomingRequestUi(
@@ -53,6 +54,7 @@ sealed interface LanTransferUiEvent {
     data object OnRefresh : LanTransferUiEvent
     data class OnFilesPicked(val files: List<PickedFile>) : LanTransferUiEvent
     data class OnSendTo(val deviceId: String) : LanTransferUiEvent
+    data class OnSendText(val deviceId: String, val text: String) : LanTransferUiEvent
     data class OnAcceptIncoming(val accepted: Boolean) : LanTransferUiEvent
     data class OnCancelTransfer(val id: String) : LanTransferUiEvent
     data class OnRetryTransfer(val id: String) : LanTransferUiEvent

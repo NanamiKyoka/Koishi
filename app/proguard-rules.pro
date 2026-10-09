@@ -66,3 +66,31 @@
 -dontwarn jdk.jfr.**
 -dontwarn org.apache.log4j.**
 -dontwarn org.apache.logging.log4j.**
+
+
+# Netty creates NIO channels through ReflectiveChannelFactory
+-keep class io.netty.channel.socket.nio.NioServerSocketChannel { public <init>(); }
+-keep class io.netty.channel.socket.nio.NioSocketChannel { public <init>(); }
+-keep class io.netty.channel.socket.nio.NioDatagramChannel { public <init>(); }
+
+
+# Netty relies on runtime type information, reflection and internal class hierarchies
+-keep class io.netty.** { *; }
+-keep interface io.netty.** { *; }
+-keep class io.ktor.server.netty.** { *; }
+-keep class io.ktor.server.engine.** { *; }
+
+
+# Optional Netty codecs and integrations absent from the Android build
+-dontwarn com.aayushatharva.brotli4j.**
+-dontwarn com.github.luben.zstd.**
+-dontwarn com.google.protobuf.**
+-dontwarn com.jcraft.jzlib.**
+-dontwarn com.ning.compress.**
+-dontwarn com.oracle.svm.**
+-dontwarn io.netty.pkitesting.**
+-dontwarn lzma.**
+-dontwarn net.jpountz.**
+-dontwarn org.jboss.marshalling.**
+-dontwarn org.osgi.annotation.bundle.**
+-dontwarn reactor.blockhound.**

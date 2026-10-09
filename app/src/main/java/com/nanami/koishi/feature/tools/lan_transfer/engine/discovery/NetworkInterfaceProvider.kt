@@ -5,7 +5,8 @@ import java.net.NetworkInterface
 
 data class LocalNetworkInterface(
     val networkInterface: NetworkInterface,
-    val address: Inet4Address
+    val address: Inet4Address,
+    val prefixLength: Int
 )
 
 class NetworkInterfaceProvider {
@@ -19,7 +20,14 @@ class NetworkInterfaceProvider {
                     .asSequence()
                     .filterIsInstance<Inet4Address>()
                     .filter { !it.isLoopbackAddress && !it.isLinkLocalAddress }
-                    .map { address -> LocalNetworkInterface(networkInterface, address) }
+                    .map { address ->
+                        val prefixLength = networkInterface.interfaceAddresses
+                            .firstOrNull { it.address == address }
+                            ?.networkPrefixLength
+                            ?.toInt()
+                            ?: 24
+                        LocalNetworkInterface(networkInterface, address, prefixLength)
+                    }
             }
             ?.toList()
             .orEmpty()

@@ -30,6 +30,7 @@ interface LocalSendRegisterClient {
         payload: RegisterRequestDto,
         expectedFingerprint: String? = null
     ): DeviceInfoResponseDto
+
 }
 
 class LocalSendClient(
@@ -242,13 +243,14 @@ class LocalSendClient(
 
         fun protocolJson(): Json = Json {
             ignoreUnknownKeys = true
+            encodeDefaults = true
             explicitNulls = false
         }
 
         fun defaultHttpClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(0, TimeUnit.MILLISECONDS)
+            .writeTimeout(0, TimeUnit.MILLISECONDS)
             .build()
     }
 }

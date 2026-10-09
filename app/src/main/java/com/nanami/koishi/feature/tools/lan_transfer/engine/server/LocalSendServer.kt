@@ -84,10 +84,17 @@ class LocalSendServer(
             },
             module = { installRoutes() }
         )
-        engine.start(wait = false)
-        server = engine
-        boundPort = engine.engine.resolvedConnectors().first().port
-        return boundPort
+        return try {
+            engine.start(wait = false)
+            server = engine
+            boundPort = engine.engine.resolvedConnectors().firstOrNull()?.port ?: port
+            boundPort
+        } catch (error: Exception) {
+            runCatching { engine.stop(gracePeriodMillis = 0, timeoutMillis = 500) }
+            server = null
+            boundPort = 0
+            throw error
+        }
     }
 
     suspend fun stop() {

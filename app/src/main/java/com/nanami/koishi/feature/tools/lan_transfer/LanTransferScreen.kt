@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Cancel
@@ -146,6 +147,7 @@ fun LanTransferScreen(
     modifier: Modifier = Modifier
 ) {
     var showSettings by remember { mutableStateOf(false) }
+    var textTarget by remember { mutableStateOf<LanDevice?>(null) }
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
@@ -203,7 +205,11 @@ fun LanTransferScreen(
                 }
             } else {
                 items(state.devices, key = { it.id }) { device ->
-                    DeviceRow(device = device, onSend = { onEvent(LanTransferUiEvent.OnSendTo(device.id)) })
+                    DeviceRow(
+                        device = device,
+                        onSend = { onEvent(LanTransferUiEvent.OnSendTo(device.id)) },
+                        onSendText = { textTarget = device }
+                    )
                 }
             }
             item {
@@ -232,6 +238,17 @@ fun LanTransferScreen(
             request = request,
             onAccept = { onEvent(LanTransferUiEvent.OnAcceptIncoming(true)) },
             onReject = { onEvent(LanTransferUiEvent.OnAcceptIncoming(false)) }
+        )
+    }
+
+    textTarget?.let { target ->
+        SendTextDialog(
+            deviceAlias = target.alias,
+            onDismiss = { textTarget = null },
+            onSend = { text ->
+                textTarget = null
+                onEvent(LanTransferUiEvent.OnSendText(target.id, text))
+            }
         )
     }
 
@@ -334,7 +351,11 @@ private fun EmptyDevices(isLoading: Boolean) {
 }
 
 @Composable
-private fun DeviceRow(device: LanDevice, onSend: () -> Unit) {
+private fun DeviceRow(
+    device: LanDevice,
+    onSend: () -> Unit,
+    onSendText: () -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(18.dp),
@@ -370,6 +391,12 @@ private fun DeviceRow(device: LanDevice, onSend: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            IconButton(onClick = onSendText) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.Chat,
+                    contentDescription = stringResource(R.string.lan_transfer_send_text)
+                )
+            }
             FilledTonalButton(onClick = onSend) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.Send,
@@ -377,7 +404,7 @@ private fun DeviceRow(device: LanDevice, onSend: () -> Unit) {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.size(6.dp))
-                Text(stringResource(R.string.lan_transfer_send_files))
+                Text(stringResource(R.string.lan_transfer_send))
             }
         }
     }
@@ -508,7 +535,7 @@ private fun TransferRow(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stringResource(
+                text = item.errorMessage ?: stringResource(
                     when (item.status) {
                         TransferItemStatus.DONE -> R.string.lan_transfer_status_done
                         TransferItemStatus.FAILED -> R.string.lan_transfer_status_failed
@@ -521,10 +548,55 @@ private fun TransferRow(
                     }
                 ),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (item.errorMessage != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
+}
+
+@Composable
+private fun SendTextDialog(
+    deviceAlias: String,
+    onDismiss: () -> Unit,
+    onSend: (String) -> Unit
+) {
+    var text by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.lan_transfer_send_text)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.lan_transfer_send_text_to, deviceAlias),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.lan_transfer_text_hint)) },
+                    minLines = 3,
+                    maxLines = 8
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSend(text) },
+                enabled = text.isNotBlank()
+            ) {
+                Text(stringResource(R.string.dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.dialog_cancel))
+            }
+        }
+    )
 }
 
 @Composable

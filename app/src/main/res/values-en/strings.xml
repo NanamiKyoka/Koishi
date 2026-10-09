@@ -894,7 +894,7 @@
     <string name="lan_transfer_error_generic">Transfer failed, please retry</string>
     <string name="lan_transfer_receive_on">Receiving is on. Other devices can now find this device</string>
     <string name="lan_transfer_receive_off">Receiving is off</string>
-    <string name="lan_transfer_files_selected">%1$d files selected</string>
+    <string name="lan_transfer_files_selected">%1$s files selected</string>
     <string name="lan_transfer_saved_hint">Received files are saved to Download/Koishi</string>
 
     <!-- Mini Apps Tool -->
@@ -1294,4 +1294,9 @@
     <string name="lan_transfer_notification_incoming">%1$d incoming files</string>
     <string name="lan_transfer_notification_progress">Transferring %1$s (%2$d%%)</string>
     <string name="lan_transfer_save_directory">Save subfolder</string>
+    <string name="lan_transfer_send_text">Send text</string>
+    <string name="lan_transfer_send_text_to">Send text to %1$s</string>
+    <string name="lan_transfer_text_hint">Enter text</string>
+    <string name="lan_transfer_text_message">Text message</string>
+    <string name="lan_transfer_send">Send</string>
 </resources>

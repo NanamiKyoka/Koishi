@@ -20,7 +20,10 @@ data class PickedFile(
     val size: Long,
     val mimeType: String,
     val modifiedAt: Long? = null,
-    val accessedAt: Long? = null
+    val accessedAt: Long? = null,
+    val previewText: String? = null,
+    val temporary: Boolean = false,
+    val displayName: String? = null
 )
 
 object ContentUriFileSource {

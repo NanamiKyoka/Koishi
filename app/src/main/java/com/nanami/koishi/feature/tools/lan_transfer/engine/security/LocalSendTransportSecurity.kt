@@ -1,12 +1,15 @@
 package com.nanami.koishi.feature.tools.lan_transfer.engine.security
 
 import okhttp3.OkHttpClient
+import java.net.Socket
+import java.security.Principal
 import java.security.SecureRandom
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
-import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLEngine
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
+import javax.net.ssl.X509ExtendedKeyManager
 import javax.net.ssl.X509TrustManager
 
 internal data class LocalSendHttpClient(
@@ -15,20 +18,15 @@ internal data class LocalSendHttpClient(
 )
 
 internal object LocalSendTransportSecurity {
-    private val keyStorePassword = "localsend".toCharArray()
-    private val privateKeyPassword = "localsend".toCharArray()
-
     fun pinClient(
         identity: LocalSendIdentityMaterial,
         baseClient: OkHttpClient,
         expectedFingerprint: String?
     ): LocalSendHttpClient {
         val trustManager = LocalSendFingerprintTrustManager(expectedFingerprint)
-        val keyStore = identity.keyStore(keyStorePassword.copyOf())
-        val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-            .apply { init(keyStore, privateKeyPassword.copyOf()) }
+        val keyManager = LocalSendIdentityKeyManager(identity)
         val sslContext = SSLContext.getInstance("TLS").apply {
-            init(keyManagerFactory.keyManagers, arrayOf<TrustManager>(trustManager), SecureRandom())
+            init(arrayOf(keyManager), arrayOf<TrustManager>(trustManager), SecureRandom())
         }
         return LocalSendHttpClient(
             client = baseClient.newBuilder()
@@ -37,6 +35,46 @@ internal object LocalSendTransportSecurity {
                 .build(),
             trustManager = trustManager
         )
+    }
+}
+
+private class LocalSendIdentityKeyManager(
+    private val identity: LocalSendIdentityMaterial
+) : X509ExtendedKeyManager() {
+    override fun getClientAliases(keyType: String?, issuers: Array<out Principal>?): Array<String> =
+        if (supports(keyType)) arrayOf(ALIAS) else emptyArray()
+
+    override fun chooseClientAlias(
+        keyType: Array<out String>?,
+        issuers: Array<out Principal>?,
+        socket: Socket?
+    ): String? = if (keyType?.any(::supports) == true) ALIAS else null
+
+    override fun chooseEngineClientAlias(
+        keyType: Array<out String>?,
+        issuers: Array<out Principal>?,
+        engine: SSLEngine?
+    ): String? = if (keyType?.any(::supports) == true) ALIAS else null
+
+    override fun getServerAliases(keyType: String?, issuers: Array<out Principal>?): Array<String>? = null
+
+    override fun chooseServerAlias(
+        keyType: String?,
+        issuers: Array<out Principal>?,
+        socket: Socket?
+    ): String? = null
+
+    override fun getCertificateChain(alias: String?): Array<X509Certificate>? =
+        if (alias == ALIAS) arrayOf(identity.certificate) else null
+
+    override fun getPrivateKey(alias: String?): java.security.PrivateKey? =
+        if (alias == ALIAS) identity.privateKey else null
+
+    private fun supports(keyType: String?): Boolean =
+        keyType == "RSA" || keyType == "RSA-PSS" || keyType == "RSASSA-PSS"
+
+    private companion object {
+        const val ALIAS = "localsend-client"
     }
 }
 
