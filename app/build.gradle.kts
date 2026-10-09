@@ -112,6 +112,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "META-INF/LICENSE.md"
             excludes += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/license/**"
+            excludes += "META-INF/versions/**"
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
         }
     }
 
@@ -171,7 +175,11 @@ dependencies {
     implementation(libs.bouncycastle.prov)
     implementation(libs.bouncycastle.pkix)
     implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.netty) {
+        exclude(group = "io.netty", module = "netty-codec-native-quic")
+        exclude(group = "io.netty", module = "netty-transport-native-epoll")
+        exclude(group = "io.netty", module = "netty-transport-native-kqueue")
+    }
 
     // QR Code Generation & Scanning
     implementation(libs.qrcode.kotlin)

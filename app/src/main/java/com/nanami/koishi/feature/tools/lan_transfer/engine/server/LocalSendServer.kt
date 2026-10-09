@@ -15,10 +15,13 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
-import io.ktor.server.cio.CIO
-import io.ktor.server.cio.CIOApplicationEngine
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendCertificateFactory
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityMaterial
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.sslConnector
+import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.receiveText
@@ -42,6 +45,7 @@ data class LocalSendServerConfig(
 
 class LocalSendServer(
     private val config: LocalSendServerConfig,
+    private val identity: LocalSendIdentityMaterial,
     private val callbacks: LocalSendServerCallbacks,
     private val json: Json = Json {
         ignoreUnknownKeys = true
@@ -49,8 +53,9 @@ class LocalSendServer(
     }
 ) {
     private val sessionMutex = Mutex()
+    private val clientCertificates = LocalSendClientCertificateRegistry()
     private var session: ActiveSession? = null
-    private var server: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
+    private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
     private var boundPort: Int = 0
 
     suspend fun start(
@@ -58,9 +63,26 @@ class LocalSendServer(
         port: Int = LocalSendProtocol.DEFAULT_PORT
     ): Int {
         check(server == null) { "Server is already running" }
-        val engine = embeddedServer(CIO, host = host, port = port) {
-            installRoutes()
+        require(config.device.fingerprint.equals(identity.fingerprint, ignoreCase = true)) {
+            "Server fingerprint must match the TLS identity"
         }
+        val engine = embeddedServer(
+            factory = Netty,
+            configure = {
+                sslConnector(
+                    keyStore = identity.keyStore(TLS_PASSWORD.copyOf()),
+                    keyAlias = LocalSendIdentityMaterial.KEY_ALIAS,
+                    keyStorePassword = { TLS_PASSWORD.copyOf() },
+                    privateKeyPassword = { TLS_PASSWORD.copyOf() }
+                ) {
+                    this.host = host
+                    this.port = port
+                }
+                enableHttp2 = false
+                channelPipelineConfig = localSendTlsPipelineConfig(identity, clientCertificates)
+            },
+            module = { installRoutes() }
+        )
         engine.start(wait = false)
         server = engine
         boundPort = engine.engine.resolvedConnectors().first().port
@@ -89,9 +111,12 @@ class LocalSendServer(
                     val request = call.receiveProtocolJson<RegisterRequestDto>()
                     val protocol = LanDeviceProtocol.fromWire(request.protocol)
                         ?: return@post call.respondError(HttpStatusCode.BadRequest, "Invalid protocol")
+                    call.requireVerifiedFingerprint(request.fingerprint)
                     val peer = request.toPeer(remoteHost = call.requestOriginHost(), protocol = protocol)
                     callbacks.onRegistered(peer)
                     call.respondJson(config.device)
+                } catch (error: ClientCertificateException) {
+                    call.respondError(HttpStatusCode.Unauthorized, error.message ?: "Invalid client certificate")
                 } catch (error: Exception) {
                     call.respondError(HttpStatusCode.InternalServerError, error.message ?: "Register failed")
                 }
@@ -100,6 +125,8 @@ class LocalSendServer(
             post("${LocalSendProtocol.API_PREFIX}/prepare-upload") {
                 try {
                     call.respondPrepareUpload()
+                } catch (error: ClientCertificateException) {
+                    call.respondError(HttpStatusCode.Unauthorized, error.message ?: "Invalid client certificate")
                 } catch (error: Exception) {
                     call.respondError(HttpStatusCode.InternalServerError, error.message ?: "Prepare upload failed")
                 }
@@ -108,13 +135,19 @@ class LocalSendServer(
             post("${LocalSendProtocol.API_PREFIX}/upload") {
                 try {
                     call.respondUpload()
+                } catch (error: ClientCertificateException) {
+                    call.respondError(HttpStatusCode.Unauthorized, error.message ?: "Invalid client certificate")
                 } catch (error: Exception) {
                     call.respondError(HttpStatusCode.InternalServerError, error.message ?: "Upload failed")
                 }
             }
 
             post("${LocalSendProtocol.API_PREFIX}/cancel") {
-                call.cancelSession()
+                try {
+                    call.cancelSession()
+                } catch (error: ClientCertificateException) {
+                    call.respondError(HttpStatusCode.Unauthorized, error.message ?: "Invalid client certificate")
+                }
             }
         }
     }
@@ -126,6 +159,7 @@ class LocalSendServer(
         val request = receiveProtocolJson<PrepareUploadRequestDto>()
         val protocol = LanDeviceProtocol.fromWire(request.info.protocol)
             ?: return respondError(HttpStatusCode.BadRequest, "Invalid protocol")
+        requireVerifiedFingerprint(request.info.fingerprint)
         val peer = request.info.toPeer(requestOriginHost(), protocol)
         val sessionId = UUID.randomUUID().toString()
 
@@ -200,6 +234,7 @@ class LocalSendServer(
         } ?: return respondError(HttpStatusCode.Forbidden, "Invalid upload token")
 
         val peer = activePeer(sessionId) ?: return respondError(HttpStatusCode.Conflict, "Session ended")
+        requireVerifiedFingerprint(peer.fingerprint)
         val output = try {
             callbacks.openFileTarget(
                 IncomingFileUpload(
@@ -280,10 +315,16 @@ class LocalSendServer(
     private suspend fun ApplicationCall.cancelSession() {
         val sessionId = request.queryParameters["sessionId"]
         val sourceHost = requestOriginHost()
+        val sourceFingerprint = clientCertificateFingerprint()
         sessionMutex.withLock {
             val active = session
-            if (active != null && active.sessionId == sessionId && active.peerHost == sourceHost) {
+            if (active != null &&
+                active.sessionId == sessionId &&
+                active.peerHost == sourceHost &&
+                active.peer.fingerprint.equals(sourceFingerprint, ignoreCase = true)
+            ) {
                 session = null
+                callbacks.onSessionCancelled(sessionId)
             }
         }
         respond(HttpStatusCode.OK)
@@ -304,7 +345,7 @@ class LocalSendServer(
                     file
                 }
             }
-            session = if (updatedFiles.values.all { it.status == FileStatus.FINISHED || it.status == FileStatus.FAILED }) {
+            session = if (updatedFiles.values.all { it.status == FileStatus.FINISHED }) {
                 null
             } else {
                 active.copy(files = updatedFiles)
@@ -334,6 +375,21 @@ class LocalSendServer(
         json.decodeFromString<T>(receiveText())
 
     private fun ApplicationCall.requestOriginHost(): String = request.origin.remoteHost
+
+    private fun ApplicationCall.clientCertificateFingerprint(): String {
+        val origin = request.origin
+        val certificate = clientCertificates.find(origin.remoteHost, origin.remotePort)
+            ?: throw ClientCertificateException("Client certificate is missing")
+        return LocalSendCertificateFactory.fingerprint(certificate)
+    }
+
+    private fun ApplicationCall.requireVerifiedFingerprint(claimedFingerprint: String): String {
+        val actual = clientCertificateFingerprint()
+        if (!actual.equals(claimedFingerprint, ignoreCase = true)) {
+            throw ClientCertificateException("Client fingerprint does not match its certificate")
+        }
+        return actual
+    }
 
     private fun ApplicationCall.isPinValid(): Boolean = config.pin.isNullOrBlank() || request.queryParameters["pin"] == config.pin
 
@@ -371,4 +427,10 @@ class LocalSendServer(
         FINISHED,
         FAILED
     }
+
+    private companion object {
+        val TLS_PASSWORD = "localsend".toCharArray()
+    }
 }
+
+private class ClientCertificateException(message: String) : IllegalStateException(message)

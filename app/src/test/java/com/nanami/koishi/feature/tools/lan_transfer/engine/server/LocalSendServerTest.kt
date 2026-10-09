@@ -1,26 +1,24 @@
 package com.nanami.koishi.feature.tools.lan_transfer.engine.server
 
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
+import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.DeviceInfoResponseDto
-import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadRequestDto
-import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadResponseDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendClient
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendProtocolException
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendUploadSource
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadRequestDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.RegisterRequestDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.TransferFileDto
-import kotlinx.coroutines.Dispatchers
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendCertificateFactory
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityMaterial
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
@@ -28,45 +26,35 @@ import java.util.concurrent.ConcurrentHashMap
 class LocalSendServerTest {
 
     private val json = Json { ignoreUnknownKeys = true }
+    private val serverIdentity = LocalSendCertificateFactory.create()
+    private val clientIdentity = LocalSendCertificateFactory.create()
 
     @Test
-    fun servesInfoRegisterPrepareAndUpload() = runTest {
+    fun servesInfoRegisterPrepareAndUploadOverMutualTls() = runTest {
         val callbacks = RecordingCallbacks()
-        val server = LocalSendServer(
-            config = LocalSendServerConfig(
-                device = DeviceInfoResponseDto(
-                    alias = "Koishi",
-                    version = "2.2",
-                    fingerprint = "SERVER123",
-                    download = false
-                ),
-                verifyChecksums = true
-            ),
-            callbacks = callbacks,
-            json = json
-        )
+        val server = createServer(callbacks, verifyChecksums = true)
         val port = server.start(host = "127.0.0.1", port = 0)
         try {
-            val info = get("http://127.0.0.1:$port/api/localsend/v2/info")
-            assertEquals(200, info.first)
-            assertEquals("Koishi", json.decodeFromString<DeviceInfoResponseDto>(info.second).alias)
-
-            val registerRequest = RegisterRequestDto(
-                alias = "Remote",
-                version = "2.2",
-                fingerprint = "REMOTE123",
+            val client = LocalSendClient(clientIdentity)
+            val info = client.info(
+                host = "127.0.0.1",
                 port = port,
-                protocol = "http"
+                protocol = LanDeviceProtocol.HTTPS,
+                expectedFingerprint = serverIdentity.fingerprint
             )
-            val client = LocalSendClient(OkHttpClient())
+            assertEquals("Koishi", info.alias)
+            assertEquals(serverIdentity.fingerprint, info.fingerprint)
+
+            val registerRequest = clientRegisterRequest(port)
             val register = client.register(
                 host = "127.0.0.1",
                 port = port,
-                protocol = com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol.HTTP,
-                payload = registerRequest
+                protocol = LanDeviceProtocol.HTTPS,
+                payload = registerRequest,
+                expectedFingerprint = serverIdentity.fingerprint
             )
             assertEquals("Koishi", register.alias)
-            assertEquals("REMOTE123", callbacks.registered.single().fingerprint)
+            assertEquals(clientIdentity.fingerprint, callbacks.registered.single().fingerprint)
 
             val content = "local send payload".toByteArray()
             val file = TransferFileDto(
@@ -83,19 +71,21 @@ class LocalSendServerTest {
             val prepareResponse = client.prepareUpload(
                 host = "127.0.0.1",
                 port = port,
-                protocol = com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol.HTTP,
-                payload = prepareRequest
+                protocol = LanDeviceProtocol.HTTPS,
+                payload = prepareRequest,
+                expectedFingerprint = serverIdentity.fingerprint
             ) ?: error("Upload was not accepted")
             val token = prepareResponse.files.getValue(file.id)
 
             client.upload(
                 host = "127.0.0.1",
                 port = port,
-                protocol = com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol.HTTP,
+                protocol = LanDeviceProtocol.HTTPS,
                 sessionId = prepareResponse.sessionId,
                 fileId = file.id,
                 token = token,
-                source = ByteArrayUploadSource(content)
+                source = ByteArrayUploadSource(content),
+                expectedFingerprint = serverIdentity.fingerprint
             )
             assertEquals("local send payload", callbacks.outputs.getValue(file.id).toString(Charsets.UTF_8))
             assertTrue(callbacks.results.single().success)
@@ -107,67 +97,104 @@ class LocalSendServerTest {
     @Test
     fun rejectsPrepareWhenPinDoesNotMatch() = runTest {
         val callbacks = RecordingCallbacks()
-        val server = LocalSendServer(
-            config = LocalSendServerConfig(
-                device = DeviceInfoResponseDto(
-                    alias = "Koishi",
-                    version = "2.2",
-                    fingerprint = "SERVER123"
-                ),
-                pin = "2468"
-            ),
-            callbacks = callbacks,
-            json = json
-        )
+        val server = createServer(callbacks, pin = "2468")
         val port = server.start(host = "127.0.0.1", port = 0)
         try {
-            val request = PrepareUploadRequestDto(
-                info = RegisterRequestDto(
-                    alias = "Remote",
-                    version = "2.2",
-                    fingerprint = "REMOTE123",
+            val client = LocalSendClient(clientIdentity)
+            val response = runCatching {
+                client.prepareUpload(
+                    host = "127.0.0.1",
                     port = port,
-                    protocol = "http"
-                ),
-                files = emptyMap()
-            )
-            val response = post(
-                "http://127.0.0.1:$port/api/localsend/v2/prepare-upload?pin=0000",
-                json.encodeToString(PrepareUploadRequestDto.serializer(), request)
-            )
+                    protocol = LanDeviceProtocol.HTTPS,
+                    payload = PrepareUploadRequestDto(
+                        info = clientRegisterRequest(port),
+                        files = emptyMap()
+                    ),
+                    pin = "0000",
+                    expectedFingerprint = serverIdentity.fingerprint
+                )
+            }
 
-            assertEquals(401, response.first)
+            val error = response.exceptionOrNull() as LocalSendProtocolException
+            assertEquals(401, error.statusCode)
         } finally {
             server.stop()
         }
     }
 
-    private suspend fun get(url: String): Pair<Int, String> = execute(
-        Request.Builder().url(url).get().build()
-    )
-
-    private suspend fun post(url: String, body: String): Pair<Int, String> = execute(
-        Request.Builder()
-            .url(url)
-            .post(body.toByteArray().toRequestBody("application/json".toMediaType()))
-            .build()
-    )
-
-    private suspend fun post(url: String, body: ByteArray): Pair<Int, String> = execute(
-        Request.Builder()
-            .url(url)
-            .post(body.toRequestBody("application/octet-stream".toMediaType()))
-            .build()
-    )
-
-    private suspend fun execute(request: Request): Pair<Int, String> =
-        withContext(Dispatchers.IO) {
-            OkHttpClient().newCall(request).execute().use { response ->
-                response.code to response.body.orEmpty()
+    @Test
+    fun rejectsClaimedFingerprintThatDoesNotMatchClientCertificate() = runTest {
+        val callbacks = RecordingCallbacks()
+        val server = createServer(callbacks)
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            val response = runCatching {
+                client.register(
+                    host = "127.0.0.1",
+                    port = port,
+                    protocol = LanDeviceProtocol.HTTPS,
+                    payload = clientRegisterRequest(port).copy(fingerprint = "WRONG"),
+                    expectedFingerprint = serverIdentity.fingerprint
+                )
             }
-        }
 
-    private fun okhttp3.ResponseBody?.orEmpty(): String = this?.string().orEmpty()
+            val error = response.exceptionOrNull() as LocalSendProtocolException
+            assertEquals(401, error.statusCode)
+            assertTrue(callbacks.registered.isEmpty())
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
+    fun rejectsServerCertificateWithWrongPinnedFingerprint() = runTest {
+        val server = createServer(RecordingCallbacks())
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            val response = runCatching {
+                client.info(
+                    host = "127.0.0.1",
+                    port = port,
+                    protocol = LanDeviceProtocol.HTTPS,
+                    expectedFingerprint = "00".repeat(32)
+                )
+            }
+
+            assertTrue(response.exceptionOrNull() is IOException)
+        } finally {
+            server.stop()
+        }
+    }
+
+    private fun createServer(
+        callbacks: RecordingCallbacks,
+        pin: String? = null,
+        verifyChecksums: Boolean = false
+    ): LocalSendServer = LocalSendServer(
+        config = LocalSendServerConfig(
+            device = DeviceInfoResponseDto(
+                alias = "Koishi",
+                version = "2.2",
+                fingerprint = serverIdentity.fingerprint,
+                download = false
+            ),
+            pin = pin,
+            verifyChecksums = verifyChecksums
+        ),
+        identity = serverIdentity,
+        callbacks = callbacks,
+        json = json
+    )
+
+    private fun clientRegisterRequest(port: Int): RegisterRequestDto = RegisterRequestDto(
+        alias = "Remote",
+        version = "2.2",
+        fingerprint = clientIdentity.fingerprint,
+        port = port,
+        protocol = "https"
+    )
 
     private fun ByteArray.sha256(): String =
         MessageDigest.getInstance("SHA-256")

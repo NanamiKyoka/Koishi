@@ -1,6 +1,7 @@
 package com.nanami.koishi.feature.tools.lan_transfer.engine.protocol
 
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendCertificateFactory
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -22,7 +23,7 @@ class LocalSendClientTest {
         )
         server.start()
         try {
-            val client = LocalSendClient(OkHttpClient())
+            val client = LocalSendClient(LocalSendCertificateFactory.create(), OkHttpClient())
             val response = client.register(
                 host = server.hostName,
                 port = server.port,
@@ -57,7 +58,7 @@ class LocalSendClientTest {
         )
         server.start()
         try {
-            val client = LocalSendClient(OkHttpClient())
+            val client = LocalSendClient(LocalSendCertificateFactory.create(), OkHttpClient())
             val result = runCatching {
                 client.register(
                     host = server.hostName,

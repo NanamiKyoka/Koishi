@@ -41,7 +41,7 @@ class DeviceDiscovery(
     fun discover(
         alias: String,
         port: Int = LocalSendProtocol.DEFAULT_PORT,
-        protocol: LanDeviceProtocol = LanDeviceProtocol.HTTP,
+        protocol: LanDeviceProtocol = LanDeviceProtocol.HTTPS,
         announce: Boolean = true
     ): Flow<LanDevice> = callbackFlow {
         val localInfo = deviceInfoProvider.create(alias, port, protocol)

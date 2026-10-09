@@ -57,3 +57,12 @@
 -dontwarn java.awt.**
 -dontwarn javax.swing.**
 -dontwarn javax.security.auth.x500.**
+
+
+# Netty server optional transports and TLS providers
+-dontwarn io.netty.channel.epoll.**
+-dontwarn io.netty.channel.kqueue.**
+-dontwarn io.netty.internal.tcnative.**
+-dontwarn jdk.jfr.**
+-dontwarn org.apache.log4j.**
+-dontwarn org.apache.logging.log4j.**

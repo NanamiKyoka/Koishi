@@ -69,6 +69,6 @@ val featureModule = module {
     single { LanTransferSettingsRepository(get()) }
     single { LocalSendIdentityStore(get()) }
     single { LocalDeviceInfoProvider(get()) }
-    single { LocalSendClient() }
+    single { LocalSendClient(get<LocalSendIdentityStore>().get()) }
     single { DeviceDiscovery(get(), get(), get()) }
 }

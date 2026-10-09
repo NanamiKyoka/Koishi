@@ -41,4 +41,6 @@ interface LocalSendServerCallbacks {
     suspend fun openFileTarget(request: IncomingFileUpload): OutputStream
 
     suspend fun onFileFinished(result: IncomingFileResult) = Unit
+
+    suspend fun onSessionCancelled(sessionId: String) = Unit
 }

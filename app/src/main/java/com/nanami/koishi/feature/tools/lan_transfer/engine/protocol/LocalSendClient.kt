@@ -1,6 +1,10 @@
 package com.nanami.koishi.feature.tools.lan_transfer.engine.protocol
 
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendFingerprintTrustManager
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendHttpClient
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityMaterial
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendTransportSecurity
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.json.Json
 import okhttp3.Call
@@ -11,10 +15,10 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okio.BufferedSink
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
-import okio.BufferedSink
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -23,12 +27,14 @@ interface LocalSendRegisterClient {
         host: String,
         port: Int,
         protocol: LanDeviceProtocol,
-        payload: RegisterRequestDto
+        payload: RegisterRequestDto,
+        expectedFingerprint: String? = null
     ): DeviceInfoResponseDto
 }
 
 class LocalSendClient(
-    private val httpClient: OkHttpClient = defaultHttpClient(),
+    private val identity: LocalSendIdentityMaterial,
+    private val baseHttpClient: OkHttpClient = defaultHttpClient(),
     private val json: Json = protocolJson()
 ) : LocalSendRegisterClient {
 
@@ -36,7 +42,8 @@ class LocalSendClient(
         host: String,
         port: Int,
         protocol: LanDeviceProtocol,
-        payload: RegisterRequestDto
+        payload: RegisterRequestDto,
+        expectedFingerprint: String?
     ): DeviceInfoResponseDto {
         val url = LocalSendEndpoint.REGISTER.url(host, port, protocol.wireValue)
             ?: throw LocalSendProtocolException(message = "Invalid device address")
@@ -46,17 +53,24 @@ class LocalSendClient(
             .url(url)
             .post(body)
             .build()
-        return executeJson(request)
+        val transport = transportFor(protocol, expectedFingerprint)
+        val response = executeJson<DeviceInfoResponseDto>(transport.client, request)
+        ensureCertificateFingerprint(protocol, transport, response.fingerprint)
+        return response
     }
 
     suspend fun info(
         host: String,
         port: Int,
-        protocol: LanDeviceProtocol
+        protocol: LanDeviceProtocol,
+        expectedFingerprint: String? = null
     ): DeviceInfoResponseDto {
         val url = LocalSendEndpoint.INFO.url(host, port, protocol.wireValue)
             ?: throw LocalSendProtocolException(message = "Invalid device address")
-        return executeJson(Request.Builder().url(url).get().build())
+        val transport = transportFor(protocol, expectedFingerprint)
+        val response = executeJson<DeviceInfoResponseDto>(transport.client, Request.Builder().url(url).get().build())
+        ensureCertificateFingerprint(protocol, transport, response.fingerprint)
+        return response
     }
 
     suspend fun prepareUpload(
@@ -64,7 +78,8 @@ class LocalSendClient(
         port: Int,
         protocol: LanDeviceProtocol,
         payload: PrepareUploadRequestDto,
-        pin: String? = null
+        pin: String? = null,
+        expectedFingerprint: String? = null
     ): PrepareUploadResponseDto? {
         val baseUrl = LocalSendEndpoint.PREPARE_UPLOAD.url(host, port, protocol.wireValue)
             ?: throw LocalSendProtocolException(message = "Invalid device address")
@@ -73,7 +88,8 @@ class LocalSendClient(
             .build()
         val body = json.encodeToString(PrepareUploadRequestDto.serializer(), payload)
             .toRequestBody(JSON_MEDIA_TYPE)
-        execute(Request.Builder().url(url).post(body).build()).use { response ->
+        val transport = transportFor(protocol, expectedFingerprint)
+        execute(transport.client, Request.Builder().url(url).post(body).build()).use { response ->
             val responseBody = response.body?.string().orEmpty()
             if (response.code == 204) return null
             if (!response.isSuccessful) {
@@ -94,6 +110,7 @@ class LocalSendClient(
         fileId: String,
         token: String,
         source: LocalSendUploadSource,
+        expectedFingerprint: String? = null,
         onProgress: (sentBytes: Long) -> Unit = {}
     ) {
         val baseUrl = LocalSendEndpoint.UPLOAD.url(host, port, protocol.wireValue)
@@ -123,7 +140,8 @@ class LocalSendClient(
                 }
             }
         }
-        execute(Request.Builder().url(url).post(body).build()).use { response ->
+        val transport = transportFor(protocol, expectedFingerprint)
+        execute(transport.client, Request.Builder().url(url).post(body).build()).use { response ->
             ensureSuccessful(response)
         }
     }
@@ -132,15 +150,43 @@ class LocalSendClient(
         host: String,
         port: Int,
         protocol: LanDeviceProtocol,
-        sessionId: String
+        sessionId: String,
+        expectedFingerprint: String? = null
     ) {
         val baseUrl = LocalSendEndpoint.CANCEL.url(host, port, protocol.wireValue)
             ?: throw LocalSendProtocolException(message = "Invalid device address")
         val url = baseUrl.newBuilder()
             .addQueryParameter("sessionId", sessionId)
             .build()
-        execute(Request.Builder().url(url).post(EMPTY_BODY).build()).use { response ->
+        val transport = transportFor(protocol, expectedFingerprint)
+        execute(transport.client, Request.Builder().url(url).post(EMPTY_BODY).build()).use { response ->
             ensureSuccessful(response)
+        }
+    }
+
+    private fun transportFor(
+        protocol: LanDeviceProtocol,
+        expectedFingerprint: String?
+    ): LocalSendHttpClient {
+        if (protocol == LanDeviceProtocol.HTTP) {
+            return LocalSendHttpClient(
+                client = baseHttpClient,
+                trustManager = LocalSendFingerprintTrustManager(null)
+            )
+        }
+        return LocalSendTransportSecurity.pinClient(identity, baseHttpClient, expectedFingerprint)
+    }
+
+    private fun ensureCertificateFingerprint(
+        protocol: LanDeviceProtocol,
+        transport: LocalSendHttpClient,
+        claimedFingerprint: String
+    ) {
+        if (protocol != LanDeviceProtocol.HTTPS) return
+        val observed = transport.trustManager.observedFingerprint
+            ?: throw LocalSendProtocolException(message = "Missing server certificate")
+        if (!observed.equals(claimedFingerprint, ignoreCase = true)) {
+            throw LocalSendProtocolException(message = "Server fingerprint does not match its certificate")
         }
     }
 
@@ -153,21 +199,23 @@ class LocalSendClient(
         )
     }
 
-    private suspend inline fun <reified T> executeJson(request: Request): T =
-        execute(request).use { response ->
-            val responseBody = response.body?.string().orEmpty()
-            if (!response.isSuccessful) {
-                throw LocalSendProtocolException(
-                    statusCode = response.code,
-                    message = decodeError(responseBody) ?: response.message
-                )
-            }
-            json.decodeFromString<T>(responseBody)
+    private suspend inline fun <reified T> executeJson(
+        client: OkHttpClient,
+        request: Request
+    ): T = execute(client, request).use { response ->
+        val responseBody = response.body?.string().orEmpty()
+        if (!response.isSuccessful) {
+            throw LocalSendProtocolException(
+                statusCode = response.code,
+                message = decodeError(responseBody) ?: response.message
+            )
         }
+        json.decodeFromString<T>(responseBody)
+    }
 
-    private suspend fun execute(request: Request): Response =
+    private suspend fun execute(client: OkHttpClient, request: Request): Response =
         suspendCancellableCoroutine { continuation ->
-            val call = httpClient.newCall(request)
+            val call = client.newCall(request)
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {

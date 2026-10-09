@@ -53,9 +53,10 @@ class LanTransferViewModel(
     private val devicesById = ConcurrentHashMap<String, LanDevice>()
     private var pendingDecision: CompletableDeferred<IncomingUploadDecision>? = null
     private var server: LocalSendServer? = null
-    private val localFingerprint = identityStore.get().fingerprint
+    private val identity = identityStore.get()
+    private val localFingerprint = identity.fingerprint
 
-    private val TRANSPORT_PROTOCOL = LanDeviceProtocol.HTTP
+    private val TRANSPORT_PROTOCOL = LanDeviceProtocol.HTTPS
 
     init {
         viewModelScope.launch {
@@ -160,7 +161,7 @@ class LanTransferViewModel(
             pin = settings.pin.takeIf { settings.pinEnabled && it.isNotBlank() },
             verifyChecksums = false
         )
-        val instance = LocalSendServer(config, ServerCallbacks())
+        val instance = LocalSendServer(config, identity, ServerCallbacks())
         instance.start(port = LocalSendProtocol.DEFAULT_PORT)
         server = instance
     }
@@ -202,7 +203,8 @@ class LanTransferViewModel(
                     port = device.port,
                     protocol = device.protocol,
                     payload = PrepareUploadRequestDto(info = localInfo, files = byId),
-                    pin = settings.pin.takeIf { settings.pinEnabled && it.isNotBlank() }
+                    pin = settings.pin.takeIf { settings.pinEnabled && it.isNotBlank() },
+                    expectedFingerprint = device.fingerprint
                 )
                 if (response == null) {
                     markAllFailed(entries, TransferDirection.SENDING)
@@ -219,6 +221,7 @@ class LanTransferViewModel(
                         fileId = dto.id,
                         token = token,
                         source = ContentUriFileSource.source(getApplication<Application>().contentResolver, picked),
+                        expectedFingerprint = device.fingerprint,
                         onProgress = { sent -> updateProgress(dto.id, sent, dto.size) }
                     )
                     updateStatus(dto.id, TransferItemStatus.DONE)

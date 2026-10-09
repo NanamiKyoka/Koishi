@@ -87,7 +87,7 @@ bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = 
 
 # LocalSend Server
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
-ktor-server-cio = { module = "io.ktor:ktor-server-cio-jvm", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
 
 # QR Code & Scanning
 qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin-android", version.ref = "qrcode-kotlin" }
