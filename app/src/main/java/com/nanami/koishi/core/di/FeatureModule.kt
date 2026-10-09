@@ -11,6 +11,11 @@ import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionArchiveStor
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionRepository
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionStorageRepository
 import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchSettingsRepository
+import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.DeviceDiscovery
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalDeviceInfoProvider
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendClient
+import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityStore
+import com.nanami.koishi.feature.tools.lan_transfer.engine.settings.LanTransferSettingsRepository
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalStickerRepository
 import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetRepository
 import com.nanami.koishi.feature.tools.mini_apps.engine.MiniAppStore
@@ -60,4 +65,10 @@ val featureModule = module {
     single { MemeLocalStickerRepository(get()) }
 
     single { VideoToGifEngine(get()) }
+
+    single { LanTransferSettingsRepository(get()) }
+    single { LocalSendIdentityStore(get()) }
+    single { LocalDeviceInfoProvider(get()) }
+    single { LocalSendClient() }
+    single { DeviceDiscovery(get(), get(), get()) }
 }

@@ -13,6 +13,7 @@ import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewMod
 import com.nanami.koishi.feature.tools.image_search.ImageSearchViewModel
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchViewModel
 import com.nanami.koishi.feature.tools.image_stitching.ImageStitchingViewModel
+import com.nanami.koishi.feature.tools.lan_transfer.LanTransferViewModel
 import com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
@@ -50,4 +51,5 @@ val viewModelModule = module {
     viewModel { VideoToGifViewModel(get(), get()) }
     viewModel { WatermarkViewModel(get()) }
     viewModel { WorthCalculatorViewModel(get()) }
+    viewModel { LanTransferViewModel(get(), get(), get(), get(), get(), get()) }
 }

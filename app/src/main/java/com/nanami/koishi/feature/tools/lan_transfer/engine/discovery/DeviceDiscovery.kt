@@ -41,7 +41,8 @@ class DeviceDiscovery(
     fun discover(
         alias: String,
         port: Int = LocalSendProtocol.DEFAULT_PORT,
-        protocol: LanDeviceProtocol = LanDeviceProtocol.HTTPS
+        protocol: LanDeviceProtocol = LanDeviceProtocol.HTTP,
+        announce: Boolean = true
     ): Flow<LanDevice> = callbackFlow {
         val localInfo = deviceInfoProvider.create(alias, port, protocol)
         val multicastLock = acquireMulticastLock()
@@ -93,10 +94,12 @@ class DeviceDiscovery(
             }
         }
 
-        scope.launch {
-            ANNOUNCE_DELAYS.forEach { delayMs ->
-                delay(delayMs)
-                sockets.forEach { socket -> runCatching { socket.sendAnnouncement(localInfo, port) } }
+        if (announce) {
+            scope.launch {
+                ANNOUNCE_DELAYS.forEach { delayMs ->
+                    delay(delayMs)
+                    sockets.forEach { socket -> runCatching { socket.sendAnnouncement(localInfo, port) } }
+                }
             }
         }
 

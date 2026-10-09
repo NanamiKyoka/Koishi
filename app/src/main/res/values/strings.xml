@@ -874,6 +874,29 @@
     <string name="lan_transfer_empty_title">准备建立本地连接</string>
     <string name="lan_transfer_empty_desc">开启接收后，附近设备可以发现这台设备，也可以选择文件主动发送</string>
     <string name="lan_transfer_protocol_badge">LocalSend v2.2</string>
+    <string name="lan_transfer_receive">允许接收</string>
+    <string name="lan_transfer_receive_desc">开启后，同一局域网内的设备可以发现并发送文件到本机</string>
+    <string name="lan_transfer_devices_title">附近设备</string>
+    <string name="lan_transfer_devices_empty">正在搜索附近的设备…</string>
+    <string name="lan_transfer_devices_none">暂未发现设备，请确认设备在同一局域网并已打开</string>
+    <string name="lan_transfer_refresh">重新搜索</string>
+    <string name="lan_transfer_send_files">选择文件</string>
+    <string name="lan_transfer_send_to">发送到 %1$s</string>
+    <string name="lan_transfer_no_files">请先选择要发送的文件</string>
+    <string name="lan_transfer_incoming_title">收到文件传输请求</string>
+    <string name="lan_transfer_incoming_desc">来自「%1$s」的 %2$d 个文件，共 %3$s</string>
+    <string name="lan_transfer_accept">接收</string>
+    <string name="lan_transfer_reject">拒绝</string>
+    <string name="lan_transfer_transfers_title">传输记录</string>
+    <string name="lan_transfer_status_sending">发送中</string>
+    <string name="lan_transfer_status_receiving">接收中</string>
+    <string name="lan_transfer_status_done">已完成</string>
+    <string name="lan_transfer_status_failed">失败</string>
+    <string name="lan_transfer_error_generic">传输失败，请重试</string>
+    <string name="lan_transfer_receive_on">已开启接收，其他设备现在可以发现本机</string>
+    <string name="lan_transfer_receive_off">已关闭接收</string>
+    <string name="lan_transfer_files_selected">已选择 %1$d 个文件</string>
+    <string name="lan_transfer_saved_hint">接收的文件已保存到 Download/Koishi</string>
 
     <!-- Mini Apps Tool -->
     <string name="tool_mini_apps_name">轻应用</string>

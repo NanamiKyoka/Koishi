@@ -22,6 +22,7 @@ import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewMod
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchRoute
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchViewModel
 import com.nanami.koishi.feature.tools.lan_transfer.LanTransferRoute
+import com.nanami.koishi.feature.tools.lan_transfer.LanTransferViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsRoute
@@ -146,7 +147,9 @@ fun KoishiNavHost(
         }
 
         composable<LanTransferRoute> {
+            val lanTransferViewModel: LanTransferViewModel = koinViewModel()
             LanTransferRoute(
+                viewModel = lanTransferViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

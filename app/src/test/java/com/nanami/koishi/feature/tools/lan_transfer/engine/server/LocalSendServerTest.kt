@@ -4,6 +4,8 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.DeviceInfoResponseDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadRequestDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadResponseDto
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendClient
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendUploadSource
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.RegisterRequestDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.TransferFileDto
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.security.MessageDigest
@@ -55,11 +58,14 @@ class LocalSendServerTest {
                 port = port,
                 protocol = "http"
             )
-            val register = post(
-                "http://127.0.0.1:$port/api/localsend/v2/register",
-                json.encodeToString(RegisterRequestDto.serializer(), registerRequest)
+            val client = LocalSendClient(OkHttpClient())
+            val register = client.register(
+                host = "127.0.0.1",
+                port = port,
+                protocol = com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol.HTTP,
+                payload = registerRequest
             )
-            assertEquals(200, register.first)
+            assertEquals("Koishi", register.alias)
             assertEquals("REMOTE123", callbacks.registered.single().fingerprint)
 
             val content = "local send payload".toByteArray()
@@ -74,20 +80,23 @@ class LocalSendServerTest {
                 info = registerRequest,
                 files = mapOf(file.id to file)
             )
-            val prepare = post(
-                "http://127.0.0.1:$port/api/localsend/v2/prepare-upload",
-                json.encodeToString(PrepareUploadRequestDto.serializer(), prepareRequest)
-            )
-            assertEquals(200, prepare.first)
-            val prepareResponse = json.decodeFromString<PrepareUploadResponseDto>(prepare.second)
+            val prepareResponse = client.prepareUpload(
+                host = "127.0.0.1",
+                port = port,
+                protocol = com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol.HTTP,
+                payload = prepareRequest
+            ) ?: error("Upload was not accepted")
             val token = prepareResponse.files.getValue(file.id)
 
-            val upload = post(
-                "http://127.0.0.1:$port/api/localsend/v2/upload" +
-                    "?sessionId=${prepareResponse.sessionId}&fileId=${file.id}&token=$token",
-                content
+            client.upload(
+                host = "127.0.0.1",
+                port = port,
+                protocol = com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol.HTTP,
+                sessionId = prepareResponse.sessionId,
+                fileId = file.id,
+                token = token,
+                source = ByteArrayUploadSource(content)
             )
-            assertEquals(200, upload.first)
             assertEquals("local send payload", callbacks.outputs.getValue(file.id).toString(Charsets.UTF_8))
             assertTrue(callbacks.results.single().success)
         } finally {
@@ -164,6 +173,15 @@ class LocalSendServerTest {
         MessageDigest.getInstance("SHA-256")
             .digest(this)
             .joinToString("") { byte -> "%02x".format(byte) }
+
+    private class ByteArrayUploadSource(
+        private val data: ByteArray,
+        override val contentType: String = "application/octet-stream"
+    ) : LocalSendUploadSource {
+        override val size: Long = data.size.toLong()
+
+        override fun openStream() = ByteArrayInputStream(data)
+    }
 
     private class RecordingCallbacks : LocalSendServerCallbacks {
         val registered = mutableListOf<LanDevice>()

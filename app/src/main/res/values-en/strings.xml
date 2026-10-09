@@ -873,6 +873,29 @@
     <string name="lan_transfer_empty_title">Ready for a local connection</string>
     <string name="lan_transfer_empty_desc">Enable receiving to become discoverable, or pick files to send to a nearby device</string>
     <string name="lan_transfer_protocol_badge">LocalSend v2.2</string>
+    <string name="lan_transfer_receive">Allow receiving</string>
+    <string name="lan_transfer_receive_desc">When enabled, devices on the same network can discover and send files to this device</string>
+    <string name="lan_transfer_devices_title">Nearby devices</string>
+    <string name="lan_transfer_devices_empty">Searching for nearby devices…</string>
+    <string name="lan_transfer_devices_none">No devices found. Make sure the other device is on the same network and open</string>
+    <string name="lan_transfer_refresh">Search again</string>
+    <string name="lan_transfer_send_files">Pick files</string>
+    <string name="lan_transfer_send_to">Send to %1$s</string>
+    <string name="lan_transfer_no_files">Pick files before sending</string>
+    <string name="lan_transfer_incoming_title">Incoming file transfer</string>
+    <string name="lan_transfer_incoming_desc">%2$d files (%3$s) from "%1$s"</string>
+    <string name="lan_transfer_accept">Accept</string>
+    <string name="lan_transfer_reject">Reject</string>
+    <string name="lan_transfer_transfers_title">Transfers</string>
+    <string name="lan_transfer_status_sending">Sending</string>
+    <string name="lan_transfer_status_receiving">Receiving</string>
+    <string name="lan_transfer_status_done">Completed</string>
+    <string name="lan_transfer_status_failed">Failed</string>
+    <string name="lan_transfer_error_generic">Transfer failed, please retry</string>
+    <string name="lan_transfer_receive_on">Receiving is on. Other devices can now find this device</string>
+    <string name="lan_transfer_receive_off">Receiving is off</string>
+    <string name="lan_transfer_files_selected">%1$d files selected</string>
+    <string name="lan_transfer_saved_hint">Received files are saved to Download/Koishi</string>
 
     <!-- Mini Apps Tool -->
     <string name="tool_mini_apps_name">Mini Apps</string>
