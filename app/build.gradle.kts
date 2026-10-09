@@ -180,6 +180,7 @@ dependencies {
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.koin.test)
     testImplementation(libs.koin.test.junit4)
     androidTestImplementation(libs.androidx.test.junit)
