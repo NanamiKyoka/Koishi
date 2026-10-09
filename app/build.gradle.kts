@@ -165,6 +165,10 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
 
+    // LocalSend-compatible transport security
+    implementation(libs.bouncycastle.prov)
+    implementation(libs.bouncycastle.pkix)
+
     // QR Code Generation & Scanning
     implementation(libs.qrcode.kotlin)
     implementation(libs.mlkit.barcode.scanning)
