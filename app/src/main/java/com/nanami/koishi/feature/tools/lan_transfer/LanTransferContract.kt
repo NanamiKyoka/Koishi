@@ -6,14 +6,16 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.PickedFile
 
 enum class TransferDirection { SENDING, RECEIVING }
 
-enum class TransferItemStatus { IN_PROGRESS, DONE, FAILED }
+enum class TransferItemStatus { IN_PROGRESS, DONE, FAILED, CANCELLED }
 
 data class TransferItemUi(
     val id: String,
     val fileName: String,
     val direction: TransferDirection,
     val progress: Float,
-    val status: TransferItemStatus
+    val status: TransferItemStatus,
+    val sessionId: String? = null,
+    val canRetry: Boolean = false
 )
 
 data class IncomingRequestUi(
@@ -23,9 +25,19 @@ data class IncomingRequestUi(
     val totalBytes: Long
 )
 
+data class LanTransferSettingsUi(
+    val alias: String = "",
+    val pinEnabled: Boolean = false,
+    val pin: String = "",
+    val autoAccept: Boolean = false,
+    val computeChecksums: Boolean = false,
+    val verifyChecksums: Boolean = true
+)
+
 data class LanTransferUiState(
     val alias: String = "",
     val receiveEnabled: Boolean = false,
+    val settings: LanTransferSettingsUi = LanTransferSettingsUi(),
     val devices: List<LanDevice> = emptyList(),
     val transfers: List<TransferItemUi> = emptyList(),
     val incomingRequest: IncomingRequestUi? = null,
@@ -41,6 +53,16 @@ sealed interface LanTransferUiEvent {
     data class OnFilesPicked(val files: List<PickedFile>) : LanTransferUiEvent
     data class OnSendTo(val deviceId: String) : LanTransferUiEvent
     data class OnAcceptIncoming(val accepted: Boolean) : LanTransferUiEvent
+    data class OnCancelTransfer(val id: String) : LanTransferUiEvent
+    data class OnRetryTransfer(val id: String) : LanTransferUiEvent
+    data class OnSaveSettings(
+        val alias: String,
+        val pinEnabled: Boolean,
+        val pin: String,
+        val autoAccept: Boolean,
+        val computeChecksums: Boolean,
+        val verifyChecksums: Boolean
+    ) : LanTransferUiEvent
     data object OnDismissMessage : LanTransferUiEvent
     data class OnDismissTransfer(val id: String) : LanTransferUiEvent
 }

@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,12 +25,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Computer
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -42,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -75,6 +80,7 @@ fun LanTransferRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
 
     val userMessage = state.userMessageRes?.let { res ->
         if (state.userMessageArgs.isEmpty()) stringResource(res)
@@ -139,6 +145,7 @@ fun LanTransferScreen(
     onPickFiles: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showSettings by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
@@ -155,6 +162,14 @@ fun LanTransferScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = null
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = stringResource(R.string.lan_transfer_settings)
                         )
                     }
                 },
@@ -203,6 +218,8 @@ fun LanTransferScreen(
                 items(state.transfers, key = { it.id }) { transfer ->
                     TransferRow(
                         item = transfer,
+                        onCancel = { onEvent(LanTransferUiEvent.OnCancelTransfer(transfer.id)) },
+                        onRetry = { onEvent(LanTransferUiEvent.OnRetryTransfer(transfer.id)) },
                         onDismiss = { onEvent(LanTransferUiEvent.OnDismissTransfer(transfer.id)) }
                     )
                 }
@@ -215,6 +232,26 @@ fun LanTransferScreen(
             request = request,
             onAccept = { onEvent(LanTransferUiEvent.OnAcceptIncoming(true)) },
             onReject = { onEvent(LanTransferUiEvent.OnAcceptIncoming(false)) }
+        )
+    }
+
+    if (showSettings) {
+        LanTransferSettingsDialog(
+            settings = state.settings,
+            onDismiss = { showSettings = false },
+            onSave = { settings ->
+                showSettings = false
+                onEvent(
+                    LanTransferUiEvent.OnSaveSettings(
+                        alias = settings.alias,
+                        pinEnabled = settings.pinEnabled,
+                        pin = settings.pin,
+                        autoAccept = settings.autoAccept,
+                        computeChecksums = settings.computeChecksums,
+                        verifyChecksums = settings.verifyChecksums
+                    )
+                )
+            }
         )
     }
 }
@@ -398,7 +435,12 @@ private fun SectionTitle(title: String) {
 }
 
 @Composable
-private fun TransferRow(item: TransferItemUi, onDismiss: () -> Unit) {
+private fun TransferRow(
+    item: TransferItemUi,
+    onCancel: () -> Unit,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(16.dp),
@@ -417,6 +459,7 @@ private fun TransferRow(item: TransferItemUi, onDismiss: () -> Unit) {
                     imageVector = when (item.status) {
                         TransferItemStatus.DONE -> Icons.Rounded.Check
                         TransferItemStatus.FAILED -> Icons.Rounded.ErrorOutline
+                        TransferItemStatus.CANCELLED -> Icons.Rounded.Cancel
                         TransferItemStatus.IN_PROGRESS -> Icons.Rounded.Add
                     },
                     contentDescription = null,
@@ -424,9 +467,27 @@ private fun TransferRow(item: TransferItemUi, onDismiss: () -> Unit) {
                     tint = when (item.status) {
                         TransferItemStatus.DONE -> MaterialTheme.colorScheme.primary
                         TransferItemStatus.FAILED -> MaterialTheme.colorScheme.error
+                        TransferItemStatus.CANCELLED -> MaterialTheme.colorScheme.onSurfaceVariant
                         TransferItemStatus.IN_PROGRESS -> MaterialTheme.colorScheme.onSurfaceVariant
                     }
                 )
+                if (item.status == TransferItemStatus.IN_PROGRESS) {
+                    IconButton(onClick = onCancel, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Rounded.Cancel,
+                            contentDescription = stringResource(R.string.lan_transfer_cancel),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                } else if (item.canRetry) {
+                    IconButton(onClick = onRetry, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = stringResource(R.string.lan_transfer_retry),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
                 IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
@@ -450,6 +511,7 @@ private fun TransferRow(item: TransferItemUi, onDismiss: () -> Unit) {
                     when (item.status) {
                         TransferItemStatus.DONE -> R.string.lan_transfer_status_done
                         TransferItemStatus.FAILED -> R.string.lan_transfer_status_failed
+                        TransferItemStatus.CANCELLED -> R.string.lan_transfer_status_cancelled
                         TransferItemStatus.IN_PROGRESS -> if (item.direction == TransferDirection.SENDING) {
                             R.string.lan_transfer_status_sending
                         } else {
@@ -461,6 +523,110 @@ private fun TransferRow(item: TransferItemUi, onDismiss: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Composable
+private fun LanTransferSettingsDialog(
+    settings: LanTransferSettingsUi,
+    onDismiss: () -> Unit,
+    onSave: (LanTransferSettingsUi) -> Unit
+) {
+    var alias by remember(settings.alias) { mutableStateOf(settings.alias) }
+    var pinEnabled by remember(settings.pinEnabled) { mutableStateOf(settings.pinEnabled) }
+    var pin by remember(settings.pin) { mutableStateOf(settings.pin) }
+    var autoAccept by remember(settings.autoAccept) { mutableStateOf(settings.autoAccept) }
+    var computeChecksums by remember(settings.computeChecksums) { mutableStateOf(settings.computeChecksums) }
+    var verifyChecksums by remember(settings.verifyChecksums) { mutableStateOf(settings.verifyChecksums) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.lan_transfer_settings)) },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = alias,
+                    onValueChange = { alias = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.lan_transfer_device_name)) },
+                    singleLine = true
+                )
+                SettingsToggleRow(
+                    title = stringResource(R.string.lan_transfer_pin_enabled),
+                    checked = pinEnabled,
+                    onCheckedChange = { pinEnabled = it }
+                )
+                if (pinEnabled) {
+                    OutlinedTextField(
+                        value = pin,
+                        onValueChange = { pin = it.filter(Char::isDigit).take(8) },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.lan_transfer_pin)) },
+                        singleLine = true
+                    )
+                }
+                SettingsToggleRow(
+                    title = stringResource(R.string.lan_transfer_auto_accept),
+                    checked = autoAccept,
+                    onCheckedChange = { autoAccept = it }
+                )
+                SettingsToggleRow(
+                    title = stringResource(R.string.lan_transfer_compute_checksums),
+                    checked = computeChecksums,
+                    onCheckedChange = { computeChecksums = it }
+                )
+                SettingsToggleRow(
+                    title = stringResource(R.string.lan_transfer_verify_checksums),
+                    checked = verifyChecksums,
+                    onCheckedChange = { verifyChecksums = it }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onSave(
+                        LanTransferSettingsUi(
+                            alias = alias,
+                            pinEnabled = pinEnabled,
+                            pin = pin,
+                            autoAccept = autoAccept,
+                            computeChecksums = computeChecksums,
+                            verifyChecksums = verifyChecksums
+                        )
+                    )
+                }
+            ) {
+                Text(stringResource(R.string.dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.dialog_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun SettingsToggleRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f)
+        )
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 

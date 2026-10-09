@@ -95,6 +95,64 @@ class LocalSendServerTest {
     }
 
     @Test
+    fun retriesFailedFileInSameSession() = runTest {
+        val callbacks = RecordingCallbacks()
+        val server = createServer(callbacks, verifyChecksums = true)
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            val expectedContent = "correct payload".toByteArray()
+            val file = TransferFileDto(
+                id = "file-retry",
+                fileName = "retry.txt",
+                size = expectedContent.size.toLong(),
+                fileType = "text/plain",
+                sha256 = expectedContent.sha256()
+            )
+            val response = client.prepareUpload(
+                host = "127.0.0.1",
+                port = port,
+                protocol = LanDeviceProtocol.HTTPS,
+                payload = PrepareUploadRequestDto(
+                    info = clientRegisterRequest(port),
+                    files = mapOf(file.id to file)
+                ),
+                expectedFingerprint = serverIdentity.fingerprint
+            ) ?: error("Upload was not accepted")
+            val token = response.files.getValue(file.id)
+
+            val firstAttempt = runCatching {
+                client.upload(
+                    host = "127.0.0.1",
+                    port = port,
+                    protocol = LanDeviceProtocol.HTTPS,
+                    sessionId = response.sessionId,
+                    fileId = file.id,
+                    token = token,
+                    source = ByteArrayUploadSource("wrong payload!!".toByteArray()),
+                    expectedFingerprint = serverIdentity.fingerprint
+                )
+            }
+            assertEquals(500, (firstAttempt.exceptionOrNull() as LocalSendProtocolException).statusCode)
+
+            client.upload(
+                host = "127.0.0.1",
+                port = port,
+                protocol = LanDeviceProtocol.HTTPS,
+                sessionId = response.sessionId,
+                fileId = file.id,
+                token = token,
+                source = ByteArrayUploadSource(expectedContent),
+                expectedFingerprint = serverIdentity.fingerprint
+            )
+            assertEquals("correct payload", callbacks.outputs.getValue(file.id).toString(Charsets.UTF_8))
+            assertTrue(callbacks.results.last().success)
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
     fun rejectsPrepareWhenPinDoesNotMatch() = runTest {
         val callbacks = RecordingCallbacks()
         val server = createServer(callbacks, pin = "2468")

@@ -10,7 +10,9 @@ data class LanTransferSettings(
     val receiveEnabled: Boolean = false,
     val pinEnabled: Boolean = false,
     val pin: String = "",
-    val autoAcceptKnownDevices: Boolean = false
+    val autoAcceptKnownDevices: Boolean = false,
+    val computeChecksums: Boolean = false,
+    val verifyChecksums: Boolean = true
 )
 
 class LanTransferSettingsRepository(dao: ToolStorageDao) : BaseToolRepository<LanTransferSettings>(

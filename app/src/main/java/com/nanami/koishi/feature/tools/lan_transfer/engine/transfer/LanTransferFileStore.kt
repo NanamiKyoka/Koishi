@@ -1,5 +1,6 @@
 package com.nanami.koishi.feature.tools.lan_transfer.engine.transfer
 
+import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.os.Build
@@ -9,23 +10,27 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.TransferFile
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributeView
+import java.nio.file.attribute.FileTime
+import java.time.Instant
 
 class LanTransferFileStore(private val context: Context) {
 
     fun open(file: TransferFileDto): PendingFile {
         val displayName = sanitize(file.fileName)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            openWithMediaStore(displayName, file.fileType)
+            openWithMediaStore(displayName, file)
         } else {
-            openWithLegacyDirectory(displayName)
+            openWithLegacyDirectory(displayName, file)
         }
     }
 
-    private fun openWithMediaStore(displayName: String, mimeType: String): PendingFile {
+    private fun openWithMediaStore(displayName: String, file: TransferFileDto): PendingFile {
         val resolver = context.contentResolver
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
-            put(MediaStore.MediaColumns.MIME_TYPE, mimeType.ifBlank { "application/octet-stream" })
+            put(MediaStore.MediaColumns.MIME_TYPE, file.fileType.ifBlank { "application/octet-stream" })
             put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$DIRECTORY_NAME")
             put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
@@ -36,6 +41,7 @@ class LanTransferFileStore(private val context: Context) {
             output = stream,
             publish = { success ->
                 if (success) {
+                    applyMediaStoreTimestamp(resolver, uri, file)
                     val done = ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }
                     resolver.update(uri, done, null, null)
                 } else {
@@ -46,7 +52,7 @@ class LanTransferFileStore(private val context: Context) {
     }
 
     @Suppress("DEPRECATION")
-    private fun openWithLegacyDirectory(displayName: String): PendingFile {
+    private fun openWithLegacyDirectory(displayName: String, file: TransferFileDto): PendingFile {
         val directory = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
             DIRECTORY_NAME
@@ -55,8 +61,49 @@ class LanTransferFileStore(private val context: Context) {
         val target = uniqueFile(directory, displayName)
         return PendingFile(
             output = FileOutputStream(target),
-            publish = { success -> if (!success) target.delete() }
+            publish = { success ->
+                if (success) {
+                    applyFileTimestamp(target, file)
+                } else {
+                    target.delete()
+                }
+            }
         )
+    }
+
+    private fun applyMediaStoreTimestamp(
+        resolver: ContentResolver,
+        uri: android.net.Uri,
+        file: TransferFileDto
+    ) {
+        val modifiedSeconds = file.metadata?.modified
+            ?.let { runCatching { Instant.parse(it).epochSecond }.getOrNull() }
+            ?: return
+        resolver.update(
+            uri,
+            ContentValues().apply { put(MediaStore.MediaColumns.DATE_MODIFIED, modifiedSeconds) },
+            null,
+            null
+        )
+    }
+
+    private fun applyFileTimestamp(target: File, file: TransferFileDto) {
+        val modified = file.metadata?.modified
+            ?.let { runCatching { Instant.parse(it) }.getOrNull() }
+            ?: return
+        val accessed = file.metadata.accessed
+            ?.let { runCatching { Instant.parse(it) }.getOrNull() }
+            ?: modified
+        runCatching {
+            Files.getFileAttributeView(target.toPath(), BasicFileAttributeView::class.java)
+                .setTimes(
+                    FileTime.from(modified),
+                    FileTime.from(accessed),
+                    null
+                )
+        }.onFailure {
+            target.setLastModified(modified.toEpochMilli())
+        }
     }
 
     private fun uniqueFile(directory: File, displayName: String): File {

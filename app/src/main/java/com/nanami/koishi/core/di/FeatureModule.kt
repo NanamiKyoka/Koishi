@@ -15,6 +15,7 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.DeviceDisco
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalDeviceInfoProvider
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendClient
 import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityStore
+import com.nanami.koishi.feature.tools.lan_transfer.LanTransferEngine
 import com.nanami.koishi.feature.tools.lan_transfer.engine.settings.LanTransferSettingsRepository
 import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalStickerRepository
 import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetRepository
@@ -71,4 +72,5 @@ val featureModule = module {
     single { LocalDeviceInfoProvider(get()) }
     single { LocalSendClient(get<LocalSendIdentityStore>().get()) }
     single { DeviceDiscovery(get(), get(), get()) }
+    single { LanTransferEngine(get(), get(), get(), get(), get(), get()) }
 }

@@ -177,8 +177,6 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty) {
         exclude(group = "io.netty", module = "netty-codec-native-quic")
-        exclude(group = "io.netty", module = "netty-transport-native-epoll")
-        exclude(group = "io.netty", module = "netty-transport-native-kqueue")
     }
 
     // QR Code Generation & Scanning

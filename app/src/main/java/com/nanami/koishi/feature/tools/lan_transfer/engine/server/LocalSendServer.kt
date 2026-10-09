@@ -36,6 +36,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import java.security.MessageDigest
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class LocalSendServerConfig(
     val device: DeviceInfoResponseDto,
@@ -230,17 +231,20 @@ class LocalSendServer(
             }
             val updated = current.copy(status = FileStatus.IN_PROGRESS)
             session = active.copy(files = active.files + (fileId to updated))
-            updated
+            UploadState(updated, active.cancellation)
         } ?: return respondError(HttpStatusCode.Forbidden, "Invalid upload token")
 
         val peer = activePeer(sessionId) ?: return respondError(HttpStatusCode.Conflict, "Session ended")
         requireVerifiedFingerprint(peer.fingerprint)
+        if (fileState.cancellation.cancelled.get()) {
+            return respondError(HttpStatusCode.Conflict, "Upload cancelled")
+        }
         val output = try {
             callbacks.openFileTarget(
                 IncomingFileUpload(
                     sessionId = sessionId,
                     peer = peer,
-                    file = fileState.file
+                    file = fileState.file.file
                 )
             )
         } catch (error: Exception) {
@@ -250,7 +254,7 @@ class LocalSendServer(
                 IncomingFileResult(
                     sessionId = sessionId,
                     peer = peer,
-                    file = fileState.file,
+                    file = fileState.file.file,
                     bytesWritten = 0,
                     success = false,
                     errorMessage = message
@@ -267,23 +271,27 @@ class LocalSendServer(
             output.use { target ->
                 val buffer = ByteArray(LocalSendProtocol.UPLOAD_CHUNK_SIZE)
                 while (true) {
+                    if (fileState.cancellation.cancelled.get()) {
+                        errorMessage = "Upload cancelled"
+                        break
+                    }
                     val read = channel.readAvailable(buffer, 0, buffer.size)
                     if (read < 0) break
                     if (read == 0) continue
                     target.write(buffer, 0, read)
                     digest.update(buffer, 0, read)
                     written += read
-                    if (written > fileState.file.size) {
+                    if (written > fileState.file.file.size) {
                         errorMessage = "Received more bytes than expected"
                         break
                     }
                 }
                 target.flush()
             }
-            if (errorMessage == null && written != fileState.file.size) {
-                errorMessage = "Expected ${fileState.file.size} bytes, received $written"
+            if (errorMessage == null && written != fileState.file.file.size) {
+                errorMessage = "Expected ${fileState.file.file.size} bytes, received $written"
             }
-            val expectedHash = fileState.file.sha256
+            val expectedHash = fileState.file.file.sha256
             if (errorMessage == null && config.verifyChecksums && !expectedHash.isNullOrBlank()) {
                 val actualHash = digest.digest().joinToString("") { byte -> "%02x".format(byte) }
                 if (!actualHash.equals(expectedHash, ignoreCase = true)) {
@@ -299,7 +307,7 @@ class LocalSendServer(
             IncomingFileResult(
                 sessionId = sessionId,
                 peer = peer,
-                file = fileState.file,
+                file = fileState.file.file,
                 bytesWritten = written,
                 success = errorMessage == null,
                 errorMessage = errorMessage
@@ -313,21 +321,38 @@ class LocalSendServer(
     }
 
     private suspend fun ApplicationCall.cancelSession() {
-        val sessionId = request.queryParameters["sessionId"]
+        val sessionId = request.queryParameters["sessionId"] ?: return respondError(
+            HttpStatusCode.BadRequest,
+            "Missing session ID"
+        )
         val sourceHost = requestOriginHost()
         val sourceFingerprint = clientCertificateFingerprint()
+        cancelSessionInternal(sessionId, sourceHost, sourceFingerprint)
+        respond(HttpStatusCode.OK)
+    }
+
+    suspend fun cancelSession(sessionId: String): LanDevice? =
+        cancelSessionInternal(sessionId, sourceHost = null, sourceFingerprint = null)
+
+    private suspend fun cancelSessionInternal(
+        sessionId: String,
+        sourceHost: String?,
+        sourceFingerprint: String?
+    ): LanDevice? {
+        var peer: LanDevice? = null
         sessionMutex.withLock {
             val active = session
-            if (active != null &&
-                active.sessionId == sessionId &&
-                active.peerHost == sourceHost &&
-                active.peer.fingerprint.equals(sourceFingerprint, ignoreCase = true)
-            ) {
+            val hostMatches = sourceHost == null || active?.peerHost == sourceHost
+            val fingerprintMatches = sourceFingerprint == null ||
+                active?.peer?.fingerprint.equals(sourceFingerprint, ignoreCase = true)
+            if (active != null && active.sessionId == sessionId && hostMatches && fingerprintMatches) {
+                active.cancellation.cancelled.set(true)
                 session = null
-                callbacks.onSessionCancelled(sessionId)
+                peer = active.peer
             }
         }
-        respond(HttpStatusCode.OK)
+        if (peer != null) callbacks.onSessionCancelled(sessionId)
+        return peer
     }
 
     private suspend fun ApplicationCall.markFileFinished(
@@ -412,7 +437,8 @@ class LocalSendServer(
         val sessionId: String,
         val peerHost: String,
         val peer: LanDevice,
-        val files: Map<String, SessionFile>
+        val files: Map<String, SessionFile>,
+        val cancellation: SessionCancellation = SessionCancellation()
     )
 
     private data class SessionFile(
@@ -420,6 +446,15 @@ class LocalSendServer(
         val token: String,
         val status: FileStatus
     )
+
+    private data class UploadState(
+        val file: SessionFile,
+        val cancellation: SessionCancellation
+    )
+
+    private class SessionCancellation {
+        val cancelled = AtomicBoolean(false)
+    }
 
     private enum class FileStatus {
         PENDING,

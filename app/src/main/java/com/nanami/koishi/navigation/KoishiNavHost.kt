@@ -1,6 +1,7 @@
 package com.nanami.koishi.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -21,7 +22,9 @@ import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationRoute
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewModel
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchRoute
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchViewModel
+import com.nanami.koishi.feature.tools.lan_transfer.LanTransferEngine
 import com.nanami.koishi.feature.tools.lan_transfer.LanTransferRoute
+import com.nanami.koishi.feature.tools.lan_transfer.LanTransferShareStore
 import com.nanami.koishi.feature.tools.lan_transfer.LanTransferViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
@@ -42,6 +45,18 @@ fun KoishiNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
+    val transferEngine = org.koin.core.context.GlobalContext.get().get<LanTransferEngine>()
+    LaunchedEffect(Unit) {
+        if (LanTransferShareStore.hasPending()) {
+            transferEngine.addSharedFiles(LanTransferShareStore.consume())
+            navController.navigate(LanTransferRoute) { launchSingleTop = true }
+        }
+        LanTransferShareStore.events.collect {
+            transferEngine.addSharedFiles(LanTransferShareStore.consume())
+            navController.navigate(LanTransferRoute) { launchSingleTop = true }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = HomeRoute,

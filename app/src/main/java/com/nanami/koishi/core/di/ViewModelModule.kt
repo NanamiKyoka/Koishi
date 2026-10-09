@@ -51,5 +51,5 @@ val viewModelModule = module {
     viewModel { VideoToGifViewModel(get(), get()) }
     viewModel { WatermarkViewModel(get()) }
     viewModel { WorthCalculatorViewModel(get()) }
-    viewModel { LanTransferViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { LanTransferViewModel(get(), get()) }
 }
