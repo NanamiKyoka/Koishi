@@ -11,6 +11,7 @@ import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.EmojiEmotions
 import androidx.compose.material.icons.rounded.Gif
 import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.FolderShared
 import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.ImageSearch
@@ -142,6 +143,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_color_picker_desc,
                 icon = Icons.Rounded.Colorize,
                 category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "lan_transfer",
+                nameRes = R.string.tool_lan_transfer_name,
+                descriptionRes = R.string.tool_lan_transfer_desc,
+                icon = Icons.Rounded.FolderShared,
+                category = ToolCategory.FILE_APPS,
                 isFavorite = false,
                 hasDot = true
             ),

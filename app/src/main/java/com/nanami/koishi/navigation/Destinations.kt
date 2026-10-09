@@ -121,3 +121,6 @@ data object ColorPickerRoute
 
 @Serializable
 data object WorthCalculatorRoute
+
+@Serializable
+data object LanTransferRoute

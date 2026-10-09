@@ -19,6 +19,7 @@
     <string name="category_all">All</string>
     <string name="category_life">Life Apps</string>
     <string name="category_image_apps">Image Apps</string>
+    <string name="category_file_apps">File Apps</string>
     <string name="category_calculation">Calculation</string>
     <string name="category_query">Query Apps</string>
     <string name="category_other">Other Apps</string>
@@ -864,6 +865,14 @@
     <string name="meme_help_content">Pick a background, then stack Cheshire heads or text on it; long press the background button to remove it.\nCanvas gestures: drag with one finger, pinch to scale and rotate, then fine tune the selected sticker with the sliders below.\nTap an empty area to preview the result, and use the save button in the top bar to export it.\nStickers are downloaded from the remote repository on demand, and removing the local files also removes them from the app.</string>
     <string name="meme_confirm">OK</string>
     <string name="meme_cancel">Cancel</string>
+
+    <!-- LAN Transfer Tool -->
+    <string name="tool_lan_transfer_name">LAN Transfer</string>
+    <string name="tool_lan_transfer_desc">Transfer files securely and quickly over the local network without accounts or third-party servers</string>
+    <string name="lan_transfer_title">LAN Transfer</string>
+    <string name="lan_transfer_empty_title">Ready for a local connection</string>
+    <string name="lan_transfer_empty_desc">Enable receiving to become discoverable, or pick files to send to a nearby device</string>
+    <string name="lan_transfer_protocol_badge">LocalSend v2.2</string>
 
     <!-- Mini Apps Tool -->
     <string name="tool_mini_apps_name">Mini Apps</string>

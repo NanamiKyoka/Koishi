@@ -21,6 +21,7 @@ import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationRoute
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewModel
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchRoute
 import com.nanami.koishi.feature.tools.image_sketch.ImageSketchViewModel
+import com.nanami.koishi.feature.tools.lan_transfer.LanTransferRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankRoute
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsRoute
@@ -62,6 +63,7 @@ fun KoishiNavHost(
                         "qr_code" -> navController.navigate(QrToolRoute)
                         "watermark" -> navController.navigate(WatermarkRoute)
                         "image_sketch" -> navController.navigate(ImageSketchRoute)
+                        "lan_transfer" -> navController.navigate(LanTransferRoute)
                         "today_in_history" -> navController.navigate(TodayInHistoryRoute)
                         "decision_maker" -> navController.navigate(DecisionMakerRoute)
                         "ruler" -> navController.navigate(RulerRoute)
@@ -139,6 +141,12 @@ fun KoishiNavHost(
             val imageSketchViewModel: ImageSketchViewModel = koinViewModel()
             ImageSketchRoute(
                 viewModel = imageSketchViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<LanTransferRoute> {
+            LanTransferRoute(
                 onBack = { navController.popBackStack() }
             )
         }
