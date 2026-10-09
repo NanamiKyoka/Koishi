@@ -45,3 +45,15 @@
     public <init>(...);
 }
 
+# Ktor server (CIO) ships JVM-only debug helpers that reference java.lang.management
+-dontwarn java.lang.management.**
+-dontwarn javax.management.**
+-dontwarn java.util.logging.**
+-dontwarn io.ktor.util.debug.**
+-dontwarn kotlinx.coroutines.debug.**
+
+# BouncyCastle references desktop-only JDK APIs
+-dontwarn javax.naming.**
+-dontwarn java.awt.**
+-dontwarn javax.swing.**
+-dontwarn javax.security.auth.x500.**
