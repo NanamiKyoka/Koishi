@@ -98,6 +98,7 @@ class LanTransferViewModel(
         discoveryJob?.cancel()
         runBlocking { server?.stop() }
         server = null
+        LanTransferForegroundService.stop(getApplication())
     }
 
     private fun localAlias(): String = _uiState.value.alias
@@ -131,7 +132,13 @@ class LanTransferViewModel(
         viewModelScope.launch {
             settingsRepository.updateData { it.copy(receiveEnabled = enabled) }
             _uiState.update { it.copy(receiveEnabled = enabled) }
-            if (enabled) startServer() else stopServer()
+            if (enabled) {
+                LanTransferForegroundService.start(getApplication())
+                startServer()
+            } else {
+                stopServer()
+                LanTransferForegroundService.stop(getApplication())
+            }
             restartDiscovery()
             message(if (enabled) R.string.lan_transfer_receive_on else R.string.lan_transfer_receive_off)
         }
