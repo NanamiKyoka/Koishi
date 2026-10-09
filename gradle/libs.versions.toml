@@ -31,6 +31,7 @@ androidx-browser = "1.8.0"
 androidx-webkit = "1.16.0"
 media3 = "1.5.1"
 bouncycastle = "1.86"
+ktor = "3.6.0"
 
 [libraries]
 android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "android-desugar" }
@@ -83,6 +84,10 @@ androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "medi
 # LocalSend Security
 bouncycastle-prov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+
+# LocalSend Server
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio-jvm", version.ref = "ktor" }
 
 # QR Code & Scanning
 qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin-android", version.ref = "qrcode-kotlin" }

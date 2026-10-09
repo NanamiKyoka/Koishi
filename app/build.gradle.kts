@@ -168,6 +168,8 @@ dependencies {
     // LocalSend-compatible transport security
     implementation(libs.bouncycastle.prov)
     implementation(libs.bouncycastle.pkix)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
 
     // QR Code Generation & Scanning
     implementation(libs.qrcode.kotlin)
