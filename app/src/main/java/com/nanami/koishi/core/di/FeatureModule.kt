@@ -14,6 +14,7 @@ import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchSettingsRe
 import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.DeviceDiscovery
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalDeviceInfoProvider
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendClient
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendRegisterClient
 import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityStore
 import com.nanami.koishi.feature.tools.lan_transfer.LanTransferEngine
 import com.nanami.koishi.feature.tools.lan_transfer.engine.settings.LanTransferSettingsRepository
@@ -71,6 +72,7 @@ val featureModule = module {
     single { LocalSendIdentityStore(get()) }
     single { LocalDeviceInfoProvider(get()) }
     single { LocalSendClient(get<LocalSendIdentityStore>().get()) }
+    single<LocalSendRegisterClient> { get<LocalSendClient>() }
     single { DeviceDiscovery(get(), get(), get()) }
     single { LanTransferEngine(get(), get(), get(), get(), get(), get()) }
 }

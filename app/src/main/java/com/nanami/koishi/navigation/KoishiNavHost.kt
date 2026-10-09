@@ -45,14 +45,15 @@ fun KoishiNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
-    val transferEngine = org.koin.core.context.GlobalContext.get().get<LanTransferEngine>()
     LaunchedEffect(Unit) {
         if (LanTransferShareStore.hasPending()) {
-            transferEngine.addSharedFiles(LanTransferShareStore.consume())
+            org.koin.core.context.GlobalContext.get().get<LanTransferEngine>()
+                .addSharedFiles(LanTransferShareStore.consume())
             navController.navigate(LanTransferRoute) { launchSingleTop = true }
         }
         LanTransferShareStore.events.collect {
-            transferEngine.addSharedFiles(LanTransferShareStore.consume())
+            org.koin.core.context.GlobalContext.get().get<LanTransferEngine>()
+                .addSharedFiles(LanTransferShareStore.consume())
             navController.navigate(LanTransferRoute) { launchSingleTop = true }
         }
     }
