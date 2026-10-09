@@ -11,10 +11,8 @@ import com.nanami.koishi.core.data.cache.TempImageStore
 import com.nanami.koishi.core.di.coreDataModule
 import com.nanami.koishi.core.di.featureModule
 import com.nanami.koishi.core.di.viewModelModule
-import com.nanami.koishi.feature.tools.lan_transfer.LanTransferEngine
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import java.io.File
@@ -31,7 +29,6 @@ class KoishiApp : Application(), ImageLoaderFactory {
             androidContext(this@KoishiApp)
             modules(coreDataModule, featureModule, viewModelModule)
         }
-        GlobalContext.get().get<LanTransferEngine>().initialize()
         GlobalCrashHandler.initialize(this)
         TempImageCleaner(this).install()
     }

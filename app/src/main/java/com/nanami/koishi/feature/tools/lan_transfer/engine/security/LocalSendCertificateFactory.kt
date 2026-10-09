@@ -6,7 +6,6 @@ import org.bouncycastle.asn1.x509.Extension
 import org.bouncycastle.asn1.x509.KeyUsage
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import java.math.BigInteger
 import java.security.KeyPairGenerator
@@ -36,7 +35,6 @@ data class LocalSendIdentityMaterial(
 }
 
 object LocalSendCertificateFactory {
-    private val provider = BouncyCastleProvider()
     private const val SUBJECT_NAME = "CN=LocalSend User"
     private const val SIGNATURE_ALGORITHM = "SHA256withRSA"
 
@@ -61,10 +59,8 @@ object LocalSendCertificateFactory {
             KeyUsage(KeyUsage.digitalSignature or KeyUsage.keyEncipherment)
         )
         val signer = JcaContentSignerBuilder(SIGNATURE_ALGORITHM)
-            .setProvider(provider)
             .build(keyPair.private)
         val certificate = JcaX509CertificateConverter()
-            .setProvider(provider)
             .getCertificate(builder.build(signer))
         return LocalSendIdentityMaterial(
             privateKey = keyPair.private,
