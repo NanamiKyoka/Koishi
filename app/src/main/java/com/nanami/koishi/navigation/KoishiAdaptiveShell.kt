@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
 import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
+import com.nanami.koishi.core.designsystem.adaptive.windowLayoutModeForWidth
 import com.nanami.koishi.feature.home.MainTab
 
 @Composable
@@ -43,11 +44,7 @@ fun KoishiAdaptiveShell(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val layoutMode = when {
-            maxWidth < 600.dp -> WindowLayoutMode.COMPACT
-            maxWidth < 840.dp -> WindowLayoutMode.MEDIUM
-            else -> WindowLayoutMode.EXPANDED
-        }
+        val layoutMode = windowLayoutModeForWidth(maxWidth)
 
         CompositionLocalProvider(LocalWindowLayoutMode provides layoutMode) {
             if (layoutMode == WindowLayoutMode.COMPACT) {
