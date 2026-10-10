@@ -36,6 +36,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import java.security.MessageDigest
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class LocalSendServerConfig(
@@ -55,6 +56,7 @@ class LocalSendServer(
 ) {
     private val sessionMutex = Mutex()
     private val clientCertificates = LocalSendClientCertificateRegistry()
+    private val pinFailures = ConcurrentHashMap<String, PinFailureState>()
     private var session: ActiveSession? = null
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
     private var boundPort: Int = 0
@@ -161,8 +163,13 @@ class LocalSendServer(
     }
 
     private suspend fun ApplicationCall.respondPrepareUpload() {
-        if (!isPinValid()) {
-            return respondError(HttpStatusCode.Unauthorized, "Invalid PIN")
+        when (validatePin()) {
+            PinValidationResult.Valid -> Unit
+            PinValidationResult.Invalid -> return respondError(HttpStatusCode.Unauthorized, "Invalid PIN")
+            PinValidationResult.TooManyAttempts -> return respondError(
+                HttpStatusCode.TooManyRequests,
+                "Too many PIN attempts"
+            )
         }
         val request = receiveProtocolJson<PrepareUploadRequestDto>()
         val protocol = LanDeviceProtocol.fromWire(request.info.protocol)
@@ -423,7 +430,35 @@ class LocalSendServer(
         return actual
     }
 
-    private fun ApplicationCall.isPinValid(): Boolean = config.pin.isNullOrBlank() || request.queryParameters["pin"] == config.pin
+    private fun ApplicationCall.validatePin(): PinValidationResult {
+        val expected = config.pin?.takeIf { it.isNotBlank() } ?: return PinValidationResult.Valid
+        val provided = request.queryParameters["pin"].orEmpty()
+        val now = System.currentTimeMillis()
+        val host = requestOriginHost()
+        val activeFailure = pinFailures[host]
+        if (activeFailure != null && activeFailure.blockedUntil > now) {
+            return PinValidationResult.TooManyAttempts
+        }
+        if (MessageDigest.isEqual(expected.toByteArray(Charsets.UTF_8), provided.toByteArray(Charsets.UTF_8))) {
+            pinFailures.remove(host)
+            return PinValidationResult.Valid
+        }
+
+        val state = pinFailures.compute(host) { _, current ->
+            val withinWindow = current != null && now - current.windowStartedAt < PIN_ATTEMPT_WINDOW_MS
+            val failures = if (withinWindow) current.failures + 1 else 1
+            PinFailureState(
+                failures = failures,
+                windowStartedAt = if (withinWindow) current.windowStartedAt else now,
+                blockedUntil = if (failures >= MAX_PIN_ATTEMPTS) now + PIN_BLOCK_DURATION_MS else 0L
+            )
+        } ?: PinFailureState()
+        return if (state.blockedUntil > now) {
+            PinValidationResult.TooManyAttempts
+        } else {
+            PinValidationResult.Invalid
+        }
+    }
 
     private fun RegisterRequestDto.toPeer(remoteHost: String, protocol: LanDeviceProtocol): LanDevice =
         DeviceInfoResponseDto(
@@ -439,6 +474,12 @@ class LocalSendServer(
             protocol = protocol,
             lastSeenAt = System.currentTimeMillis()
         )
+
+    private data class PinFailureState(
+        val failures: Int = 0,
+        val windowStartedAt: Long = 0L,
+        val blockedUntil: Long = 0L
+    )
 
     private data class ActiveSession(
         val sessionId: String,
@@ -472,7 +513,16 @@ class LocalSendServer(
 
     private companion object {
         val TLS_PASSWORD = "localsend".toCharArray()
+        const val MAX_PIN_ATTEMPTS = 5
+        const val PIN_ATTEMPT_WINDOW_MS = 60_000L
+        const val PIN_BLOCK_DURATION_MS = 60_000L
     }
+}
+
+private enum class PinValidationResult {
+    Valid,
+    Invalid,
+    TooManyAttempts
 }
 
 private class ClientCertificateException(message: String) : IllegalStateException(message)

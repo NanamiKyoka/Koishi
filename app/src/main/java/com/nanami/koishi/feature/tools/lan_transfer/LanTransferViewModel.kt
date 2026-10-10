@@ -18,4 +18,9 @@ class LanTransferViewModel(
     fun onEvent(event: LanTransferUiEvent) {
         engine.onEvent(event)
     }
+
+    override fun onCleared() {
+        engine.cancelPendingPinPrompt()
+        super.onCleared()
+    }
 }

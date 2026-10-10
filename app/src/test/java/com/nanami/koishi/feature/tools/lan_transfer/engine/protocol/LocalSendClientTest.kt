@@ -49,6 +49,43 @@ class LocalSendClientTest {
     }
 
     @Test
+    fun sendsPinWithPrepareUploadRequest() = runTest {
+        val server = MockWebServer()
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody("""{"sessionId":"session-1","files":{}}""")
+        )
+        server.start()
+        try {
+            val client = LocalSendClient(LocalSendCertificateFactory.create(), OkHttpClient())
+            client.prepareUpload(
+                host = server.hostName,
+                port = server.port,
+                protocol = LanDeviceProtocol.HTTP,
+                payload = PrepareUploadRequestDto(
+                    info = RegisterRequestDto(
+                        alias = "Koishi",
+                        version = "2.2",
+                        fingerprint = "LOCAL123",
+                        port = 53317,
+                        protocol = "http"
+                    ),
+                    files = emptyMap()
+                ),
+                pin = "12 34"
+            )
+
+            val request = server.takeRequest()
+            assertEquals("POST", request.method)
+            assertEquals("/api/localsend/v2/prepare-upload?pin=12%2034", request.path)
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    @Test
     fun exposesServerErrorMessage() = runTest {
         val server = MockWebServer()
         server.enqueue(

@@ -12,7 +12,9 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.FileMetadata
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalDeviceInfoProvider
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendClient
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendProtocol
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendProtocolException
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadRequestDto
+import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.PrepareUploadResponseDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.TransferFileDto
 import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIdentityStore
 import com.nanami.koishi.feature.tools.lan_transfer.engine.server.IncomingFileResult
@@ -68,6 +70,7 @@ class LanTransferEngine(
     private val devicesById = ConcurrentHashMap<String, LanDevice>()
     private val retrySends = ConcurrentHashMap<String, RetrySend>()
     private var pendingDecision: CompletableDeferred<IncomingUploadDecision>? = null
+    private var pendingPinDecision: CompletableDeferred<String?>? = null
     private var server: LocalSendServer? = null
     private var discoveryJob: Job? = null
     private var sendJob: Job? = null
@@ -109,6 +112,8 @@ class LanTransferEngine(
             is LanTransferUiEvent.OnSendTo -> sendTo(event.deviceId)
             is LanTransferUiEvent.OnSendText -> sendText(event.deviceId, event.text)
             is LanTransferUiEvent.OnAcceptIncoming -> resolveIncoming(event.accepted)
+            is LanTransferUiEvent.OnSubmitPin -> pendingPinDecision?.complete(event.pin.trim())
+            LanTransferUiEvent.OnCancelPinPrompt -> pendingPinDecision?.complete(null)
             is LanTransferUiEvent.OnCancelTransfer -> cancelTransfer(event.id)
             is LanTransferUiEvent.OnRetryTransfer -> retryTransfer(event.id)
             is LanTransferUiEvent.OnSaveSettings -> saveSettings(event)
@@ -315,24 +320,48 @@ class LanTransferEngine(
     private suspend fun processSend(device: LanDevice, entries: List<PreparedSendEntry>) {
         if (entries.isEmpty()) return
         val localInfo = deviceInfoProvider.create(localAlias(), protocol = LanDeviceProtocol.HTTPS)
-        val response = try {
-            Log.d(TAG, "prepare-upload to ${device.host}:${device.port} files=${entries.size}")
-            client.prepareUpload(
-                host = device.host,
-                port = device.port,
-                protocol = device.protocol,
-                payload = PrepareUploadRequestDto(
-                    info = localInfo,
-                    files = entries.associate { it.dto.id to it.dto }
-                ),
-                expectedFingerprint = device.fingerprint
-            )
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Exception) {
-            Log.e(TAG, "prepare-upload failed", error)
-            markEntriesFailed(entries.map { it.dto }, error.message)
-            return
+        var response: PrepareUploadResponseDto? = null
+        var pin: String? = null
+        var pinAttempt = 0
+        while (true) {
+            try {
+                Log.d(TAG, "prepare-upload to ${device.host}:${device.port} files=${entries.size}")
+                response = client.prepareUpload(
+                    host = device.host,
+                    port = device.port,
+                    protocol = device.protocol,
+                    payload = PrepareUploadRequestDto(
+                        info = localInfo,
+                        files = entries.associate { it.dto.id to it.dto }
+                    ),
+                    pin = pin,
+                    expectedFingerprint = device.fingerprint
+                )
+                break
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: LocalSendProtocolException) {
+                if (error.statusCode == 401) {
+                    val enteredPin = requestPin(
+                        device = device,
+                        invalid = pinAttempt > 0,
+                        attempt = pinAttempt
+                    ) ?: run {
+                        markEntriesCancelled(entries.map { it.dto })
+                        return
+                    }
+                    pin = enteredPin
+                    pinAttempt += 1
+                    continue
+                }
+                Log.e(TAG, "prepare-upload failed", error)
+                markEntriesFailed(entries.map { it.dto }, error.message)
+                return
+            } catch (error: Exception) {
+                Log.e(TAG, "prepare-upload failed", error)
+                markEntriesFailed(entries.map { it.dto }, error.message)
+                return
+            }
         }
         if (response == null) {
             entries.forEach { entry ->
@@ -397,6 +426,40 @@ class LanTransferEngine(
         activeSendSession = null
     }
 
+    fun cancelPendingPinPrompt() {
+        pendingPinDecision?.complete(null)
+        pendingPinDecision = null
+        _uiState.update { it.copy(pinPrompt = null) }
+    }
+
+    private suspend fun requestPin(
+        device: LanDevice,
+        invalid: Boolean,
+        attempt: Int
+    ): String? {
+        pendingPinDecision?.complete(null)
+        val deferred = CompletableDeferred<String?>()
+        pendingPinDecision = deferred
+        _uiState.update {
+            it.copy(
+                pinPrompt = PinPromptUi(
+                    deviceId = device.id,
+                    deviceAlias = device.alias,
+                    invalid = invalid,
+                    attempt = attempt
+                )
+            )
+        }
+        return try {
+            deferred.await()
+        } finally {
+            if (pendingPinDecision === deferred) {
+                pendingPinDecision = null
+            }
+            _uiState.update { it.copy(pinPrompt = null) }
+        }
+    }
+
     private fun retryTransfer(id: String) {
         val retry = retrySends[id] ?: return
         if (sendJob?.isActive == true) {
@@ -429,6 +492,7 @@ class LanTransferEngine(
 
     private fun cancelSendingTransfer() {
         val session = activeSendSession
+        cancelPendingPinPrompt()
         sendJob?.cancel()
         sendJob = null
         activeSendSession = null
@@ -558,6 +622,12 @@ class LanTransferEngine(
     private fun markEntriesFailed(files: List<TransferFileDto>, errorMessage: String? = null) {
         files.forEach {
             updateStatus(it.id, TransferItemStatus.FAILED, canRetry = true, errorMessage = errorMessage)
+        }
+    }
+
+    private fun markEntriesCancelled(files: List<TransferFileDto>) {
+        files.forEach {
+            updateStatus(it.id, TransferItemStatus.CANCELLED)
         }
     }
 

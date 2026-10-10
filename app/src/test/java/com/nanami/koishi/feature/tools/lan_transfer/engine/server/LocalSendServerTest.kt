@@ -217,6 +217,101 @@ class LocalSendServerTest {
     }
 
     @Test
+    fun acceptsPrepareWhenPinMatches() = runTest {
+        val callbacks = RecordingCallbacks()
+        val server = createServer(callbacks, pin = "2468")
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            val response = client.prepareUpload(
+                host = "127.0.0.1",
+                port = port,
+                protocol = LanDeviceProtocol.HTTPS,
+                payload = PrepareUploadRequestDto(
+                    info = clientRegisterRequest(port),
+                    files = emptyMap()
+                ),
+                pin = "2468",
+                expectedFingerprint = serverIdentity.fingerprint
+            )
+
+            assertNull(response)
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
+    fun rejectsPrepareWhenPinIsMissing() = runTest {
+        val callbacks = RecordingCallbacks()
+        val server = createServer(callbacks, pin = "2468")
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            val response = runCatching {
+                client.prepareUpload(
+                    host = "127.0.0.1",
+                    port = port,
+                    protocol = LanDeviceProtocol.HTTPS,
+                    payload = PrepareUploadRequestDto(
+                        info = clientRegisterRequest(port),
+                        files = emptyMap()
+                    ),
+                    expectedFingerprint = serverIdentity.fingerprint
+                )
+            }
+
+            val error = response.exceptionOrNull() as LocalSendProtocolException
+            assertEquals(401, error.statusCode)
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
+    fun blocksPrepareAfterRepeatedInvalidPinAttempts() = runTest {
+        val callbacks = RecordingCallbacks()
+        val server = createServer(callbacks, pin = "2468")
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            repeat(5) {
+                runCatching {
+                    client.prepareUpload(
+                        host = "127.0.0.1",
+                        port = port,
+                        protocol = LanDeviceProtocol.HTTPS,
+                        payload = PrepareUploadRequestDto(
+                            info = clientRegisterRequest(port),
+                            files = emptyMap()
+                        ),
+                        pin = "0000",
+                        expectedFingerprint = serverIdentity.fingerprint
+                    )
+                }
+            }
+            val response = runCatching {
+                client.prepareUpload(
+                    host = "127.0.0.1",
+                    port = port,
+                    protocol = LanDeviceProtocol.HTTPS,
+                    payload = PrepareUploadRequestDto(
+                        info = clientRegisterRequest(port),
+                        files = emptyMap()
+                    ),
+                    pin = "0000",
+                    expectedFingerprint = serverIdentity.fingerprint
+                )
+            }
+
+            val error = response.exceptionOrNull() as LocalSendProtocolException
+            assertEquals(429, error.statusCode)
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
     fun rejectsClaimedFingerprintThatDoesNotMatchClientCertificate() = runTest {
         val callbacks = RecordingCallbacks()
         val server = createServer(callbacks)

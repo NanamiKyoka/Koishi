@@ -49,6 +49,13 @@ data class LanTransferSettingsUi(
     val verifyChecksums: Boolean = true
 )
 
+data class PinPromptUi(
+    val deviceId: String,
+    val deviceAlias: String,
+    val invalid: Boolean = false,
+    val attempt: Int = 0
+)
+
 data class LanTransferUiState(
     val alias: String = "",
     val receiveEnabled: Boolean = false,
@@ -57,6 +64,7 @@ data class LanTransferUiState(
     val transfers: List<TransferItemUi> = emptyList(),
     val incomingRequest: IncomingRequestUi? = null,
     val selectedFiles: List<PickedFile> = emptyList(),
+    val pinPrompt: PinPromptUi? = null,
     @StringRes val userMessageRes: Int? = null,
     val userMessageArgs: List<String> = emptyList(),
     val isLoading: Boolean = true
@@ -69,6 +77,8 @@ sealed interface LanTransferUiEvent {
     data class OnSendTo(val deviceId: String) : LanTransferUiEvent
     data class OnSendText(val deviceId: String, val text: String) : LanTransferUiEvent
     data class OnAcceptIncoming(val accepted: Boolean) : LanTransferUiEvent
+    data class OnSubmitPin(val pin: String) : LanTransferUiEvent
+    data object OnCancelPinPrompt : LanTransferUiEvent
     data class OnCancelTransfer(val id: String) : LanTransferUiEvent
     data class OnRetryTransfer(val id: String) : LanTransferUiEvent
     data class OnSaveSettings(
