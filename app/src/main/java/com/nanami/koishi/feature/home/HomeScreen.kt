@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
@@ -53,6 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
+import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
+import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
 import com.nanami.koishi.core.model.ToolItem
 import com.nanami.koishi.feature.favorites.FavoritesScreen
 import com.nanami.koishi.feature.home.components.CategorySectionCard
@@ -220,32 +225,38 @@ private fun ToolSearchContent(
         )
 
         if (uiState.searchQuery.isBlank()) {
-            SearchSuggestions(
-                history = uiState.searchHistory,
-                onHistoryItemClick = { keyword ->
-                    onEvent(HomeUiEvent.OnSearchHistoryClick(keyword))
-                },
-                onDeleteItem = { onEvent(HomeUiEvent.OnDeleteSearchHistoryItem(it)) },
-                onClearHistory = { onEvent(HomeUiEvent.OnClearHistory) }
-            )
+            AdaptiveContentWidth(maxWidth = 840.dp) {
+                SearchSuggestions(
+                    history = uiState.searchHistory,
+                    onHistoryItemClick = { keyword ->
+                        onEvent(HomeUiEvent.OnSearchHistoryClick(keyword))
+                    },
+                    onDeleteItem = { onEvent(HomeUiEvent.OnDeleteSearchHistoryItem(it)) },
+                    onClearHistory = { onEvent(HomeUiEvent.OnClearHistory) }
+                )
+            }
         } else {
             val results = uiState.filteredTools
             if (results.isEmpty()) {
-                EmptySearchResult(
-                    query = uiState.searchQuery,
-                    modifier = Modifier.fillMaxSize()
-                )
+                AdaptiveContentWidth(maxWidth = 640.dp) {
+                    EmptySearchResult(
+                        query = uiState.searchQuery,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             } else {
-                SearchResultList(
-                    query = uiState.searchQuery,
-                    tools = results,
-                    onToolClick = { tool ->
-                        keyboardController?.hide()
-                        onEvent(HomeUiEvent.OnSearchActiveChange(false))
-                        onToolClick(tool)
-                    },
-                    onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) }
-                )
+                AdaptiveContentWidth(maxWidth = 960.dp) {
+                    SearchResultList(
+                        query = uiState.searchQuery,
+                        tools = results,
+                        onToolClick = { tool ->
+                            keyboardController?.hide()
+                            onEvent(HomeUiEvent.OnSearchActiveChange(false))
+                            onToolClick(tool)
+                        },
+                        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) }
+                    )
+                }
             }
         }
     }
@@ -499,6 +510,24 @@ private fun EmptySearchResult(
     }
 }
 
+@Composable
+private fun ToolboxCategoryItem(
+    category: com.nanami.koishi.core.model.ToolCategory,
+    uiState: HomeUiState,
+    onEvent: (HomeUiEvent) -> Unit,
+    onToolClick: (ToolItem) -> Unit,
+) {
+    val toolsInCategory = uiState.allTools.filter { it.category == category }
+    CategorySectionCard(
+        category = category,
+        tools = toolsInCategory,
+        isExpanded = uiState.expandedCategories.contains(category),
+        onToggleExpand = { onEvent(HomeUiEvent.OnToggleCategoryExpanded(category)) },
+        onToolClick = onToolClick,
+        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) },
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ToolboxOverview(
@@ -546,24 +575,50 @@ private fun ToolboxOverview(
             uiState.allTools.any { it.category == category }
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+        val layoutMode = LocalWindowLayoutMode.current
+
+        AdaptiveContentWidth(
+            maxWidth = if (layoutMode == WindowLayoutMode.EXPANDED) 1200.dp else 840.dp,
+            modifier = Modifier.weight(1f),
         ) {
-            items(
-                items = categoriesToDisplay,
-                key = { it.name }
-            ) { category ->
-                val toolsInCategory = uiState.allTools.filter { it.category == category }
-                CategorySectionCard(
-                    category = category,
-                    tools = toolsInCategory,
-                    isExpanded = uiState.expandedCategories.contains(category),
-                    onToggleExpand = { onEvent(HomeUiEvent.OnToggleCategoryExpanded(category)) },
-                    onToolClick = onToolClick,
-                    onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) }
-                )
+            if (layoutMode == WindowLayoutMode.EXPANDED) {
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(minSize = 360.dp),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalItemSpacing = 14.dp,
+                ) {
+                    items(
+                        count = categoriesToDisplay.size,
+                        key = { categoriesToDisplay[it].name },
+                    ) { index ->
+                        ToolboxCategoryItem(
+                            category = categoriesToDisplay[index],
+                            uiState = uiState,
+                            onEvent = onEvent,
+                            onToolClick = onToolClick,
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    items(
+                        items = categoriesToDisplay,
+                        key = { it.name },
+                    ) { category ->
+                        ToolboxCategoryItem(
+                            category = category,
+                            uiState = uiState,
+                            onEvent = onEvent,
+                            onToolClick = onToolClick,
+                        )
+                    }
+                }
             }
         }
     }

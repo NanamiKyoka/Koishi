@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nanami.koishi.BuildConfig
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.theme.ThemeMode
 import com.nanami.koishi.core.designsystem.theme.isDarkTheme
 import com.nanami.koishi.feature.settings.components.AppThemePicker
@@ -129,84 +130,89 @@ fun SettingsScreen(
             )
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+        AdaptiveContentWidth(
+            maxWidth = 840.dp,
+            modifier = Modifier.weight(1f),
         ) {
-            SettingsCategoryHeader(title = stringResource(R.string.settings_category_appearance))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                SettingsCategoryHeader(title = stringResource(R.string.settings_category_appearance))
 
-            ThemeModeSelector(
-                value = uiState.themeMode,
-                onSelect = { onEvent(SettingsUiEvent.OnThemeModeSelected(it)) }
-            )
+                ThemeModeSelector(
+                    value = uiState.themeMode,
+                    onSelect = { onEvent(SettingsUiEvent.OnThemeModeSelected(it)) }
+                )
 
-            AppThemePicker(
-                value = uiState.appTheme,
-                amoled = uiState.amoled,
-                darkTheme = uiState.themeMode.isDarkTheme,
-                onSelect = { onEvent(SettingsUiEvent.OnAppThemeSelected(it)) }
-            )
+                AppThemePicker(
+                    value = uiState.appTheme,
+                    amoled = uiState.amoled,
+                    darkTheme = uiState.themeMode.isDarkTheme,
+                    onSelect = { onEvent(SettingsUiEvent.OnAppThemeSelected(it)) }
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            SettingsSwitchItem(
-                icon = Icons.Rounded.DarkMode,
-                title = stringResource(R.string.settings_amoled),
-                subtitle = stringResource(R.string.settings_amoled_desc),
-                checked = uiState.amoled,
-                enabled = uiState.themeMode != ThemeMode.LIGHT,
-                onCheckedChange = { onEvent(SettingsUiEvent.OnAmoledToggled(it)) }
-            )
+                SettingsSwitchItem(
+                    icon = Icons.Rounded.DarkMode,
+                    title = stringResource(R.string.settings_amoled),
+                    subtitle = stringResource(R.string.settings_amoled_desc),
+                    checked = uiState.amoled,
+                    enabled = uiState.themeMode != ThemeMode.LIGHT,
+                    onCheckedChange = { onEvent(SettingsUiEvent.OnAmoledToggled(it)) }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsCategoryHeader(title = stringResource(R.string.settings_category_language))
+                SettingsCategoryHeader(title = stringResource(R.string.settings_category_language))
 
-            SettingsClickableItem(
-                icon = Icons.Rounded.Language,
-                title = stringResource(R.string.settings_language),
-                subtitle = stringResource(uiState.language.titleRes),
-                onClick = { onEvent(SettingsUiEvent.OnShowLanguageDialog(true)) }
-            )
+                SettingsClickableItem(
+                    icon = Icons.Rounded.Language,
+                    title = stringResource(R.string.settings_language),
+                    subtitle = stringResource(uiState.language.titleRes),
+                    onClick = { onEvent(SettingsUiEvent.OnShowLanguageDialog(true)) }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsCategoryHeader(title = stringResource(R.string.settings_category_data))
+                SettingsCategoryHeader(title = stringResource(R.string.settings_category_data))
 
-            SettingsClickableItem(
-                icon = Icons.Rounded.CloudSync,
-                title = stringResource(R.string.settings_webdav_sync),
-                subtitle = stringResource(R.string.settings_webdav_sync_desc),
-                onClick = { onEvent(SettingsUiEvent.OnShowWebDavDialog(true)) }
-            )
+                SettingsClickableItem(
+                    icon = Icons.Rounded.CloudSync,
+                    title = stringResource(R.string.settings_webdav_sync),
+                    subtitle = stringResource(R.string.settings_webdav_sync_desc),
+                    onClick = { onEvent(SettingsUiEvent.OnShowWebDavDialog(true)) }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsCategoryHeader(title = stringResource(R.string.settings_category_about))
+                SettingsCategoryHeader(title = stringResource(R.string.settings_category_about))
 
-            SettingsClickableItem(
-                icon = Icons.Rounded.SystemUpdate,
-                title = stringResource(R.string.settings_check_update),
-                subtitle = stringResource(R.string.settings_check_update_desc),
-                onClick = { onEvent(SettingsUiEvent.OnCheckForUpdate) }
-            )
+                SettingsClickableItem(
+                    icon = Icons.Rounded.SystemUpdate,
+                    title = stringResource(R.string.settings_check_update),
+                    subtitle = stringResource(R.string.settings_check_update_desc),
+                    onClick = { onEvent(SettingsUiEvent.OnCheckForUpdate) }
+                )
 
-            val projectUrl = stringResource(R.string.settings_project_url)
-            SettingsClickableItem(
-                icon = Icons.Rounded.Info,
-                title = "Koishi",
-                subtitle = "${stringResource(R.string.settings_version)} ${BuildConfig.VERSION_NAME}\n${stringResource(R.string.settings_about_desc)}",
-                onClick = { openWebPage(context, projectUrl) }
-            )
+                val projectUrl = stringResource(R.string.settings_project_url)
+                SettingsClickableItem(
+                    icon = Icons.Rounded.Info,
+                    title = "Koishi",
+                    subtitle = "${stringResource(R.string.settings_version)} ${BuildConfig.VERSION_NAME}\n${stringResource(R.string.settings_about_desc)}",
+                    onClick = { openWebPage(context, projectUrl) }
+                )
 
-            val developerUrl = stringResource(R.string.settings_developer_url)
-            SettingsClickableItem(
-                icon = Icons.Rounded.Person,
-                title = stringResource(R.string.settings_developer),
-                subtitle = "NanamiKyoka",
-                onClick = { openWebPage(context, developerUrl) }
-            )
+                val developerUrl = stringResource(R.string.settings_developer_url)
+                SettingsClickableItem(
+                    icon = Icons.Rounded.Person,
+                    title = stringResource(R.string.settings_developer),
+                    subtitle = "NanamiKyoka",
+                    onClick = { openWebPage(context, developerUrl) }
+                )
+            }
         }
     }
 }
