@@ -3,6 +3,7 @@ package com.nanami.koishi.feature.tools.lan_transfer
 import androidx.annotation.StringRes
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.PickedFile
+import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ReceivedFileLocation
 
 enum class TransferDirection { SENDING, RECEIVING }
 
@@ -16,7 +17,8 @@ data class TransferItemUi(
     val status: TransferItemStatus,
     val sessionId: String? = null,
     val canRetry: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val receivedLocation: ReceivedFileLocation? = null
 )
 
 sealed interface IncomingRequestUi {

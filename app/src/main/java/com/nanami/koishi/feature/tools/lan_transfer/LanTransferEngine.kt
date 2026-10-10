@@ -27,6 +27,7 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.settings.LanTransferS
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ContentUriFileSource
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.LanTransferFileStore
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.PickedFile
+import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ReceivedFileLocation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -537,6 +538,14 @@ class LanTransferEngine(
         }
     }
 
+    private fun updateReceivedLocation(fileId: String, location: ReceivedFileLocation) {
+        _uiState.update { state ->
+            state.copy(transfers = state.transfers.map { item ->
+                if (item.id == fileId) item.copy(receivedLocation = location) else item
+            })
+        }
+    }
+
     private fun updateSessionId(fileIds: List<String>, sessionId: String) {
         val ids = fileIds.toSet()
         _uiState.update { state ->
@@ -625,7 +634,11 @@ class LanTransferEngine(
 
         override suspend fun onFileFinished(result: IncomingFileResult) {
             val key = "${result.sessionId}/${result.file.id}"
-            pendingOutputs.remove(key)?.publish(result.success)
+            val pending = pendingOutputs.remove(key)
+            pending?.publish(result.success)
+            if (result.success && pending != null) {
+                updateReceivedLocation(result.file.id, pending.location)
+            }
             updateStatus(result.file.id, if (result.success) TransferItemStatus.DONE else TransferItemStatus.FAILED)
         }
 

@@ -1289,6 +1289,8 @@
     <string name="lan_transfer_cancel">Cancel transfer</string>
     <string name="lan_transfer_retry">Retry</string>
     <string name="lan_transfer_status_cancelled">Cancelled</string>
+    <string name="lan_transfer_open_folder">Open containing folder</string>
+    <string name="lan_transfer_open_folder_failed">No app can open this folder</string>
     <string name="lan_transfer_device_name">Device name</string>
     <string name="lan_transfer_pin_enabled">Require PIN</string>
     <string name="lan_transfer_pin">PIN</string>

@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.Build
 import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.TransferFileDto
 import java.io.File
@@ -40,6 +41,7 @@ class LanTransferFileStore(private val context: Context) {
         val stream = resolver.openOutputStream(uri) ?: error("Unable to open destination file")
         return PendingFile(
             output = stream,
+            location = downloadFolderLocation(directory),
             publish = { success ->
                 if (success) {
                     applyMediaStoreTimestamp(resolver, uri, file)
@@ -56,12 +58,13 @@ class LanTransferFileStore(private val context: Context) {
     private fun openWithLegacyDirectory(displayName: String, file: TransferFileDto, directoryName: String): PendingFile {
         val directory = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            DIRECTORY_NAME
+            directoryName
         )
         directory.mkdirs()
         val target = uniqueFile(directory, displayName)
         return PendingFile(
             output = FileOutputStream(target),
+            location = downloadFolderLocation(directoryName),
             publish = { success ->
                 if (success) {
                     applyFileTimestamp(target, file)
@@ -124,6 +127,16 @@ class LanTransferFileStore(private val context: Context) {
         return candidate
     }
 
+    private fun downloadFolderLocation(directoryName: String): ReceivedFileLocation {
+        val documentId = "primary:${Environment.DIRECTORY_DOWNLOADS}/$directoryName"
+        return ReceivedFileLocation(
+            folderUri = DocumentsContract.buildDocumentUri(
+                EXTERNAL_STORAGE_AUTHORITY,
+                documentId
+            ).toString()
+        )
+    }
+
     private fun sanitizeDirectory(name: String): String = name
         .replace('/', '_')
         .replace('\\', '_')
@@ -141,10 +154,12 @@ class LanTransferFileStore(private val context: Context) {
 
     data class PendingFile(
         val output: OutputStream,
+        val location: ReceivedFileLocation,
         val publish: (success: Boolean) -> Unit
     )
 
     companion object {
         const val DIRECTORY_NAME = "Koishi"
+        private const val EXTERNAL_STORAGE_AUTHORITY = "com.android.externalstorage.documents"
     }
 }

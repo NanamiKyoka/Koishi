@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Computer
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
@@ -484,6 +485,7 @@ private fun TransferRow(
     onRetry: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(16.dp),
@@ -567,6 +569,33 @@ private fun TransferRow(
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
+            val receivedLocation = item.receivedLocation
+            if (
+                item.direction == TransferDirection.RECEIVING &&
+                item.status == TransferItemStatus.DONE &&
+                receivedLocation != null
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                FilledTonalButton(
+                    onClick = {
+                        if (!LanTransferFolderOpener.open(context, receivedLocation)) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.lan_transfer_open_folder_failed),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.FolderOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.size(6.dp))
+                    Text(stringResource(R.string.lan_transfer_open_folder))
+                }
+            }
         }
     }
 }

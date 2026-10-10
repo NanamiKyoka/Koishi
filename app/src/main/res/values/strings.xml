@@ -1290,6 +1290,8 @@
     <string name="lan_transfer_cancel">取消传输</string>
     <string name="lan_transfer_retry">重试</string>
     <string name="lan_transfer_status_cancelled">已取消</string>
+    <string name="lan_transfer_open_folder">打开所在文件夹</string>
+    <string name="lan_transfer_open_folder_failed">没有可以打开文件夹的应用</string>
     <string name="lan_transfer_device_name">设备名称</string>
     <string name="lan_transfer_pin_enabled">启用 PIN</string>
     <string name="lan_transfer_pin">PIN 码</string>
