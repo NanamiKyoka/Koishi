@@ -59,6 +59,8 @@ data class PinPromptUi(
 data class LanTransferUiState(
     val alias: String = "",
     val receiveEnabled: Boolean = false,
+    val localAddresses: List<String> = emptyList(),
+    val listenPort: Int? = null,
     val settings: LanTransferSettingsUi = LanTransferSettingsUi(),
     val devices: List<LanDevice> = emptyList(),
     val transfers: List<TransferItemUi> = emptyList(),

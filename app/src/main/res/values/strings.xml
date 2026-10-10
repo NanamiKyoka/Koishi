@@ -1302,6 +1302,9 @@
     <string name="lan_transfer_receive_off_status">接收已关闭</string>
     <string name="lan_transfer_receive_on_hint">同一局域网内的设备可以发现并向本机发送</string>
     <string name="lan_transfer_receive_off_hint">开启后其他设备才能发现本机</string>
+    <string name="lan_transfer_local_address">本机地址</string>
+    <string name="lan_transfer_local_address_empty">暂不可用</string>
+    <string name="lan_transfer_local_address_copied">本机地址已复制</string>
     <string name="lan_transfer_pin_enabled_status">需要 PIN</string>
     <string name="lan_transfer_pin_disabled_status">无需 PIN</string>
     <string name="lan_transfer_pin_setup">PIN 设置</string>

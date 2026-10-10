@@ -31,7 +31,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Chat
+import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
 import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.TextSnippet
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Close
@@ -39,14 +41,12 @@ import androidx.compose.material.icons.rounded.Computer
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.InsertDriveFile
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.TextSnippet
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -251,6 +251,8 @@ fun LanTransferScreen(
                         alias = state.alias.ifBlank { state.settings.alias },
                         pinEnabled = state.settings.pinEnabled && state.settings.pin.isNotBlank(),
                         pin = state.settings.pin,
+                        localAddresses = state.localAddresses,
+                        listenPort = state.listenPort,
                         onToggleReceive = onToggleReceive,
                         onTogglePin = { enabled ->
                             if (enabled) {
@@ -405,6 +407,8 @@ private fun ReceiveStatusCard(
     alias: String,
     pinEnabled: Boolean,
     pin: String,
+    localAddresses: List<String>,
+    listenPort: Int?,
     onToggleReceive: (Boolean) -> Unit,
     onTogglePin: (Boolean) -> Unit,
     onEditPin: () -> Unit
@@ -467,6 +471,54 @@ private fun ReceiveStatusCard(
                 Switch(checked = enabled, onCheckedChange = onToggleReceive)
             }
             HorizontalDivider(color = contentColor.copy(alpha = 0.14f))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Rounded.Wifi,
+                    contentDescription = null,
+                    tint = contentColor.copy(alpha = 0.8f),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.lan_transfer_local_address),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (localAddresses.isEmpty() || listenPort == null) {
+                        Text(
+                            text = stringResource(R.string.lan_transfer_local_address_empty),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = contentColor.copy(alpha = 0.72f)
+                        )
+                    } else {
+                        Text(
+                            text = localAddresses.joinToString("  ") { "$it:$listenPort" },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = contentColor.copy(alpha = 0.82f)
+                        )
+                    }
+                }
+                if (localAddresses.isNotEmpty() && listenPort != null) {
+                    IconButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(ClipboardManager::class.java)
+                            val address = localAddresses.joinToString("\n") { "$it:$listenPort" }
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer Address", address))
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.lan_transfer_local_address_copied),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = stringResource(R.string.lan_transfer_local_address_copied)
+                        )
+                    }
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = if (pinEnabled) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
@@ -543,7 +595,7 @@ private fun FileSelectionSection(
         FileActionCard(
             title = stringResource(R.string.lan_transfer_send_files),
             description = stringResource(R.string.lan_transfer_files_desc),
-            icon = Icons.Rounded.InsertDriveFile,
+            icon = Icons.AutoMirrored.Rounded.InsertDriveFile,
             onClick = onPickFiles
         )
         FileActionCard(
@@ -555,7 +607,7 @@ private fun FileSelectionSection(
         FileActionCard(
             title = stringResource(R.string.lan_transfer_pick_text),
             description = stringResource(R.string.lan_transfer_pick_text_desc),
-            icon = Icons.Rounded.TextSnippet,
+            icon = Icons.AutoMirrored.Rounded.TextSnippet,
             onClick = onPickText
         )
     }
@@ -701,7 +753,7 @@ private fun SelectedFileTile(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Rounded.InsertDriveFile,
+                            imageVector = Icons.AutoMirrored.Rounded.InsertDriveFile,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.size(36.dp)

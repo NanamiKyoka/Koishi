@@ -29,14 +29,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -196,7 +196,10 @@ internal fun LanTransferSettingsSheet(
     var autoAccept by remember(settings.autoAccept) { mutableStateOf(settings.autoAccept) }
     var computeChecksums by remember(settings.computeChecksums) { mutableStateOf(settings.computeChecksums) }
     var verifyChecksums by remember(settings.verifyChecksums) { mutableStateOf(settings.verifyChecksums) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -313,23 +316,31 @@ internal fun SendTextTargetDialog(
                     )
                 } else {
                     devices.forEach { device ->
-                        ListItem(
-                            headlineContent = { Text(device.alias) },
-                            supportingContent = {
-                                Text(device.deviceModel ?: device.host)
-                            },
-                            leadingContent = {
-                                Icon(
-                                    imageVector = if (device.deviceType == LanDeviceType.MOBILE) {
-                                        Icons.Rounded.PhoneAndroid
-                                    } else {
-                                        Icons.Rounded.Computer
-                                    },
-                                    contentDescription = null
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelect(device) }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (device.deviceType == LanDeviceType.MOBILE) {
+                                    Icons.Rounded.PhoneAndroid
+                                } else {
+                                    Icons.Rounded.Computer
+                                },
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Column {
+                                Text(device.alias)
+                                Text(
+                                    text = device.deviceModel ?: device.host,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            },
-                            modifier = Modifier.clickable { onSelect(device) }
-                        )
+                            }
+                        }
                         HorizontalDivider()
                     }
                 }

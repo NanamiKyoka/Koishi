@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.DeviceDiscovery
+import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.NetworkInterfaceProvider
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceProtocol
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.DeviceInfoResponseDto
@@ -66,6 +67,7 @@ class LanTransferEngine(
     val uiState: StateFlow<LanTransferUiState> = _uiState.asStateFlow()
 
     private val fileStore = LanTransferFileStore(appContext)
+    private val networkInterfaceProvider = NetworkInterfaceProvider()
     private val pendingOutputs = ConcurrentHashMap<String, LanTransferFileStore.PendingFile>()
     private val devicesById = ConcurrentHashMap<String, LanDevice>()
     private val retrySends = ConcurrentHashMap<String, RetrySend>()
@@ -92,6 +94,9 @@ class LanTransferEngine(
             }
             startServer()
             restartDiscovery()
+            if (settings.receiveEnabled) {
+                LanTransferForegroundService.start(appContext)
+            }
         }
     }
 
@@ -155,7 +160,7 @@ class LanTransferEngine(
                     alias = localAlias(),
                     serverPort = server?.port ?: LocalSendProtocol.DEFAULT_PORT,
                     protocol = LanDeviceProtocol.HTTPS,
-                    announce = true
+                    announce = _uiState.value.receiveEnabled
                 ).collect { device ->
                     if (device.fingerprint == localFingerprint) return@collect
                     devicesById[device.id] = device
@@ -189,7 +194,10 @@ class LanTransferEngine(
     }
 
     private suspend fun startServer() {
-        if (server != null) return
+        if (server != null) {
+            refreshLocalNetworkInfo()
+            return
+        }
         val settings = settingsRepository.currentData()
         val deviceInfo = deviceInfoProvider.create(localAlias(), protocol = LanDeviceProtocol.HTTPS)
         val config = LocalSendServerConfig(
@@ -213,6 +221,7 @@ class LanTransferEngine(
             fallback.start(port = 0)
             server = fallback
         }
+        refreshLocalNetworkInfo()
     }
 
     private suspend fun stopServer() {
@@ -220,7 +229,21 @@ class LanTransferEngine(
         server = null
         pendingDecision?.cancel()
         pendingDecision = null
-        _uiState.update { it.copy(incomingRequest = null) }
+        _uiState.update { it.copy(incomingRequest = null, listenPort = null) }
+    }
+
+    private fun refreshLocalNetworkInfo() {
+        val addresses = runCatching {
+            networkInterfaceProvider.activeIpv4Interfaces()
+                .mapNotNull { it.address.hostAddress }
+                .distinct()
+        }.getOrDefault(emptyList())
+        _uiState.update {
+            it.copy(
+                localAddresses = addresses,
+                listenPort = server?.port
+            )
+        }
     }
 
     private fun saveSettings(event: LanTransferUiEvent.OnSaveSettings) {

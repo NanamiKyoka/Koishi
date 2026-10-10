@@ -1301,6 +1301,9 @@
     <string name="lan_transfer_receive_off_status">Receiving off</string>
     <string name="lan_transfer_receive_on_hint">Devices on the same network can discover and send to this device</string>
     <string name="lan_transfer_receive_off_hint">Turn this on to become discoverable</string>
+    <string name="lan_transfer_local_address">Local address</string>
+    <string name="lan_transfer_local_address_empty">Unavailable</string>
+    <string name="lan_transfer_local_address_copied">Local address copied</string>
     <string name="lan_transfer_pin_enabled_status">PIN required</string>
     <string name="lan_transfer_pin_disabled_status">No PIN</string>
     <string name="lan_transfer_pin_setup">PIN settings</string>
