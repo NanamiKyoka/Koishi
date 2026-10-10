@@ -3,6 +3,7 @@ package com.nanami.koishi.feature.tools.lan_transfer
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.nanami.koishi.R
 import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.DeviceDiscovery
 import com.nanami.koishi.feature.tools.lan_transfer.engine.discovery.NetworkInterfaceProvider
@@ -28,6 +29,7 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.server.LocalSendServe
 import com.nanami.koishi.feature.tools.lan_transfer.engine.settings.LanTransferSettings
 import com.nanami.koishi.feature.tools.lan_transfer.engine.settings.LanTransferSettingsRepository
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ContentUriFileSource
+import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.FolderItemLimitException
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.LanTransferFileStore
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.PickedFile
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ReceivedFileLocation
@@ -43,6 +45,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.OutputStream
 import java.time.Instant
@@ -119,6 +122,7 @@ class LanTransferEngine(
                 }
             }
             is LanTransferUiEvent.OnAddText -> addText(event.text)
+            is LanTransferUiEvent.OnFolderPicked -> importFolder(event.uri.toUri())
             is LanTransferUiEvent.OnUpdateText -> updateText(event.uri, event.text)
             is LanTransferUiEvent.OnRemoveFile -> removeSelectedFile(event.uri)
             LanTransferUiEvent.OnClearFiles -> clearSelectedFiles()
@@ -284,6 +288,32 @@ class LanTransferEngine(
     private fun addText(text: String) {
         val picked = createTextFile(text) ?: return
         _uiState.update { it.copy(selectedFiles = it.selectedFiles + picked) }
+    }
+
+    private fun importFolder(uri: Uri) {
+        scope.launch {
+            _uiState.update { it.copy(isImportingFiles = true) }
+            try {
+                val imported = withContext(Dispatchers.IO) {
+                    ContentUriFileSource.describeTree(appContext, uri)
+                }
+                if (imported.isEmpty()) {
+                    message(R.string.lan_transfer_folder_empty)
+                } else {
+                    val selected = _uiState.value.selectedFiles
+                        .plus(imported)
+                        .distinctBy { it.uri.toString() }
+                    _uiState.update { it.copy(selectedFiles = selected) }
+                    message(R.string.lan_transfer_folder_added, imported.size.toString())
+                }
+            } catch (_: FolderItemLimitException) {
+                message(R.string.lan_transfer_folder_limit)
+            } catch (_: Exception) {
+                message(R.string.lan_transfer_folder_failed)
+            } finally {
+                _uiState.update { it.copy(isImportingFiles = false) }
+            }
+        }
     }
 
     private fun updateText(uri: String, text: String) {

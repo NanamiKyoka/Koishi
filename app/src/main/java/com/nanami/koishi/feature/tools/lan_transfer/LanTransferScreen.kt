@@ -3,6 +3,7 @@ package com.nanami.koishi.feature.tools.lan_transfer
 import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -24,23 +25,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Chat
-import androidx.compose.material.icons.automirrored.rounded.InsertDriveFile
 import androidx.compose.material.icons.automirrored.rounded.Send
-import androidx.compose.material.icons.automirrored.rounded.TextSnippet
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Computer
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.FolderOpen
-import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.MoreVert
@@ -76,8 +72,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -85,13 +79,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceType
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ContentUriFileSource
-import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.PickedFile
 
 @Composable
 fun LanTransferRoute(
@@ -123,6 +115,19 @@ fun LanTransferRoute(
     val mediaPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris -> handleUris(uris) }
+    val folderPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+            viewModel.onEvent(LanTransferUiEvent.OnFolderPicked(uri.toString()))
+        }
+    }
     var pendingEnableReceive by remember { mutableStateOf(false) }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -157,6 +162,7 @@ fun LanTransferRoute(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
             )
         },
+        onPickFolder = { folderPicker.launch(null) },
         onToggleReceive = ::requestReceiveToggle,
         onEvent = viewModel::onEvent,
         modifier = modifier
@@ -169,12 +175,16 @@ fun LanTransferScreen(
     onBack: () -> Unit,
     onPickFiles: () -> Unit,
     onPickImages: () -> Unit,
+    onPickFolder: () -> Unit,
     onToggleReceive: (Boolean) -> Unit,
     onEvent: (LanTransferUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showSettings by remember { mutableStateOf(false) }
     var showPinSetup by remember { mutableStateOf(false) }
+    var showAddItems by remember { mutableStateOf(false) }
+    var showTextInput by remember { mutableStateOf(false) }
+    var editingItems by remember { mutableStateOf(false) }
     var showTextTargetPicker by remember { mutableStateOf(false) }
     var textTarget by remember { mutableStateOf<LanDevice?>(null) }
 
@@ -192,6 +202,19 @@ fun LanTransferScreen(
         )
     }
 
+    LaunchedEffect(state.selectedFiles.isEmpty()) {
+        if (editingItems && state.selectedFiles.isEmpty()) editingItems = false
+    }
+
+    if (editingItems) {
+        LanTransferSelectedItemsScreen(
+            files = state.selectedFiles,
+            onBack = { editingItems = false },
+            onRemove = { onEvent(LanTransferUiEvent.OnRemoveFile(it)) },
+            onClear = { onEvent(LanTransferUiEvent.OnClearFiles) },
+            onUpdateText = { uri, text -> onEvent(LanTransferUiEvent.OnUpdateText(uri, text)) }
+        )
+    } else {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -264,19 +287,32 @@ fun LanTransferScreen(
                         onEditPin = { showPinSetup = true }
                     )
                 }
+                if (state.isImportingFiles) {
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            Text(
+                                text = stringResource(R.string.lan_transfer_folder_importing),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
                 item {
                     if (state.selectedFiles.isEmpty()) {
-                        FileSelectionSection(
+                        SendSelectionOptions(
                             onPickFiles = onPickFiles,
-                            onPickImages = onPickImages,
-                            onPickText = { showTextTargetPicker = true }
+                            onPickMedia = onPickImages,
+                            onPickText = { showTextInput = true },
+                            onPickFolder = onPickFolder
                         )
                     } else {
-                        SelectedFilesCard(
+                        SelectedItemsSummaryCard(
                             files = state.selectedFiles,
-                            onAddFiles = onPickFiles,
-                            onRemoveFile = { onEvent(LanTransferUiEvent.OnRemoveFile(it)) },
-                            onClearFiles = { onEvent(LanTransferUiEvent.OnClearFiles) }
+                            onClear = { onEvent(LanTransferUiEvent.OnClearFiles) },
+                            onEdit = { editingItems = true },
+                            onAdd = { showAddItems = true }
                         )
                     }
                 }
@@ -332,6 +368,7 @@ fun LanTransferScreen(
             }
         }
     }
+    }
 
     state.pinPrompt?.let { prompt ->
         PinPromptDialog(
@@ -386,6 +423,39 @@ fun LanTransferScreen(
             onSave = { pin ->
                 showPinSetup = false
                 saveSettings(state.settings.copy(pinEnabled = true, pin = pin))
+            }
+        )
+    }
+
+    if (showAddItems) {
+        AddItemsBottomSheet(
+            onDismiss = { showAddItems = false },
+            onPickFiles = {
+                showAddItems = false
+                onPickFiles()
+            },
+            onPickMedia = {
+                showAddItems = false
+                onPickImages()
+            },
+            onPickText = {
+                showAddItems = false
+                showTextInput = true
+            },
+            onPickFolder = {
+                showAddItems = false
+                onPickFolder()
+            }
+        )
+    }
+
+    if (showTextInput) {
+        TextInputDialog(
+            title = stringResource(R.string.lan_transfer_preview_text),
+            onDismiss = { showTextInput = false },
+            onConfirm = { text ->
+                showTextInput = false
+                onEvent(LanTransferUiEvent.OnAddText(text))
             }
         )
     }
@@ -578,216 +648,6 @@ private fun ReceiveStatusCard(
                 color = contentColor.copy(alpha = 0.72f)
             )
         }
-    }
-}
-
-@Composable
-private fun FileSelectionSection(
-    onPickFiles: () -> Unit,
-    onPickImages: () -> Unit,
-    onPickText: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionTitle(stringResource(R.string.lan_transfer_files_title))
-        Text(
-            text = stringResource(R.string.lan_transfer_files_desc),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        FileActionCard(
-            title = stringResource(R.string.lan_transfer_send_files),
-            description = stringResource(R.string.lan_transfer_files_desc),
-            icon = Icons.AutoMirrored.Rounded.InsertDriveFile,
-            onClick = onPickFiles
-        )
-        FileActionCard(
-            title = stringResource(R.string.lan_transfer_pick_images),
-            description = stringResource(R.string.lan_transfer_pick_images_desc),
-            icon = Icons.Rounded.Image,
-            onClick = onPickImages
-        )
-        FileActionCard(
-            title = stringResource(R.string.lan_transfer_pick_text),
-            description = stringResource(R.string.lan_transfer_pick_text_desc),
-            icon = Icons.AutoMirrored.Rounded.TextSnippet,
-            onClick = onPickText
-        )
-    }
-}
-
-@Composable
-private fun FileActionCard(
-    title: String,
-    description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.size(52.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-@Composable
-private fun SelectedFilesCard(
-    files: List<PickedFile>,
-    onAddFiles: () -> Unit,
-    onRemoveFile: (String) -> Unit,
-    onClearFiles: () -> Unit
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.lan_transfer_files_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.lan_transfer_selected_files,
-                            files.size,
-                            formatBytes(files.sumOf { it.size })
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onClearFiles) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = stringResource(R.string.lan_transfer_clear_files)
-                    )
-                }
-            }
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(files, key = { it.uri.toString() }) { file ->
-                    SelectedFileTile(
-                        file = file,
-                        onRemove = { onRemoveFile(file.uri.toString()) }
-                    )
-                }
-            }
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                FilledTonalButton(onClick = onAddFiles) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(stringResource(R.string.lan_transfer_add_files))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SelectedFileTile(
-    file: PickedFile,
-    onRemove: () -> Unit
-) {
-    Column(modifier = Modifier.width(96.dp)) {
-        Box(
-            modifier = Modifier
-                .size(96.dp)
-                .clip(RoundedCornerShape(18.dp))
-        ) {
-            if (file.mimeType.startsWith("image/")) {
-                AsyncImage(
-                    model = file.uri,
-                    contentDescription = file.fileName,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.InsertDriveFile,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-                }
-            }
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp)
-                    .size(28.dp)
-                    .clickable(onClick = onRemove)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = stringResource(R.string.lan_transfer_remove_file),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = file.displayName ?: file.fileName,
-            style = MaterialTheme.typography.labelMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 

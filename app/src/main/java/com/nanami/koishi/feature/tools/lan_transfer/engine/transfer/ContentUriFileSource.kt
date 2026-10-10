@@ -1,10 +1,12 @@
 package com.nanami.koishi.feature.tools.lan_transfer.engine.transfer
 
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import androidx.documentfile.provider.DocumentFile
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.LocalSendUploadSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -55,6 +57,44 @@ object ContentUriFileSource {
         )
     }
 
+    fun describeTree(context: Context, uri: Uri): List<PickedFile> {
+        val root = DocumentFile.fromTreeUri(context, uri) ?: return emptyList()
+        val rootName = root.name?.takeIf { it.isNotBlank() } ?: "Folder"
+        val result = mutableListOf<PickedFile>()
+
+        fun walk(directory: DocumentFile, relativePath: String) {
+            directory.listFiles().forEach { child ->
+                val name = child.name?.takeIf { it.isNotBlank() } ?: return@forEach
+                val childPath = "$relativePath/${name.replace('\\', '/')}"
+                when {
+                    child.isDirectory -> walk(child, childPath)
+                    child.isFile -> {
+                        val described = describe(context.contentResolver, child.uri)
+                        val size = described?.size ?: child.length()
+                        if (size >= 0) {
+                            result += (described ?: PickedFile(
+                                uri = child.uri,
+                                fileName = name,
+                                size = size,
+                                mimeType = child.type ?: "application/octet-stream",
+                                modifiedAt = child.lastModified().takeIf { it > 0 }
+                            )).copy(
+                                fileName = childPath,
+                                displayName = childPath
+                            )
+                            if (result.size > MAX_FOLDER_FILES) {
+                                throw FolderItemLimitException()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        walk(root, rootName.replace('\\', '/'))
+        return result
+    }
+
     fun source(resolver: ContentResolver, file: PickedFile): LocalSendUploadSource =
         object : LocalSendUploadSource {
             override val size: Long = file.size
@@ -96,4 +136,7 @@ object ContentUriFileSource {
     fun Instant.toMetadataTimestamp(): String = toString()
 
     private const val UPLOAD_HASH_BUFFER_SIZE = 256 * 1024
+    private const val MAX_FOLDER_FILES = 5_000
 }
+
+class FolderItemLimitException : IllegalStateException()

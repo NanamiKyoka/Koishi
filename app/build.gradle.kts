@@ -163,6 +163,7 @@ dependencies {
     implementation(libs.coil.gif)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.webkit)
+    implementation(libs.androidx.documentfile)
 
     // Media3 Transformer & ExoPlayer
     implementation(libs.androidx.media3.transformer)

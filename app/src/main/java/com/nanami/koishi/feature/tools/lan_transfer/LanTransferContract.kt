@@ -68,6 +68,7 @@ data class LanTransferUiState(
     val selectedFiles: List<PickedFile> = emptyList(),
     val pinPrompt: PinPromptUi? = null,
     val isScanning: Boolean = false,
+    val isImportingFiles: Boolean = false,
     val activeSendDeviceId: String? = null,
     @StringRes val userMessageRes: Int? = null,
     val userMessageArgs: List<String> = emptyList(),
@@ -79,6 +80,7 @@ sealed interface LanTransferUiEvent {
     data object OnRefresh : LanTransferUiEvent
     data class OnFilesPicked(val files: List<PickedFile>) : LanTransferUiEvent
     data class OnAddText(val text: String) : LanTransferUiEvent
+    data class OnFolderPicked(val uri: String) : LanTransferUiEvent
     data class OnUpdateText(val uri: String, val text: String) : LanTransferUiEvent
     data class OnRemoveFile(val uri: String) : LanTransferUiEvent
     data object OnClearFiles : LanTransferUiEvent
