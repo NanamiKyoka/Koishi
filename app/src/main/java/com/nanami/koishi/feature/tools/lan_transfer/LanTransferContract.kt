@@ -78,6 +78,8 @@ sealed interface LanTransferUiEvent {
     data class OnToggleReceive(val enabled: Boolean) : LanTransferUiEvent
     data object OnRefresh : LanTransferUiEvent
     data class OnFilesPicked(val files: List<PickedFile>) : LanTransferUiEvent
+    data class OnAddText(val text: String) : LanTransferUiEvent
+    data class OnUpdateText(val uri: String, val text: String) : LanTransferUiEvent
     data class OnRemoveFile(val uri: String) : LanTransferUiEvent
     data object OnClearFiles : LanTransferUiEvent
     data class OnSendTo(val deviceId: String) : LanTransferUiEvent

@@ -83,6 +83,7 @@ class LanTransferEngine(
     fun initialize() {
         if (!initialized.compareAndSet(false, true)) return
         scope.launch {
+            cleanupTextCache()
             val settings = settingsRepository.currentData()
             _uiState.update { state ->
                 state.copy(
@@ -117,10 +118,10 @@ class LanTransferEngine(
                     message(R.string.lan_transfer_files_selected, selected.size.toString())
                 }
             }
-            is LanTransferUiEvent.OnRemoveFile -> _uiState.update { state ->
-                state.copy(selectedFiles = state.selectedFiles.filterNot { it.uri.toString() == event.uri })
-            }
-            LanTransferUiEvent.OnClearFiles -> _uiState.update { it.copy(selectedFiles = emptyList()) }
+            is LanTransferUiEvent.OnAddText -> addText(event.text)
+            is LanTransferUiEvent.OnUpdateText -> updateText(event.uri, event.text)
+            is LanTransferUiEvent.OnRemoveFile -> removeSelectedFile(event.uri)
+            LanTransferUiEvent.OnClearFiles -> clearSelectedFiles()
             is LanTransferUiEvent.OnSendTo -> sendTo(event.deviceId)
             is LanTransferUiEvent.OnSendText -> sendText(event.deviceId, event.text)
             is LanTransferUiEvent.OnAcceptIncoming -> resolveIncoming(event.accepted)
@@ -280,6 +281,68 @@ class LanTransferEngine(
         }
     }
 
+    private fun addText(text: String) {
+        val picked = createTextFile(text) ?: return
+        _uiState.update { it.copy(selectedFiles = it.selectedFiles + picked) }
+    }
+
+    private fun updateText(uri: String, text: String) {
+        val current = _uiState.value.selectedFiles.firstOrNull { it.uri.toString() == uri } ?: return
+        val replacement = createTextFile(text) ?: return
+        _uiState.update { state ->
+            state.copy(
+                selectedFiles = state.selectedFiles.map { file ->
+                    if (file.uri.toString() == uri) replacement else file
+                }
+            )
+        }
+        deleteTemporary(current)
+    }
+
+    private fun removeSelectedFile(uri: String) {
+        val removed = _uiState.value.selectedFiles.firstOrNull { it.uri.toString() == uri } ?: return
+        _uiState.update { state ->
+            state.copy(selectedFiles = state.selectedFiles.filterNot { it.uri.toString() == uri })
+        }
+        deleteTemporary(removed)
+    }
+
+    private fun clearSelectedFiles() {
+        val selected = _uiState.value.selectedFiles
+        _uiState.update { it.copy(selectedFiles = emptyList()) }
+        selected.forEach(::deleteTemporary)
+    }
+
+    private fun createTextFile(text: String): PickedFile? {
+        if (text.isBlank()) return null
+        return runCatching {
+            val bytes = text.toByteArray(Charsets.UTF_8)
+            val directory = File(appContext.cacheDir, TEXT_CACHE_DIRECTORY).apply { mkdirs() }
+            val file = File(directory, "${UUID.randomUUID()}.txt")
+            file.writeBytes(bytes)
+            PickedFile(
+                uri = Uri.fromFile(file),
+                fileName = file.name,
+                size = bytes.size.toLong(),
+                mimeType = "text/plain",
+                previewText = text,
+                temporary = true,
+                displayName = appContext.getString(R.string.lan_transfer_text_message)
+            )
+        }.getOrNull()
+    }
+
+    private fun deleteTemporary(file: PickedFile) {
+        if (!file.temporary) return
+        file.uri.path?.let { path -> runCatching { File(path).delete() } }
+    }
+
+    private fun cleanupTextCache() {
+        val directory = File(appContext.cacheDir, TEXT_CACHE_DIRECTORY)
+        if (!directory.exists()) return
+        directory.listFiles()?.forEach { file -> runCatching { file.delete() } }
+    }
+
     private fun sendTo(deviceId: String) {
         val device = devicesById[deviceId] ?: return
         val files = _uiState.value.selectedFiles
@@ -293,20 +356,7 @@ class LanTransferEngine(
     private fun sendText(deviceId: String, text: String) {
         val device = devicesById[deviceId] ?: return
         if (text.isBlank()) return
-        val content = text
-        val bytes = content.toByteArray(Charsets.UTF_8)
-        val directory = File(appContext.cacheDir, "lan_transfer_text").apply { mkdirs() }
-        val file = File(directory, "${UUID.randomUUID()}.txt")
-        file.writeBytes(bytes)
-        val picked = PickedFile(
-            uri = Uri.fromFile(file),
-            fileName = file.name,
-            size = bytes.size.toLong(),
-            mimeType = "text/plain",
-            previewText = content,
-            temporary = true,
-            displayName = appContext.getString(R.string.lan_transfer_text_message)
-        )
+        val picked = createTextFile(text) ?: return
         startSend(device, listOf(picked), clearSelection = false)
     }
 
@@ -803,6 +853,7 @@ class LanTransferEngine(
         const val MAX_UPLOAD_ATTEMPTS = 3
         const val RETRY_DELAY_MS = 500L
         const val SCAN_INDICATOR_DURATION_MS = 3_500L
+        const val TEXT_CACHE_DIRECTORY = "lan_transfer_text"
     }
 }
 
