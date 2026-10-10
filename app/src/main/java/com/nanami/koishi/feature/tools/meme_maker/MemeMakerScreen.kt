@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -60,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
+import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
+import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
 import com.nanami.koishi.core.designsystem.component.ClassicColorPickerDialog
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
 import com.nanami.koishi.core.util.AlbumFolders
@@ -151,96 +154,72 @@ fun MemeMakerScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .navigationBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                StickerCanvas(
-                    background = state.backgroundBitmap,
-                    stickers = state.stickers,
-                    stickerBitmaps = state.stickerBitmaps,
-                    canvasWidth = state.canvasWidth,
-                    canvasHeight = state.canvasHeight,
-                    selectedStickerId = state.selectedStickerId,
-                    onSelectSticker = { onEvent(MemeMakerUiEvent.OnSelectSticker(it)) },
-                    onTransformSticker = { id, transform ->
-                        onEvent(MemeMakerUiEvent.OnTransformSticker(id, transform))
-                    },
-                    onRequestPreview = { onEvent(MemeMakerUiEvent.OnRequestPreview) },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+        val isExpanded = LocalWindowLayoutMode.current == WindowLayoutMode.EXPANDED
+        val contentModifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .padding(horizontal = 16.dp)
+            .navigationBarsPadding()
 
-            if (state.showAssetPanel) {
-                StickerLibraryPanel(
-                    packs = state.packs,
-                    assets = state.assets,
-                    localStickers = state.localStickers,
-                    downloadingPackId = state.downloadingPackId,
-                    downloadProgress = state.downloadProgress,
-                    onCollapse = { onEvent(MemeMakerUiEvent.OnToggleAssetPanel(false)) },
-                    onDownloadPack = { onEvent(MemeMakerUiEvent.OnDownloadPack(it)) },
-                    onRemovePack = { onEvent(MemeMakerUiEvent.OnRemovePack(it)) },
-                    onPickAsset = { onEvent(MemeMakerUiEvent.OnStickerAssetPicked(it)) },
-                    onImportLocal = onPickLocalSticker,
-                    onPickLocal = { onEvent(MemeMakerUiEvent.OnLocalStickerPicked(Uri.parse(it.uri))) },
-                    onRemoveLocal = { onEvent(MemeMakerUiEvent.OnRemoveLocalSticker(it)) }
-                )
-            } else {
-                StickerTuningPanel(
-                    sticker = selectedSticker,
-                    onTransformChanged = { transform ->
-                        selectedSticker?.let {
-                            onEvent(MemeMakerUiEvent.OnTransformSticker(it.id, transform))
-                        }
-                    },
-                    onEditText = { selectedSticker?.let { onEvent(MemeMakerUiEvent.OnOpenTextEditor(it.id)) } },
-                    onFlip = { selectedSticker?.let { onEvent(MemeMakerUiEvent.OnFlipSticker(it.id)) } },
-                    onDuplicate = { selectedSticker?.let { onEvent(MemeMakerUiEvent.OnDuplicateSticker(it.id)) } },
-                    onBringToFront = { selectedSticker?.let { onEvent(MemeMakerUiEvent.OnBringStickerToFront(it.id)) } },
-                    onSendToBack = { selectedSticker?.let { onEvent(MemeMakerUiEvent.OnSendStickerToBack(it.id)) } },
-                    onDelete = { selectedSticker?.let { onEvent(MemeMakerUiEvent.OnDeleteSticker(it.id)) } }
-                )
-            }
-
+        if (isExpanded) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = contentModifier,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                ToolBarButton(
-                    icon = Icons.Rounded.Layers,
-                    labelRes = R.string.meme_sticker_library,
-                    emphasized = state.showAssetPanel,
-                    onClick = { onEvent(MemeMakerUiEvent.OnToggleAssetPanel(!state.showAssetPanel)) },
-                    modifier = Modifier.weight(1f)
+                MemeCanvasArea(
+                    state = state,
+                    onEvent = onEvent,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                 )
-                ToolBarButton(
-                    icon = Icons.Rounded.TextFields,
-                    labelRes = R.string.meme_add_text_sticker,
-                    onClick = { onEvent(MemeMakerUiEvent.OnAddTextSticker) },
-                    modifier = Modifier.weight(1f)
+
+                Column(
+                    modifier = Modifier
+                        .width(380.dp)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                    ) {
+                        MemeControlsPanel(
+                            state = state,
+                            onEvent = onEvent,
+                            onPickLocalSticker = onPickLocalSticker,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                    MemeToolbar(
+                        state = state,
+                        onEvent = onEvent,
+                        onPickBackground = onPickBackground,
+                    )
+                }
+            }
+        } else {
+            Column(
+                modifier = contentModifier,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                MemeCanvasArea(
+                    state = state,
+                    onEvent = onEvent,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                 )
-                ToolBarButton(
-                    icon = Icons.Rounded.Image,
-                    labelRes = R.string.meme_pick_background,
-                    onClick = onPickBackground,
-                    onLongClick = if (state.background != null) {
-                        { onEvent(MemeMakerUiEvent.OnClearBackground) }
-                    } else {
-                        null
-                    },
-                    modifier = Modifier.weight(1f)
+                MemeControlsPanel(
+                    state = state,
+                    onEvent = onEvent,
+                    onPickLocalSticker = onPickLocalSticker,
+                )
+                MemeToolbar(
+                    state = state,
+                    onEvent = onEvent,
+                    onPickBackground = onPickBackground,
                 )
             }
         }
@@ -304,6 +283,112 @@ fun MemeMakerScreen(
             title = { Text(state.progressStage) },
             text = { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) },
             confirmButton = {}
+        )
+    }
+}
+
+@Composable
+private fun MemeCanvasArea(
+    state: MemeMakerUiState,
+    onEvent: (MemeMakerUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        StickerCanvas(
+            background = state.backgroundBitmap,
+            stickers = state.stickers,
+            stickerBitmaps = state.stickerBitmaps,
+            canvasWidth = state.canvasWidth,
+            canvasHeight = state.canvasHeight,
+            selectedStickerId = state.selectedStickerId,
+            onSelectSticker = { onEvent(MemeMakerUiEvent.OnSelectSticker(it)) },
+            onTransformSticker = { id, transform ->
+                onEvent(MemeMakerUiEvent.OnTransformSticker(id, transform))
+            },
+            onRequestPreview = { onEvent(MemeMakerUiEvent.OnRequestPreview) },
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Composable
+private fun MemeControlsPanel(
+    state: MemeMakerUiState,
+    onEvent: (MemeMakerUiEvent) -> Unit,
+    onPickLocalSticker: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (state.showAssetPanel) {
+        StickerLibraryPanel(
+            packs = state.packs,
+            assets = state.assets,
+            localStickers = state.localStickers,
+            downloadingPackId = state.downloadingPackId,
+            downloadProgress = state.downloadProgress,
+            onCollapse = { onEvent(MemeMakerUiEvent.OnToggleAssetPanel(false)) },
+            onDownloadPack = { onEvent(MemeMakerUiEvent.OnDownloadPack(it)) },
+            onRemovePack = { onEvent(MemeMakerUiEvent.OnRemovePack(it)) },
+            onPickAsset = { onEvent(MemeMakerUiEvent.OnStickerAssetPicked(it)) },
+            onImportLocal = onPickLocalSticker,
+            onPickLocal = { onEvent(MemeMakerUiEvent.OnLocalStickerPicked(Uri.parse(it.uri))) },
+            onRemoveLocal = { onEvent(MemeMakerUiEvent.OnRemoveLocalSticker(it)) },
+            modifier = modifier,
+        )
+    } else {
+        val sticker = state.selectedSticker
+        StickerTuningPanel(
+            sticker = sticker,
+            onTransformChanged = { transform ->
+                sticker?.let {
+                    onEvent(MemeMakerUiEvent.OnTransformSticker(it.id, transform))
+                }
+            },
+            onEditText = { sticker?.let { onEvent(MemeMakerUiEvent.OnOpenTextEditor(it.id)) } },
+            onFlip = { sticker?.let { onEvent(MemeMakerUiEvent.OnFlipSticker(it.id)) } },
+            onDuplicate = { sticker?.let { onEvent(MemeMakerUiEvent.OnDuplicateSticker(it.id)) } },
+            onBringToFront = { sticker?.let { onEvent(MemeMakerUiEvent.OnBringStickerToFront(it.id)) } },
+            onSendToBack = { sticker?.let { onEvent(MemeMakerUiEvent.OnSendStickerToBack(it.id)) } },
+            onDelete = { sticker?.let { onEvent(MemeMakerUiEvent.OnDeleteSticker(it.id)) } },
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun MemeToolbar(
+    state: MemeMakerUiState,
+    onEvent: (MemeMakerUiEvent) -> Unit,
+    onPickBackground: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ToolBarButton(
+            icon = Icons.Rounded.Layers,
+            labelRes = R.string.meme_sticker_library,
+            emphasized = state.showAssetPanel,
+            onClick = { onEvent(MemeMakerUiEvent.OnToggleAssetPanel(!state.showAssetPanel)) },
+            modifier = Modifier.weight(1f),
+        )
+        ToolBarButton(
+            icon = Icons.Rounded.TextFields,
+            labelRes = R.string.meme_add_text_sticker,
+            onClick = { onEvent(MemeMakerUiEvent.OnAddTextSticker) },
+            modifier = Modifier.weight(1f),
+        )
+        ToolBarButton(
+            icon = Icons.Rounded.Image,
+            labelRes = R.string.meme_pick_background,
+            onClick = onPickBackground,
+            onLongClick = if (state.background != null) {
+                { onEvent(MemeMakerUiEvent.OnClearBackground) }
+            } else {
+                null
+            },
+            modifier = Modifier.weight(1f),
         )
     }
 }

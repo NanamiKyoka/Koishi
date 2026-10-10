@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.feature.tools.decision_maker.components.DecisionResultPlate
@@ -273,10 +274,14 @@ fun DecisionMakerScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        AdaptiveContentWidth(
+            maxWidth = 960.dp,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+        ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
             ModeSelector(
                 mode = state.mode,
@@ -366,6 +371,7 @@ fun DecisionMakerScreen(
             }
 
             BottomBar(state = state)
+        }
         }
     }
 }

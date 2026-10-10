@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,6 +63,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -90,6 +92,8 @@ import coil.request.ImageRequest
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
+import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
+import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
 import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
 import com.nanami.koishi.feature.tools.image_search.model.EngineSearchState
 import com.nanami.koishi.feature.tools.image_search.model.EngineSearchStatus
@@ -121,6 +125,8 @@ fun ImageSearchScreen(
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    val controlsScrollState = rememberScrollState()
+    val resultsScrollState = rememberScrollState()
 
     // 接入升级后的自由全图裁剪启动器 (默认不裁剪全选，四周自由拉伸)
     val cropLauncher = rememberCropImageLauncher { uri ->
@@ -175,95 +181,77 @@ fun ImageSearchScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // 图片选择与预览卡片
-            ImagePreviewCard(
-                state = state,
-                onPickImage = {
-                    cropLauncher.launch(isSquare = false, target = "image_search")
-                },
-                onClearImage = { onEvent(ImageSearchUiEvent.OnClearImage) }
-            )
+        val isExpanded = LocalWindowLayoutMode.current == WindowLayoutMode.EXPANDED
+        val onPickImage = {
+            cropLauncher.launch(isSquare = false, target = "image_search")
+        }
+        val onOpenUrl: (String) -> Unit = { url -> openWebUrl(context, url) }
+        val onSearchGoogleLens = {
+            launchGoogleLens(context, state.selectedImageUri)
+        }
 
-            // 搜索源多选配置
-            SearchEnginesCard(
-                state = state,
-                onToggleEngine = { onEvent(ImageSearchUiEvent.OnToggleEngine(it)) },
-                onConfigureKey = { onEvent(ImageSearchUiEvent.OnShowApiKeyDialog(true)) }
-            )
-
-            // 开始以图搜图按钮
-            Button(
-                onClick = { onEvent(ImageSearchUiEvent.OnStartSearch) },
-                enabled = state.canSearch,
-                shape = PillShape,
+        if (isExpanded) {
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                if (state.isSearching) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.5.dp
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(R.string.image_search_searching),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Rounded.ImageSearch,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.image_search_btn_search),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                }
-            }
-
-            // 多源搜索结果异步并发与折叠/展开展示区
-            AnimatedVisibility(visible = state.engineStates.isNotEmpty()) {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(0.9f)
+                        .fillMaxHeight()
+                        .verticalScroll(controlsScrollState)
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    for (engine in state.selectedEngines) {
-                        val engineState = state.engineStates[engine]
-                        if (engineState != null) {
-                            val isCollapsed = state.collapsedEngines.contains(engine)
-                            EngineResultSection(
-                                engineState = engineState,
-                                isCollapsed = isCollapsed,
-                                onToggleCollapse = { onEvent(ImageSearchUiEvent.OnToggleEngineCollapse(engine)) },
-                                onOpenUrl = { url -> openWebUrl(context, url) },
-                                onConfigureEngine = {
-                                    onEvent(ImageSearchUiEvent.OnShowApiKeyDialog(true))
-                                },
-                                onSearchGoogleLens = {
-                                    launchGoogleLens(context, state.selectedImageUri)
-                                }
-                            )
-                        }
-                    }
+                    ImageSearchControls(
+                        state = state,
+                        onEvent = onEvent,
+                        onPickImage = onPickImage
+                    )
+                }
+
+                VerticalDivider()
+
+                Column(
+                    modifier = Modifier
+                        .weight(1.1f)
+                        .fillMaxHeight()
+                        .verticalScroll(resultsScrollState)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ImageSearchResults(
+                        state = state,
+                        onEvent = onEvent,
+                        onOpenUrl = onOpenUrl,
+                        onSearchGoogleLens = onSearchGoogleLens
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(scrollState)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ImageSearchControls(
+                    state = state,
+                    onEvent = onEvent,
+                    onPickImage = onPickImage
+                )
+                ImageSearchResults(
+                    state = state,
+                    onEvent = onEvent,
+                    onOpenUrl = onOpenUrl,
+                    onSearchGoogleLens = onSearchGoogleLens
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
         }
     }
 
@@ -279,6 +267,104 @@ fun ImageSearchScreen(
         )
     }
 }
+
+@Composable
+private fun ImageSearchControls(
+    state: ImageSearchUiState,
+    onEvent: (ImageSearchUiEvent) -> Unit,
+    onPickImage: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        ImagePreviewCard(
+            state = state,
+            onPickImage = onPickImage,
+            onClearImage = { onEvent(ImageSearchUiEvent.OnClearImage) }
+        )
+
+        SearchEnginesCard(
+            state = state,
+            onToggleEngine = { onEvent(ImageSearchUiEvent.OnToggleEngine(it)) },
+            onConfigureKey = { onEvent(ImageSearchUiEvent.OnShowApiKeyDialog(true)) }
+        )
+
+        Button(
+            onClick = { onEvent(ImageSearchUiEvent.OnStartSearch) },
+            enabled = state.canSearch,
+            shape = PillShape,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            if (state.isSearching) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.5.dp
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = stringResource(R.string.image_search_searching),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Rounded.ImageSearch,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.image_search_btn_search),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageSearchResults(
+    state: ImageSearchUiState,
+    onEvent: (ImageSearchUiEvent) -> Unit,
+    onOpenUrl: (String) -> Unit,
+    onSearchGoogleLens: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        AnimatedVisibility(visible = state.engineStates.isNotEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                for (engine in state.selectedEngines) {
+                    val engineState = state.engineStates[engine]
+                    if (engineState != null) {
+                        val isCollapsed = state.collapsedEngines.contains(engine)
+                        EngineResultSection(
+                            engineState = engineState,
+                            isCollapsed = isCollapsed,
+                            onToggleCollapse = { onEvent(ImageSearchUiEvent.OnToggleEngineCollapse(engine)) },
+                            onOpenUrl = onOpenUrl,
+                            onConfigureEngine = {
+                                onEvent(ImageSearchUiEvent.OnShowApiKeyDialog(true))
+                            },
+                            onSearchGoogleLens = onSearchGoogleLens
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun ImagePreviewCard(

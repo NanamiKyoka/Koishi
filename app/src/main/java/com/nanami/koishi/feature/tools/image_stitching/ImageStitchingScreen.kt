@@ -96,6 +96,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import kotlin.math.roundToInt
 
 @Composable
@@ -180,10 +181,14 @@ fun ImageStitchingScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        AdaptiveContentWidth(
+            maxWidth = 1400.dp,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+        ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
             when (uiState.stage) {
                 StitchingPageStage.IMAGE_LIST -> {
@@ -242,6 +247,7 @@ fun ImageStitchingScreen(
                     }
                 }
             }
+        }
         }
     }
 
