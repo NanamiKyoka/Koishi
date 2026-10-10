@@ -1,6 +1,8 @@
 package com.nanami.koishi.feature.tools.lan_transfer
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Chat
@@ -237,11 +241,19 @@ fun LanTransferScreen(
 }
 
     state.incomingRequest?.let { request ->
-        IncomingRequestDialog(
-            request = request,
-            onAccept = { onEvent(LanTransferUiEvent.OnAcceptIncoming(true)) },
-            onReject = { onEvent(LanTransferUiEvent.OnAcceptIncoming(false)) }
-        )
+        when (request) {
+            is IncomingRequestUi.Files -> IncomingFileRequestDialog(
+                request = request,
+                onAccept = { onEvent(LanTransferUiEvent.OnAcceptIncoming(true)) },
+                onReject = { onEvent(LanTransferUiEvent.OnAcceptIncoming(false)) }
+            )
+
+            is IncomingRequestUi.Text -> IncomingTextDialog(
+                request = request,
+                onCopy = { onEvent(LanTransferUiEvent.OnAcceptIncoming(true)) },
+                onReject = { onEvent(LanTransferUiEvent.OnAcceptIncoming(false)) }
+            )
+        }
     }
 
     textTarget?.let { target ->
@@ -716,8 +728,8 @@ private fun SettingsToggleRow(
 }
 
 @Composable
-private fun IncomingRequestDialog(
-    request: IncomingRequestUi,
+private fun IncomingFileRequestDialog(
+    request: IncomingRequestUi.Files,
     onAccept: () -> Unit,
     onReject: () -> Unit
 ) {
@@ -737,6 +749,69 @@ private fun IncomingRequestDialog(
         confirmButton = {
             Button(onClick = onAccept) {
                 Text(stringResource(R.string.lan_transfer_accept))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onReject) {
+                Text(stringResource(R.string.lan_transfer_reject))
+            }
+        }
+    )
+}
+
+@Composable
+private fun IncomingTextDialog(
+    request: IncomingRequestUi.Text,
+    onCopy: () -> Unit,
+    onReject: () -> Unit
+) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = onReject,
+        title = { Text(stringResource(R.string.lan_transfer_incoming_text_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(
+                        R.string.lan_transfer_incoming_text_from,
+                        request.peerAlias
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
+                    SelectionContainer {
+                        Text(
+                            text = request.text,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 72.dp, max = 320.dp)
+                                .verticalScroll(rememberScrollState())
+                                .padding(12.dp),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val clipboard = context.getSystemService(ClipboardManager::class.java)
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer", request.text))
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.lan_transfer_text_copied),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    onCopy()
+                }
+            ) {
+                Text(stringResource(R.string.lan_transfer_copy_text))
             }
         },
         dismissButton = {

@@ -79,7 +79,9 @@ class LanTransferForegroundService : Service(), KoinComponent {
         )
         val activeTransfer = state.transfers.firstOrNull { it.status == TransferItemStatus.IN_PROGRESS }
         val contentText = when {
-            state.incomingRequest != null -> getString(
+            state.incomingRequest is IncomingRequestUi.Text ->
+                getString(R.string.lan_transfer_notification_text)
+            state.incomingRequest is IncomingRequestUi.Files -> getString(
                 R.string.lan_transfer_notification_incoming,
                 state.incomingRequest.fileCount
             )

@@ -240,8 +240,8 @@ class LanTransferEngine(
 
     private fun sendText(deviceId: String, text: String) {
         val device = devicesById[deviceId] ?: return
-        val content = text.trim()
-        if (content.isEmpty()) return
+        if (text.isBlank()) return
+        val content = text
         val bytes = content.toByteArray(Charsets.UTF_8)
         val directory = File(appContext.cacheDir, "lan_transfer_text").apply { mkdirs() }
         val file = File(directory, "${UUID.randomUUID()}.txt")
@@ -470,10 +470,14 @@ class LanTransferEngine(
         val decision = pendingDecision ?: return
         val request = _uiState.value.incomingRequest
         if (accepted && request != null) {
-            val ids = _uiState.value.transfers
-                .filter { it.direction == TransferDirection.RECEIVING && it.sessionId == request.sessionId }
-                .map { it.id }
-                .toSet()
+            val ids = when (request) {
+                is IncomingRequestUi.Files -> _uiState.value.transfers
+                    .filter { it.direction == TransferDirection.RECEIVING && it.sessionId == request.sessionId }
+                    .map { it.id }
+                    .toSet()
+
+                is IncomingRequestUi.Text -> emptySet()
+            }
             decision.complete(IncomingUploadDecision.Accept(ids))
         } else {
             decision.complete(IncomingUploadDecision.Reject)
@@ -577,6 +581,22 @@ class LanTransferEngine(
 
         override suspend fun onUploadRequested(request: IncomingUploadRequest): IncomingUploadDecision {
             if (!_uiState.value.receiveEnabled) return IncomingUploadDecision.Reject
+            val message = request.files.singleTextMessageOrNull()
+            if (message != null) {
+                val deferred = CompletableDeferred<IncomingUploadDecision>()
+                pendingDecision = deferred
+                _uiState.update {
+                    it.copy(
+                        incomingRequest = IncomingRequestUi.Text(
+                            sessionId = request.sessionId,
+                            peerAlias = request.peer.alias,
+                            text = message
+                        )
+                    )
+                }
+                return deferred.await()
+            }
+
             addTransfers(request.files.values.toList(), TransferDirection.RECEIVING, request.sessionId)
             val settings = settingsRepository.currentData()
             if (settings.autoAcceptKnownDevices) {
@@ -586,7 +606,7 @@ class LanTransferEngine(
             pendingDecision = deferred
             _uiState.update {
                 it.copy(
-                    incomingRequest = IncomingRequestUi(
+                    incomingRequest = IncomingRequestUi.Files(
                         sessionId = request.sessionId,
                         peerAlias = request.peer.alias,
                         fileCount = request.files.size,

@@ -19,12 +19,23 @@ data class TransferItemUi(
     val errorMessage: String? = null
 )
 
-data class IncomingRequestUi(
-    val sessionId: String,
-    val peerAlias: String,
-    val fileCount: Int,
-    val totalBytes: Long
-)
+sealed interface IncomingRequestUi {
+    val sessionId: String
+    val peerAlias: String
+
+    data class Files(
+        override val sessionId: String,
+        override val peerAlias: String,
+        val fileCount: Int,
+        val totalBytes: Long
+    ) : IncomingRequestUi
+
+    data class Text(
+        override val sessionId: String,
+        override val peerAlias: String,
+        val text: String
+    ) : IncomingRequestUi
+}
 
 data class LanTransferSettingsUi(
     val alias: String = "",

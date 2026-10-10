@@ -14,6 +14,7 @@ import com.nanami.koishi.feature.tools.lan_transfer.engine.security.LocalSendIde
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.ByteArrayInputStream
@@ -89,6 +90,41 @@ class LocalSendServerTest {
             )
             assertEquals("local send payload", callbacks.outputs.getValue(file.id).toString(Charsets.UTF_8))
             assertTrue(callbacks.results.single().success)
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
+    fun acceptsTextMessageWithoutUploadingAFile() = runTest {
+        val callbacks = RecordingCallbacks().apply {
+            decision = { IncomingUploadDecision.Accept(emptySet()) }
+        }
+        val server = createServer(callbacks)
+        val port = server.start(host = "127.0.0.1", port = 0)
+        try {
+            val client = LocalSendClient(clientIdentity)
+            val message = TransferFileDto(
+                id = "message",
+                fileName = "message.txt",
+                size = 5,
+                fileType = "text/plain",
+                preview = "hello"
+            )
+
+            val response = client.prepareUpload(
+                host = "127.0.0.1",
+                port = port,
+                protocol = LanDeviceProtocol.HTTPS,
+                payload = PrepareUploadRequestDto(
+                    info = clientRegisterRequest(port),
+                    files = mapOf(message.id to message)
+                ),
+                expectedFingerprint = serverIdentity.fingerprint
+            )
+
+            assertNull(response)
+            assertTrue(callbacks.outputs.isEmpty())
         } finally {
             server.stop()
         }
@@ -272,13 +308,15 @@ class LocalSendServerTest {
         val registered = mutableListOf<LanDevice>()
         val outputs = ConcurrentHashMap<String, ByteArrayOutputStream>()
         val results = mutableListOf<IncomingFileResult>()
+        var decision: (IncomingUploadRequest) -> IncomingUploadDecision =
+            { request -> IncomingUploadDecision.Accept(request.files.keys) }
 
         override suspend fun onRegistered(peer: LanDevice) {
             registered += peer
         }
 
         override suspend fun onUploadRequested(request: IncomingUploadRequest): IncomingUploadDecision =
-            IncomingUploadDecision.Accept(request.files.keys)
+            decision(request)
 
         override suspend fun openFileTarget(request: IncomingFileUpload): OutputStream =
             ByteArrayOutputStream().also { outputs[request.file.id] = it }
