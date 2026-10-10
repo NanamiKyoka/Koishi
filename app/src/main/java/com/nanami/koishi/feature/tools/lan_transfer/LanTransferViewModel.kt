@@ -21,6 +21,5 @@ class LanTransferViewModel(
 
     override fun onCleared() {
         engine.cancelPendingPinPrompt()
-        super.onCleared()
     }
 }

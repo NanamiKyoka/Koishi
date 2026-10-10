@@ -896,6 +896,10 @@
     <string name="lan_transfer_status_done">Completed</string>
     <string name="lan_transfer_status_failed">Failed</string>
     <string name="lan_transfer_error_generic">Transfer failed, please retry</string>
+    <string name="lan_transfer_error_rejected">The recipient declined the transfer</string>
+    <string name="lan_transfer_error_remote_busy">The recipient is handling another transfer</string>
+    <string name="lan_transfer_error_pin_attempts">Too many PIN attempts, try again later</string>
+    <string name="lan_transfer_settings_busy">Settings cannot be changed during a transfer</string>
     <string name="lan_transfer_receive_on">Receiving is on. Other devices can now find this device</string>
     <string name="lan_transfer_receive_off">Receiving is off</string>
     <string name="lan_transfer_files_selected">%1$s files selected</string>

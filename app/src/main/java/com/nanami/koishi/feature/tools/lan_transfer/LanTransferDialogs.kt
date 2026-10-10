@@ -438,6 +438,7 @@ internal fun IncomingTextDialog(
     onReject: () -> Unit
 ) {
     val context = LocalContext.current
+    val copiedMessage = stringResource(R.string.lan_transfer_text_copied)
 
     AlertDialog(
         onDismissRequest = onReject,
@@ -476,7 +477,7 @@ internal fun IncomingTextDialog(
                     clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer", request.text))
                     Toast.makeText(
                         context,
-                        context.getString(R.string.lan_transfer_text_copied),
+                        copiedMessage,
                         Toast.LENGTH_SHORT
                     ).show()
                     onCopy()

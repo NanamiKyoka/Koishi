@@ -247,12 +247,18 @@ class LanTransferEngine(
     }
 
     private fun saveSettings(event: LanTransferUiEvent.OnSaveSettings) {
+        if (_uiState.value.transfers.any { it.status == TransferItemStatus.IN_PROGRESS }) {
+            message(R.string.lan_transfer_settings_busy)
+            return
+        }
         scope.launch {
+            val pin = event.pin.trim()
+            val pinEnabled = event.pinEnabled && pin.isNotEmpty()
             val settings = settingsRepository.updateData {
                 it.copy(
                     alias = event.alias.trim(),
-                    pinEnabled = event.pinEnabled,
-                    pin = event.pin.trim(),
+                    pinEnabled = pinEnabled,
+                    pin = if (pinEnabled) pin else "",
                     saveDirectory = event.saveDirectory.trim().ifBlank { "Koishi" },
                     autoAcceptKnownDevices = event.autoAccept,
                     computeChecksums = event.computeChecksums,
@@ -396,8 +402,18 @@ class LanTransferEngine(
                     pinAttempt += 1
                     continue
                 }
+                val messageRes = when (error.statusCode) {
+                    403 -> R.string.lan_transfer_error_rejected
+                    409 -> R.string.lan_transfer_error_remote_busy
+                    429 -> R.string.lan_transfer_error_pin_attempts
+                    else -> null
+                }
                 Log.e(TAG, "prepare-upload failed", error)
-                markEntriesFailed(entries.map { it.dto }, error.message)
+                messageRes?.let { message(it) }
+                markEntriesFailed(
+                    entries.map { it.dto },
+                    messageRes?.let(appContext::getString) ?: error.message
+                )
                 return
             } catch (error: Exception) {
                 Log.e(TAG, "prepare-upload failed", error)

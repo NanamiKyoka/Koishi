@@ -414,6 +414,8 @@ private fun ReceiveStatusCard(
     onEditPin: () -> Unit
 ) {
     val context = LocalContext.current
+    val pinCopiedMessage = stringResource(R.string.lan_transfer_pin_copied)
+    val addressCopiedMessage = stringResource(R.string.lan_transfer_local_address_copied)
     val containerColor = if (enabled) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
@@ -507,7 +509,7 @@ private fun ReceiveStatusCard(
                             clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer Address", address))
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.lan_transfer_local_address_copied),
+                                addressCopiedMessage,
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -551,7 +553,7 @@ private fun ReceiveStatusCard(
                             clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer PIN", pin))
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.lan_transfer_pin_copied),
+                                pinCopiedMessage,
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -1007,6 +1009,7 @@ private fun TransferRow(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val openFolderFailedMessage = stringResource(R.string.lan_transfer_open_folder_failed)
     val statusColor = when (item.status) {
         TransferItemStatus.DONE -> MaterialTheme.colorScheme.primary
         TransferItemStatus.FAILED -> MaterialTheme.colorScheme.error
@@ -1108,7 +1111,7 @@ private fun TransferRow(
                         if (!LanTransferFolderOpener.open(context, location)) {
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.lan_transfer_open_folder_failed),
+                                openFolderFailedMessage,
                                 Toast.LENGTH_SHORT
                             ).show()
                         }

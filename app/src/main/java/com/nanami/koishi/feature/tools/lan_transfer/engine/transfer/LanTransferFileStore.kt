@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import androidx.annotation.RequiresApi
 import com.nanami.koishi.feature.tools.lan_transfer.engine.protocol.TransferFileDto
 import java.io.File
 import java.io.FileOutputStream
@@ -28,6 +29,7 @@ class LanTransferFileStore(private val context: Context) {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun openWithMediaStore(displayName: String, file: TransferFileDto, directory: String): PendingFile {
         val resolver = context.contentResolver
         val values = ContentValues().apply {
