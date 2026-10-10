@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.worth_calculator.components.EducationAndExperienceSection
 import com.nanami.koishi.feature.tools.worth_calculator.components.EnvironmentAndTeamSection
 import com.nanami.koishi.feature.tools.worth_calculator.components.SalaryAndRegionSection
@@ -262,6 +263,7 @@ fun WorthCalculatorScreen(
             }
         }
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1000.dp) {
         AnimatedContent(
             targetState = state.currentScreen,
             transitionSpec = {
@@ -325,5 +327,6 @@ fun WorthCalculatorScreen(
                 }
             }
         }
-    }
+            }
+}
 }

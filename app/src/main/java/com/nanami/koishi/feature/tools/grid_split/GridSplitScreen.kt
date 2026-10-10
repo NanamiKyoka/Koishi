@@ -76,6 +76,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
 import kotlin.math.min
 
@@ -169,6 +170,7 @@ fun GridSplitScreen(
             )
         }
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -244,7 +246,8 @@ fun GridSplitScreen(
                     .navigationBarsPadding()
             )
         }
-    }
+            }
+}
 }
 
 /**

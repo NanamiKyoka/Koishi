@@ -84,6 +84,7 @@ fun TopicManagerSheet(    topics: List<DecisionTopic>,
     )
 
     ModalBottomSheet(
+        sheetMaxWidth = 640.dp,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = BottomSheetShape,

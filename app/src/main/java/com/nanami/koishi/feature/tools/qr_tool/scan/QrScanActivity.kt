@@ -34,6 +34,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -418,14 +419,14 @@ fun ScanOverlayView(modifier: Modifier = Modifier) {
     )
     val primaryColor = MaterialTheme.colorScheme.primary
 
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        val boxSizeDp = minOf(360.dp, maxWidth * 0.72f, maxHeight * 0.58f).coerceAtLeast(200.dp)
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.padding(bottom = 40.dp)
         ) {
-            val boxSizeDp = 260.dp
-
             // 方形取景框
             Box(
                 modifier = Modifier
@@ -511,6 +512,7 @@ fun ScanResultBottomSheet(
     val copiedMessage = stringResource(R.string.qr_scan_copied)
 
     ModalBottomSheet(
+        sheetMaxWidth = 640.dp,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh

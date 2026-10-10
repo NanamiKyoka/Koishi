@@ -87,6 +87,7 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import java.util.Locale
 
@@ -203,6 +204,7 @@ fun VideoToGifScreen(
             )
         }
     ) { innerPadding ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -693,7 +695,8 @@ fun VideoToGifScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
-    }
+            }
+}
 
     if (state.isProcessing) {
         AlertDialog(

@@ -575,6 +575,7 @@ fun SelectModeBottomSheet(
     )
 
     ModalBottomSheet(
+        sheetMaxWidth = 640.dp,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -688,6 +689,7 @@ fun StitchingSettingsBottomSheet(
     )
 
     ModalBottomSheet(
+        sheetMaxWidth = 640.dp,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh

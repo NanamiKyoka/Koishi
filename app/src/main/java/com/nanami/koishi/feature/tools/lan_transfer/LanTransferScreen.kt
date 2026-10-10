@@ -70,6 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ContentUriFileSource
 
@@ -181,6 +182,7 @@ fun LanTransferScreen(
             )
         }
     ) { innerPadding ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -231,7 +233,8 @@ fun LanTransferScreen(
                 }
             }
         }
-    }
+            }
+}
 
     state.incomingRequest?.let { request ->
         IncomingRequestDialog(

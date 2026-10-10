@@ -85,6 +85,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.image.crop.ImageCropActivity
 import com.nanami.koishi.core.image.crop.rememberCropImageLauncher
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
@@ -227,6 +228,7 @@ fun QrToolRoute(
             )
         }
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -654,7 +656,8 @@ fun QrToolRoute(
                 onDismissRequest = { showPreview = false }
             )
         }
-    }
+            }
+}
 }
 
 /**

@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.mini_apps.components.AddMiniAppDialog
 import com.nanami.koishi.feature.tools.mini_apps.components.ClearBrowsingDataDialog
 import com.nanami.koishi.feature.tools.mini_apps.components.MiniAppReorderableList
@@ -198,6 +199,7 @@ fun MiniAppsScreen(
             }
         }
     ) { innerPadding ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -244,7 +246,8 @@ fun MiniAppsScreen(
                 }
             }
         }
-    }
+            }
+}
 }
 
 @Composable

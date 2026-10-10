@@ -85,6 +85,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
@@ -211,6 +212,7 @@ fun BiliCoverScreen(
             )
         }
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 960.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -258,7 +260,8 @@ fun BiliCoverScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
-    }
+            }
+}
 }
 
 @Composable

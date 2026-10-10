@@ -38,6 +38,7 @@ fun MagnificationSheet(
     )
 
     ModalBottomSheet(
+        sheetMaxWidth = 640.dp,
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow

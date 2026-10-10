@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
@@ -172,6 +173,7 @@ fun ImageObfuscationScreen(
             )
         }
     ) { innerPadding ->
+        AdaptiveContentWidth(maxWidth = 1400.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -341,7 +343,8 @@ fun ImageObfuscationScreen(
                 onSaveAll = { onEvent(ImageObfuscationUiEvent.OnSaveAll) }
             )
         }
-    }
+            }
+}
 
     if (showPreview && uiState.currentBitmap != null) {
         val previewImages = if (uiState.images.isNotEmpty()) {

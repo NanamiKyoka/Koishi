@@ -92,6 +92,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyConstants
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyInfo
 
@@ -219,6 +220,7 @@ fun CurrencyConverterScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -259,7 +261,8 @@ fun CurrencyConverterScreen(
                 }
             }
         }
-    }
+            }
+}
 
     if (uiState.showAddCurrencySheet) {
         AddCurrencyBottomSheet(
@@ -518,6 +521,7 @@ private fun AddCurrencyBottomSheet(
     val isZh = context.resources.configuration.locales[0].language.startsWith("zh")
 
     ModalBottomSheet(
+        sheetMaxWidth = 640.dp,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),

@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.color_picker.components.ColorDetailsDialog
 import com.nanami.koishi.feature.tools.color_picker.components.ColorFavoritesView
 import com.nanami.koishi.feature.tools.color_picker.components.ColorLoupe
@@ -233,6 +234,7 @@ fun ColorPickerScreen(
             )
         }
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -535,5 +537,6 @@ fun ColorPickerScreen(
                 )
             }
         }
-    }
+            }
+}
 }

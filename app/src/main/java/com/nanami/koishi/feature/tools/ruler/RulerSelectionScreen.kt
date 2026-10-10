@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.ruler.components.ProtractorCardIllustration
 import com.nanami.koishi.feature.tools.ruler.components.RulerCardIllustration
 
@@ -74,6 +75,7 @@ fun RulerSelectionScreen(
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1000.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -172,5 +174,6 @@ fun RulerSelectionScreen(
                 }
             }
         }
-    }
+            }
+}
 }

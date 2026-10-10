@@ -58,6 +58,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.bmi_calculator.components.BmiCategoryChip
 import com.nanami.koishi.feature.tools.bmi_calculator.components.BmiChartLegend
 import com.nanami.koishi.feature.tools.bmi_calculator.components.BmiClearAllDialog
@@ -156,6 +157,7 @@ fun BmiCalculatorScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 1100.dp) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -203,7 +205,8 @@ fun BmiCalculatorScreen(
                 BmiReferenceCard()
             }
         }
-    }
+            }
+}
 
     if (uiState.showClearConfirm) {
         BmiClearAllDialog(

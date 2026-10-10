@@ -88,6 +88,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankMode
@@ -185,6 +186,7 @@ fun MirageTankScreen(
             )
         }
     ) { innerPadding ->
+        AdaptiveContentWidth(maxWidth = 1200.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -600,7 +602,8 @@ fun MirageTankScreen(
                 }
             }
         }
-    }
+            }
+}
 }
 
 @Composable

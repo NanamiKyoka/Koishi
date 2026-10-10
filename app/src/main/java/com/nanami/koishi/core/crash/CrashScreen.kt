@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nanami.koishi.R
+import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 
 @Composable
 fun CrashScreen(
@@ -63,6 +64,7 @@ fun CrashScreen(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
+        AdaptiveContentWidth(maxWidth = 720.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -189,6 +191,7 @@ fun CrashScreen(
                     Text(stringResource(R.string.crash_btn_restart))
                 }
             }
+        }
         }
     }
 }
