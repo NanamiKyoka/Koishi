@@ -4,47 +4,55 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Cancel
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Computer
-import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.InsertDriveFile
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.LockOpen
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.rounded.TextSnippet
+import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -52,8 +60,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -67,17 +76,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDevice
+import com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceType
 import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.ContentUriFileSource
+import com.nanami.koishi.feature.tools.lan_transfer.engine.transfer.PickedFile
 
 @Composable
 fun LanTransferRoute(
@@ -87,8 +101,6 @@ fun LanTransferRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
-
     val userMessage = state.userMessageRes?.let { res ->
         if (state.userMessageArgs.isEmpty()) stringResource(res)
         else stringResource(res, *state.userMessageArgs.toTypedArray())
@@ -101,16 +113,18 @@ fun LanTransferRoute(
         }
     }
 
+    val handleUris: (List<Uri>) -> Unit = { uris ->
+        val picked = uris.mapNotNull { ContentUriFileSource.describe(context.contentResolver, it) }
+        if (picked.isNotEmpty()) viewModel.onEvent(LanTransferUiEvent.OnFilesPicked(picked))
+    }
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
-    ) { uris ->
-        val resolver = context.contentResolver
-        val picked = uris.mapNotNull { ContentUriFileSource.describe(resolver, it) }
-        viewModel.onEvent(LanTransferUiEvent.OnFilesPicked(picked))
-    }
-
+    ) { uris -> handleUris(uris) }
+    val mediaPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia()
+    ) { uris -> handleUris(uris) }
     var pendingEnableReceive by remember { mutableStateOf(false) }
-    val storagePermissionLauncher = rememberLauncherForActivityResult(
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (pendingEnableReceive) {
@@ -118,62 +132,93 @@ fun LanTransferRoute(
             if (granted) viewModel.onEvent(LanTransferUiEvent.OnToggleReceive(true))
         }
     }
-    val requestToggle: (Boolean) -> Unit = { enabled ->
-        val needsPermission = enabled &&
-            Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
-            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-            PackageManager.PERMISSION_GRANTED
+
+    fun requestReceiveToggle(enabled: Boolean) {
+        if (!enabled) {
+            viewModel.onEvent(LanTransferUiEvent.OnToggleReceive(false))
+            return
+        }
+        val needsPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         if (needsPermission) {
             pendingEnableReceive = true
-            storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            viewModel.onEvent(LanTransferUiEvent.OnToggleReceive(enabled))
+            viewModel.onEvent(LanTransferUiEvent.OnToggleReceive(true))
         }
     }
 
     LanTransferScreen(
         state = state,
         onBack = onBack,
-        onEvent = { event ->
-            if (event is LanTransferUiEvent.OnToggleReceive) requestToggle(event.enabled)
-            else viewModel.onEvent(event)
-        },
         onPickFiles = { filePicker.launch(arrayOf("*/*")) },
+        onPickImages = {
+            mediaPicker.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+            )
+        },
+        onToggleReceive = ::requestReceiveToggle,
+        onEvent = viewModel::onEvent,
         modifier = modifier
     )
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanTransferScreen(
     state: LanTransferUiState,
     onBack: () -> Unit,
-    onEvent: (LanTransferUiEvent) -> Unit,
     onPickFiles: () -> Unit,
+    onPickImages: () -> Unit,
+    onToggleReceive: (Boolean) -> Unit,
+    onEvent: (LanTransferUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showSettings by remember { mutableStateOf(false) }
+    var showPinSetup by remember { mutableStateOf(false) }
+    var showTextTargetPicker by remember { mutableStateOf(false) }
     var textTarget by remember { mutableStateOf<LanDevice?>(null) }
+
+    fun saveSettings(settings: LanTransferSettingsUi) {
+        onEvent(
+            LanTransferUiEvent.OnSaveSettings(
+                alias = settings.alias,
+                pinEnabled = settings.pinEnabled,
+                pin = settings.pin,
+                saveDirectory = settings.saveDirectory,
+                autoAccept = settings.autoAccept,
+                computeChecksums = settings.computeChecksums,
+                verifyChecksums = settings.verifyChecksums
+            )
+        )
+    }
+
     Scaffold(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.lan_transfer_title),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
+                title = { Text(stringResource(R.string.lan_transfer_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.dialog_cancel)
                         )
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onEvent(LanTransferUiEvent.OnRefresh) }) {
+                        if (state.isScanning) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = stringResource(R.string.lan_transfer_refresh)
+                            )
+                        }
+                    }
                     IconButton(onClick = { showSettings = true }) {
                         Icon(
                             imageVector = Icons.Rounded.Settings,
@@ -187,59 +232,112 @@ fun LanTransferScreen(
             )
         }
     ) { innerPadding ->
-        AdaptiveContentWidth(maxWidth = 1200.dp) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
-                ReceiveToggleCard(
-                    enabled = state.receiveEnabled,
-                    onToggle = { onEvent(LanTransferUiEvent.OnToggleReceive(it)) }
-                )
-            }
-            item {
-                DeviceSectionHeader(onRefresh = { onEvent(LanTransferUiEvent.OnRefresh) })
-            }
-            if (state.devices.isEmpty()) {
+        AdaptiveContentWidth(maxWidth = 960.dp) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = 32.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
                 item {
-                    EmptyDevices(isLoading = state.isLoading)
-                }
-            } else {
-                items(state.devices, key = { it.id }) { device ->
-                    DeviceRow(
-                        device = device,
-                        onSend = { onEvent(LanTransferUiEvent.OnSendTo(device.id)) },
-                        onSendText = { textTarget = device }
+                    ReceiveStatusCard(
+                        enabled = state.receiveEnabled,
+                        alias = state.alias.ifBlank { state.settings.alias },
+                        pinEnabled = state.settings.pinEnabled && state.settings.pin.isNotBlank(),
+                        pin = state.settings.pin,
+                        onToggleReceive = onToggleReceive,
+                        onTogglePin = { enabled ->
+                            if (enabled) {
+                                showPinSetup = true
+                            } else {
+                                saveSettings(state.settings.copy(pinEnabled = false, pin = ""))
+                            }
+                        },
+                        onEditPin = { showPinSetup = true }
                     )
                 }
-            }
-            item {
-                SendFilesCard(
-                    filesCount = state.selectedFiles.size,
-                    names = state.selectedFiles.map { it.fileName },
-                    onPickFiles = onPickFiles
-                )
-            }
-            if (state.transfers.isNotEmpty()) {
-                item { SectionTitle(stringResource(R.string.lan_transfer_transfers_title)) }
-                items(state.transfers, key = { it.id }) { transfer ->
-                    TransferRow(
-                        item = transfer,
-                        onCancel = { onEvent(LanTransferUiEvent.OnCancelTransfer(transfer.id)) },
-                        onRetry = { onEvent(LanTransferUiEvent.OnRetryTransfer(transfer.id)) },
-                        onDismiss = { onEvent(LanTransferUiEvent.OnDismissTransfer(transfer.id)) }
+                item {
+                    if (state.selectedFiles.isEmpty()) {
+                        FileSelectionSection(
+                            onPickFiles = onPickFiles,
+                            onPickImages = onPickImages,
+                            onPickText = { showTextTargetPicker = true }
+                        )
+                    } else {
+                        SelectedFilesCard(
+                            files = state.selectedFiles,
+                            onAddFiles = onPickFiles,
+                            onRemoveFile = { onEvent(LanTransferUiEvent.OnRemoveFile(it)) },
+                            onClearFiles = { onEvent(LanTransferUiEvent.OnClearFiles) }
+                        )
+                    }
+                }
+                item {
+                    DeviceSectionHeader(isScanning = state.isScanning)
+                }
+                if (state.devices.isEmpty()) {
+                    item {
+                        EmptyDevices(isScanning = state.isScanning) {
+                            onEvent(LanTransferUiEvent.OnRefresh)
+                        }
+                    }
+                } else {
+                    items(state.devices, key = { it.id }) { device ->
+                        DeviceRow(
+                            device = device,
+                            selectedFilesCount = state.selectedFiles.size,
+                            activeSendDeviceId = state.activeSendDeviceId,
+                            progress = state.transfers
+                                .filter { it.direction == TransferDirection.SENDING && it.status == TransferItemStatus.IN_PROGRESS }
+                                .takeIf { state.activeSendDeviceId == device.id }
+                                ?.map { it.progress }
+                                ?.average()
+                                ?.toFloat(),
+                            onSend = { onEvent(LanTransferUiEvent.OnSendTo(device.id)) },
+                            onSendText = { textTarget = device }
+                        )
+                    }
+                }
+                if (state.transfers.isNotEmpty()) {
+                    item {
+                        SectionTitle(stringResource(R.string.lan_transfer_transfers_title))
+                    }
+                    items(state.transfers, key = { it.id }) { transfer ->
+                        TransferRow(
+                            item = transfer,
+                            onCancel = { onEvent(LanTransferUiEvent.OnCancelTransfer(transfer.id)) },
+                            onRetry = { onEvent(LanTransferUiEvent.OnRetryTransfer(transfer.id)) },
+                            onDismiss = { onEvent(LanTransferUiEvent.OnDismissTransfer(transfer.id)) }
+                        )
+                    }
+                }
+                item {
+                    Text(
+                        text = stringResource(R.string.lan_transfer_help),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 16.dp)
                     )
                 }
             }
         }
-            }
-}
+    }
+
+    state.pinPrompt?.let { prompt ->
+        PinPromptDialog(
+            prompt = prompt,
+            onDismiss = { onEvent(LanTransferUiEvent.OnCancelPinPrompt) },
+            onSubmit = { onEvent(LanTransferUiEvent.OnSubmitPin(it)) }
+        )
+    }
 
     state.incomingRequest?.let { request ->
         when (request) {
@@ -257,6 +355,17 @@ fun LanTransferScreen(
         }
     }
 
+    if (showTextTargetPicker) {
+        SendTextTargetDialog(
+            devices = state.devices,
+            onDismiss = { showTextTargetPicker = false },
+            onSelect = { device ->
+                showTextTargetPicker = false
+                textTarget = device
+            }
+        )
+    }
+
     textTarget?.let { target ->
         SendTextDialog(
             deviceAlias = target.alias,
@@ -268,99 +377,439 @@ fun LanTransferScreen(
         )
     }
 
+    if (showPinSetup) {
+        PinSetupDialog(
+            initialPin = state.settings.pin,
+            onDismiss = { showPinSetup = false },
+            onSave = { pin ->
+                showPinSetup = false
+                saveSettings(state.settings.copy(pinEnabled = true, pin = pin))
+            }
+        )
+    }
+
     if (showSettings) {
-        LanTransferSettingsDialog(
+        LanTransferSettingsSheet(
             settings = state.settings,
             onDismiss = { showSettings = false },
             onSave = { settings ->
                 showSettings = false
-                onEvent(
-                    LanTransferUiEvent.OnSaveSettings(
-                        alias = settings.alias,
-                        pinEnabled = settings.pinEnabled,
-                        pin = settings.pin,
-                        saveDirectory = settings.saveDirectory,
-                        autoAccept = settings.autoAccept,
-                        computeChecksums = settings.computeChecksums,
-                        verifyChecksums = settings.verifyChecksums
-                    )
-                )
+                saveSettings(settings)
             }
+        )
+    }
+}
+@Composable
+private fun ReceiveStatusCard(
+    enabled: Boolean,
+    alias: String,
+    pinEnabled: Boolean,
+    pin: String,
+    onToggleReceive: (Boolean) -> Unit,
+    onTogglePin: (Boolean) -> Unit,
+    onEditPin: () -> Unit
+) {
+    val context = LocalContext.current
+    val containerColor = if (enabled) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = CircleShape,
+                    color = contentColor.copy(alpha = 0.12f),
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.Wifi,
+                            contentDescription = null,
+                            tint = contentColor
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(
+                            if (enabled) R.string.lan_transfer_receive_on_status
+                            else R.string.lan_transfer_receive_off_status
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = alias.ifBlank { stringResource(R.string.lan_transfer_title) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor.copy(alpha = 0.78f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Switch(checked = enabled, onCheckedChange = onToggleReceive)
+            }
+            HorizontalDivider(color = contentColor.copy(alpha = 0.14f))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (pinEnabled) Icons.Rounded.Lock else Icons.Rounded.LockOpen,
+                    contentDescription = null,
+                    tint = contentColor.copy(alpha = 0.8f),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(
+                            if (pinEnabled) R.string.lan_transfer_pin_enabled_status
+                            else R.string.lan_transfer_pin_disabled_status
+                        ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (pinEnabled) {
+                        Text(
+                            text = pin,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                if (pinEnabled) {
+                    IconButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(ClipboardManager::class.java)
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer PIN", pin))
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.lan_transfer_pin_copied),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = stringResource(R.string.lan_transfer_pin_copy)
+                        )
+                    }
+                    TextButton(onClick = onEditPin) {
+                        Text(stringResource(R.string.lan_transfer_pin_setup))
+                    }
+                }
+                Switch(checked = pinEnabled, onCheckedChange = onTogglePin)
+            }
+            Text(
+                text = stringResource(
+                    if (enabled) R.string.lan_transfer_receive_on_hint
+                    else R.string.lan_transfer_receive_off_hint
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = contentColor.copy(alpha = 0.72f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun FileSelectionSection(
+    onPickFiles: () -> Unit,
+    onPickImages: () -> Unit,
+    onPickText: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SectionTitle(stringResource(R.string.lan_transfer_files_title))
+        Text(
+            text = stringResource(R.string.lan_transfer_files_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        FileActionCard(
+            title = stringResource(R.string.lan_transfer_send_files),
+            description = stringResource(R.string.lan_transfer_files_desc),
+            icon = Icons.Rounded.InsertDriveFile,
+            onClick = onPickFiles
+        )
+        FileActionCard(
+            title = stringResource(R.string.lan_transfer_pick_images),
+            description = stringResource(R.string.lan_transfer_pick_images_desc),
+            icon = Icons.Rounded.Image,
+            onClick = onPickImages
+        )
+        FileActionCard(
+            title = stringResource(R.string.lan_transfer_pick_text),
+            description = stringResource(R.string.lan_transfer_pick_text_desc),
+            icon = Icons.Rounded.TextSnippet,
+            onClick = onPickText
         )
     }
 }
 
 @Composable
-private fun ReceiveToggleCard(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+private fun FileActionCard(
+    title: String,
+    description: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier.size(52.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.lan_transfer_receive),
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = stringResource(R.string.lan_transfer_receive_desc),
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Switch(checked = enabled, onCheckedChange = onToggle)
         }
     }
 }
-
 @Composable
-private fun DeviceSectionHeader(onRefresh: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+private fun SelectedFilesCard(
+    files: List<PickedFile>,
+    onAddFiles: () -> Unit,
+    onRemoveFile: (String) -> Unit,
+    onClearFiles: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = stringResource(R.string.lan_transfer_devices_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-        IconButton(onClick = onRefresh) {
-            Icon(imageVector = Icons.Rounded.Refresh, contentDescription = stringResource(R.string.lan_transfer_refresh))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.lan_transfer_files_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.lan_transfer_selected_files,
+                            files.size,
+                            formatBytes(files.sumOf { it.size })
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = onClearFiles) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = stringResource(R.string.lan_transfer_clear_files)
+                    )
+                }
+            }
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(files, key = { it.uri.toString() }) { file ->
+                    SelectedFileTile(
+                        file = file,
+                        onRemove = { onRemoveFile(file.uri.toString()) }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                FilledTonalButton(onClick = onAddFiles) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(stringResource(R.string.lan_transfer_add_files))
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun EmptyDevices(isLoading: Boolean) {
+private fun SelectedFileTile(
+    file: PickedFile,
+    onRemove: () -> Unit
+) {
+    Column(modifier = Modifier.width(96.dp)) {
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(18.dp))
+        ) {
+            if (file.mimeType.startsWith("image/")) {
+                AsyncImage(
+                    model = file.uri,
+                    contentDescription = file.fileName,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.InsertDriveFile,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                }
+            }
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(28.dp)
+                    .clickable(onClick = onRemove)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = stringResource(R.string.lan_transfer_remove_file),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = file.displayName ?: file.fileName,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun DeviceSectionHeader(isScanning: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.lan_transfer_devices_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (isScanning) {
+                Text(
+                    text = stringResource(R.string.lan_transfer_scanning),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        if (isScanning) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp
+            )
+        }
+    }
+}
+@Composable
+private fun EmptyDevices(
+    isScanning: Boolean,
+    onRefresh: () -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 28.dp),
-            contentAlignment = Alignment.Center
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            if (isScanning) {
+                CircularProgressIndicator(modifier = Modifier.size(28.dp))
             } else {
-                Text(
-                    text = stringResource(R.string.lan_transfer_devices_none),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                Icon(
+                    imageVector = Icons.Rounded.Wifi,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(32.dp)
                 )
+            }
+            Text(
+                text = stringResource(
+                    if (isScanning) R.string.lan_transfer_devices_empty
+                    else R.string.lan_transfer_devices_none
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedButton(onClick = onRefresh, enabled = !isScanning) {
+                Icon(
+                    imageVector = Icons.Rounded.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(stringResource(R.string.lan_transfer_refresh))
             }
         }
     }
@@ -369,106 +818,126 @@ private fun EmptyDevices(isLoading: Boolean) {
 @Composable
 private fun DeviceRow(
     device: LanDevice,
+    selectedFilesCount: Int,
+    activeSendDeviceId: String?,
+    progress: Float?,
     onSend: () -> Unit,
     onSendText: () -> Unit
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (device.deviceType == com.nanami.koishi.feature.tools.lan_transfer.engine.model.LanDeviceType.MOBILE) {
-                    Icons.Rounded.PhoneAndroid
-                } else {
-                    Icons.Rounded.Computer
-                },
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.size(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = device.alias,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "${device.host}:${device.port}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onSendText) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.Chat,
-                    contentDescription = stringResource(R.string.lan_transfer_send_text)
-                )
-            }
-            FilledTonalButton(onClick = onSend) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.Send,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.size(6.dp))
-                Text(stringResource(R.string.lan_transfer_send))
-            }
-        }
-    }
-}
+    var menuExpanded by remember { mutableStateOf(false) }
+    val isActive = activeSendDeviceId == device.id
 
-@Composable
-private fun SendFilesCard(filesCount: Int, names: List<String>, onPickFiles: () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onSend),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isActive) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            }
+        ),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                AssistChip(
-                    onClick = onPickFiles,
-                    label = { Text(stringResource(R.string.lan_transfer_send_files)) },
-                    leadingIcon = {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Rounded.Add,
+                            imageVector = if (device.deviceType == LanDeviceType.MOBILE) {
+                                Icons.Rounded.PhoneAndroid
+                            } else {
+                                Icons.Rounded.Computer
+                            },
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
-                )
-                if (filesCount > 0) {
-                    Spacer(modifier = Modifier.size(12.dp))
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(R.string.lan_transfer_files_selected, filesCount),
+                        text = device.alias,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.lan_transfer_device_model_protocol,
+                            device.deviceModel ?: device.host,
+                            device.version,
+                            device.protocol.wireValue.uppercase()
+                        ),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Rounded.MoreVert,
+                            contentDescription = null
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.lan_transfer_send_text)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.Chat,
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onSendText()
+                            }
+                        )
+                    }
+                }
+                FilledTonalButton(
+                    onClick = onSend,
+                    enabled = activeSendDeviceId == null || isActive
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.Send,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(stringResource(R.string.lan_transfer_send))
+                }
             }
-            if (names.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+            if (progress != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                LinearProgressIndicator(
+                    progress = { progress.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else if (selectedFilesCount == 0) {
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = names.joinToString("、"),
+                    text = stringResource(R.string.lan_transfer_no_files),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 }
-
 @Composable
 private fun SectionTitle(title: String) {
     Text(
@@ -486,99 +955,105 @@ private fun TransferRow(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val statusColor = when (item.status) {
+        TransferItemStatus.DONE -> MaterialTheme.colorScheme.primary
+        TransferItemStatus.FAILED -> MaterialTheme.colorScheme.error
+        TransferItemStatus.CANCELLED -> MaterialTheme.colorScheme.onSurfaceVariant
+        TransferItemStatus.IN_PROGRESS -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = item.fileName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Icon(
-                    imageVector = when (item.status) {
-                        TransferItemStatus.DONE -> Icons.Rounded.Check
-                        TransferItemStatus.FAILED -> Icons.Rounded.ErrorOutline
-                        TransferItemStatus.CANCELLED -> Icons.Rounded.Cancel
-                        TransferItemStatus.IN_PROGRESS -> Icons.Rounded.Add
-                    },
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = when (item.status) {
-                        TransferItemStatus.DONE -> MaterialTheme.colorScheme.primary
-                        TransferItemStatus.FAILED -> MaterialTheme.colorScheme.error
-                        TransferItemStatus.CANCELLED -> MaterialTheme.colorScheme.onSurfaceVariant
-                        TransferItemStatus.IN_PROGRESS -> MaterialTheme.colorScheme.onSurfaceVariant
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (item.direction == TransferDirection.SENDING) {
+                                Icons.AutoMirrored.Rounded.Send
+                            } else {
+                                Icons.Rounded.FolderOpen
+                            },
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
-                )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.fileName,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = item.errorMessage ?: stringResource(
+                            when (item.status) {
+                                TransferItemStatus.DONE -> R.string.lan_transfer_status_done
+                                TransferItemStatus.FAILED -> R.string.lan_transfer_status_failed
+                                TransferItemStatus.CANCELLED -> R.string.lan_transfer_status_cancelled
+                                TransferItemStatus.IN_PROGRESS -> if (item.direction == TransferDirection.SENDING) {
+                                    R.string.lan_transfer_status_sending
+                                } else {
+                                    R.string.lan_transfer_status_receiving
+                                }
+                            }
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (item.errorMessage != null) MaterialTheme.colorScheme.error else statusColor,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 if (item.status == TransferItemStatus.IN_PROGRESS) {
-                    IconButton(onClick = onCancel, modifier = Modifier.size(28.dp)) {
+                    IconButton(onClick = onCancel) {
                         Icon(
                             imageVector = Icons.Rounded.Cancel,
-                            contentDescription = stringResource(R.string.lan_transfer_cancel),
-                            modifier = Modifier.size(16.dp)
+                            contentDescription = stringResource(R.string.lan_transfer_cancel)
                         )
                     }
                 } else if (item.canRetry) {
-                    IconButton(onClick = onRetry, modifier = Modifier.size(28.dp)) {
+                    IconButton(onClick = onRetry) {
                         Icon(
                             imageVector = Icons.Rounded.Refresh,
-                            contentDescription = stringResource(R.string.lan_transfer_retry),
-                            modifier = Modifier.size(16.dp)
+                            contentDescription = stringResource(R.string.lan_transfer_retry)
                         )
                     }
                 }
-                IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = null
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
             if (item.status == TransferItemStatus.IN_PROGRESS) {
+                Spacer(modifier = Modifier.height(12.dp))
                 LinearProgressIndicator(
-                    progress = { item.progress },
+                    progress = { item.progress.coerceIn(0f, 1f) },
                     modifier = Modifier.fillMaxWidth()
                 )
-            } else {
-                HorizontalDivider(thickness = 1.dp)
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = item.errorMessage ?: stringResource(
-                    when (item.status) {
-                        TransferItemStatus.DONE -> R.string.lan_transfer_status_done
-                        TransferItemStatus.FAILED -> R.string.lan_transfer_status_failed
-                        TransferItemStatus.CANCELLED -> R.string.lan_transfer_status_cancelled
-                        TransferItemStatus.IN_PROGRESS -> if (item.direction == TransferDirection.SENDING) {
-                            R.string.lan_transfer_status_sending
-                        } else {
-                            R.string.lan_transfer_status_receiving
-                        }
-                    }
-                ),
-                style = MaterialTheme.typography.labelSmall,
-                color = if (item.errorMessage != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
-            val receivedLocation = item.receivedLocation
+            val location = item.receivedLocation
             if (
                 item.direction == TransferDirection.RECEIVING &&
                 item.status == TransferItemStatus.DONE &&
-                receivedLocation != null
+                location != null
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 FilledTonalButton(
                     onClick = {
-                        if (!LanTransferFolderOpener.open(context, receivedLocation)) {
+                        if (!LanTransferFolderOpener.open(context, location)) {
                             Toast.makeText(
                                 context,
                                 context.getString(R.string.lan_transfer_open_folder_failed),
@@ -592,273 +1067,10 @@ private fun TransferRow(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.size(6.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(stringResource(R.string.lan_transfer_open_folder))
                 }
             }
         }
     }
-}
-
-@Composable
-private fun SendTextDialog(
-    deviceAlias: String,
-    onDismiss: () -> Unit,
-    onSend: (String) -> Unit
-) {
-    var text by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.lan_transfer_send_text)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = stringResource(R.string.lan_transfer_send_text_to, deviceAlias),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.lan_transfer_text_hint)) },
-                    minLines = 3,
-                    maxLines = 8
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSend(text) },
-                enabled = text.isNotBlank()
-            ) {
-                Text(stringResource(R.string.dialog_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.dialog_cancel))
-            }
-        }
-    )
-}
-
-@Composable
-private fun LanTransferSettingsDialog(
-    settings: LanTransferSettingsUi,
-    onDismiss: () -> Unit,
-    onSave: (LanTransferSettingsUi) -> Unit
-) {
-    var alias by remember(settings.alias) { mutableStateOf(settings.alias) }
-    var pinEnabled by remember(settings.pinEnabled) { mutableStateOf(settings.pinEnabled) }
-    var pin by remember(settings.pin) { mutableStateOf(settings.pin) }
-    var saveDirectory by remember(settings.saveDirectory) { mutableStateOf(settings.saveDirectory) }
-    var autoAccept by remember(settings.autoAccept) { mutableStateOf(settings.autoAccept) }
-    var computeChecksums by remember(settings.computeChecksums) { mutableStateOf(settings.computeChecksums) }
-    var verifyChecksums by remember(settings.verifyChecksums) { mutableStateOf(settings.verifyChecksums) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.lan_transfer_settings)) },
-        text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedTextField(
-                    value = alias,
-                    onValueChange = { alias = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.lan_transfer_device_name)) },
-                    singleLine = true
-                )
-                SettingsToggleRow(
-                    title = stringResource(R.string.lan_transfer_pin_enabled),
-                    checked = pinEnabled,
-                    onCheckedChange = { pinEnabled = it }
-                )
-                if (pinEnabled) {
-                    OutlinedTextField(
-                        value = pin,
-                        onValueChange = { pin = it.filter(Char::isDigit).take(8) },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.lan_transfer_pin)) },
-                        singleLine = true
-                    )
-                }
-                OutlinedTextField(
-                    value = saveDirectory,
-                    onValueChange = { saveDirectory = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.lan_transfer_save_directory)) },
-                    singleLine = true
-                )
-                SettingsToggleRow(
-                    title = stringResource(R.string.lan_transfer_auto_accept),
-                    checked = autoAccept,
-                    onCheckedChange = { autoAccept = it }
-                )
-                SettingsToggleRow(
-                    title = stringResource(R.string.lan_transfer_compute_checksums),
-                    checked = computeChecksums,
-                    onCheckedChange = { computeChecksums = it }
-                )
-                SettingsToggleRow(
-                    title = stringResource(R.string.lan_transfer_verify_checksums),
-                    checked = verifyChecksums,
-                    onCheckedChange = { verifyChecksums = it }
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onSave(
-                        LanTransferSettingsUi(
-                            alias = alias,
-                            pinEnabled = pinEnabled,
-                            pin = pin,
-                            saveDirectory = saveDirectory,
-                            autoAccept = autoAccept,
-                            computeChecksums = computeChecksums,
-                            verifyChecksums = verifyChecksums
-                        )
-                    )
-                }
-            ) {
-                Text(stringResource(R.string.dialog_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.dialog_cancel))
-            }
-        }
-    )
-}
-
-@Composable
-private fun SettingsToggleRow(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
-        )
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
-}
-
-@Composable
-private fun IncomingFileRequestDialog(
-    request: IncomingRequestUi.Files,
-    onAccept: () -> Unit,
-    onReject: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onReject,
-        title = { Text(stringResource(R.string.lan_transfer_incoming_title)) },
-        text = {
-            Text(
-                stringResource(
-                    R.string.lan_transfer_incoming_desc,
-                    request.peerAlias,
-                    request.fileCount,
-                    formatBytes(request.totalBytes)
-                )
-            )
-        },
-        confirmButton = {
-            Button(onClick = onAccept) {
-                Text(stringResource(R.string.lan_transfer_accept))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onReject) {
-                Text(stringResource(R.string.lan_transfer_reject))
-            }
-        }
-    )
-}
-
-@Composable
-private fun IncomingTextDialog(
-    request: IncomingRequestUi.Text,
-    onCopy: () -> Unit,
-    onReject: () -> Unit
-) {
-    val context = LocalContext.current
-    AlertDialog(
-        onDismissRequest = onReject,
-        title = { Text(stringResource(R.string.lan_transfer_incoming_text_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = stringResource(
-                        R.string.lan_transfer_incoming_text_from,
-                        request.peerAlias
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    )
-                ) {
-                    SelectionContainer {
-                        Text(
-                            text = request.text,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 72.dp, max = 320.dp)
-                                .verticalScroll(rememberScrollState())
-                                .padding(12.dp),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val clipboard = context.getSystemService(ClipboardManager::class.java)
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Koishi LAN Transfer", request.text))
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.lan_transfer_text_copied),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    onCopy()
-                }
-            ) {
-                Text(stringResource(R.string.lan_transfer_copy_text))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onReject) {
-                Text(stringResource(R.string.lan_transfer_reject))
-            }
-        }
-    )
-}
-
-private fun formatBytes(bytes: Long): String {
-    if (bytes < 1024) return "$bytes B"
-    val units = listOf("KB", "MB", "GB", "TB")
-    var value = bytes.toDouble() / 1024
-    var unitIndex = 0
-    while (value >= 1024 && unitIndex < units.lastIndex) {
-        value /= 1024
-        unitIndex += 1
-    }
-    return "%.1f %s".format(value, units[unitIndex])
 }

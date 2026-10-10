@@ -104,11 +104,18 @@ class LanTransferEngine(
             is LanTransferUiEvent.OnToggleReceive -> setReceiveEnabled(event.enabled)
             LanTransferUiEvent.OnRefresh -> refreshDiscovery()
             is LanTransferUiEvent.OnFilesPicked -> {
-                _uiState.update { it.copy(selectedFiles = event.files) }
+                val selected = _uiState.value.selectedFiles
+                    .plus(event.files)
+                    .distinctBy { it.uri.toString() }
+                _uiState.update { it.copy(selectedFiles = selected) }
                 if (event.files.isNotEmpty()) {
-                    message(R.string.lan_transfer_files_selected, event.files.size.toString())
+                    message(R.string.lan_transfer_files_selected, selected.size.toString())
                 }
             }
+            is LanTransferUiEvent.OnRemoveFile -> _uiState.update { state ->
+                state.copy(selectedFiles = state.selectedFiles.filterNot { it.uri.toString() == event.uri })
+            }
+            LanTransferUiEvent.OnClearFiles -> _uiState.update { it.copy(selectedFiles = emptyList()) }
             is LanTransferUiEvent.OnSendTo -> sendTo(event.deviceId)
             is LanTransferUiEvent.OnSendText -> sendText(event.deviceId, event.text)
             is LanTransferUiEvent.OnAcceptIncoming -> resolveIncoming(event.accepted)
@@ -138,15 +145,25 @@ class LanTransferEngine(
     private fun restartDiscovery() {
         discoveryJob?.cancel()
         discoveryJob = scope.launch {
-            discovery.discover(
-                alias = localAlias(),
-                serverPort = server?.port ?: LocalSendProtocol.DEFAULT_PORT,
-                protocol = LanDeviceProtocol.HTTPS,
-                announce = true
-            ).collect { device ->
-                if (device.fingerprint == localFingerprint) return@collect
-                devicesById[device.id] = device
-                _uiState.update { it.copy(devices = devicesById.values.sortedBy { device -> device.alias }) }
+            _uiState.update { it.copy(isScanning = true) }
+            val scanningJob = launch {
+                delay(SCAN_INDICATOR_DURATION_MS)
+                _uiState.update { it.copy(isScanning = false) }
+            }
+            try {
+                discovery.discover(
+                    alias = localAlias(),
+                    serverPort = server?.port ?: LocalSendProtocol.DEFAULT_PORT,
+                    protocol = LanDeviceProtocol.HTTPS,
+                    announce = true
+                ).collect { device ->
+                    if (device.fingerprint == localFingerprint) return@collect
+                    devicesById[device.id] = device
+                    _uiState.update { it.copy(devices = devicesById.values.sortedBy { device -> device.alias }) }
+                }
+            } finally {
+                scanningJob.cancel()
+                _uiState.update { it.copy(isScanning = false) }
             }
         }
     }
@@ -270,6 +287,7 @@ class LanTransferEngine(
             return
         }
         sendJob = scope.launch {
+            _uiState.update { it.copy(activeSendDeviceId = device.id) }
             try {
                 val entries = prepareSendEntries(files)
                 addTransfers(
@@ -287,6 +305,7 @@ class LanTransferEngine(
             } finally {
                 activeSendSession = null
                 sendJob = null
+                _uiState.update { it.copy(activeSendDeviceId = null) }
             }
         }
     }
@@ -468,6 +487,7 @@ class LanTransferEngine(
         }
         updateStatus(id, TransferItemStatus.IN_PROGRESS, canRetry = false)
         sendJob = scope.launch {
+            _uiState.update { it.copy(activeSendDeviceId = retry.device.id) }
             try {
                 processSend(retry.device, listOf(retry.entry))
             } catch (error: CancellationException) {
@@ -478,6 +498,7 @@ class LanTransferEngine(
             } finally {
                 activeSendSession = null
                 sendJob = null
+                _uiState.update { it.copy(activeSendDeviceId = null) }
             }
         }
     }
@@ -742,6 +763,7 @@ class LanTransferEngine(
         const val TAG = "LanTransfer"
         const val MAX_UPLOAD_ATTEMPTS = 3
         const val RETRY_DELAY_MS = 500L
+        const val SCAN_INDICATOR_DURATION_MS = 3_500L
     }
 }
 
