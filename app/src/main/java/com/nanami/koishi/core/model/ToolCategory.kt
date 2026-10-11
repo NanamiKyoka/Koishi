@@ -8,6 +8,7 @@ enum class ToolCategory(@StringRes val titleRes: Int) {
     LIFE(R.string.category_life),
     IMAGE_APPS(R.string.category_image_apps),
     FILE_APPS(R.string.category_file_apps),
+    DEVICE_APPS(R.string.category_device_apps),
     CALCULATION(R.string.category_calculation),
     QUERY(R.string.category_query),
     OTHER(R.string.category_other);

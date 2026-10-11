@@ -20,6 +20,7 @@
     <string name="category_life">Life Apps</string>
     <string name="category_image_apps">Image Apps</string>
     <string name="category_file_apps">File Apps</string>
+    <string name="category_device_apps">Device Apps</string>
     <string name="category_calculation">Calculation</string>
     <string name="category_query">Query Apps</string>
     <string name="category_other">Other Apps</string>
