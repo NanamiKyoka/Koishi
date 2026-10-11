@@ -18,6 +18,7 @@ data class HomeUiState(
     val allTools: List<ToolItem> = emptyList(),
     val filteredTools: List<ToolItem> = emptyList(),
     val favoriteTools: List<ToolItem> = emptyList(),
+    val recentTools: List<ToolItem> = emptyList(),
     val expandedCategories: Set<ToolCategory> = emptySet(),
     val searchHistory: List<String> = emptyList()
 )

@@ -123,6 +123,7 @@ fun HomeScreen(
                 MainTab.FAVORITES -> {
                     FavoritesScreen(
                         favoriteTools = uiState.favoriteTools,
+                        recentTools = uiState.recentTools,
                         onToolClick = onToolClick,
                         onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) },
                         onNavigateToToolbox = { onEvent(HomeUiEvent.OnSelectTab(MainTab.TOOLBOX)) }

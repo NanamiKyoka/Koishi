@@ -3,6 +3,7 @@ package com.nanami.koishi.feature.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nanami.koishi.core.data.repository.RecentToolsRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
@@ -21,7 +22,8 @@ class HomeViewModel(
     application: Application,
     private val toolRepository: ToolRepository,
     private val favoritesRepository: ToolFavoritesRepository,
-    private val searchHistoryRepository: SearchHistoryRepository
+    private val searchHistoryRepository: SearchHistoryRepository,
+    private val recentToolsRepository: RecentToolsRepository
 ) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(MainTab.TOOLBOX)
@@ -42,15 +44,23 @@ class HomeViewModel(
         }
     }
 
+    private val _toolsAndRecent: Flow<Pair<List<ToolItem>, List<ToolItem>>> = combine(
+        _toolsWithFavoriteState,
+        recentToolsRepository.recentToolIds
+    ) { tools, recentIds ->
+        val recentTools = recentIds.mapNotNull { id -> tools.find { it.id == id } }
+        tools to recentTools
+    }
+
     val uiState: StateFlow<HomeUiState> = combine(
         combine(_currentTab, _searchQuery, _isSearchActive) { tab, query, active ->
             Triple(tab, query, active)
         },
         _selectedCategory,
         _expandedCategories,
-        _toolsWithFavoriteState,
+        _toolsAndRecent,
         searchHistoryRepository.searchHistory
-    ) { (tab, query, active), category, expanded, tools, history ->
+    ) { (tab, query, active), category, expanded, (tools, recentTools), history ->
         val app = getApplication<Application>()
         val filtered = tools.filter { tool ->
             val matchesCategory = (category == ToolCategory.ALL) || (tool.category == category)
@@ -71,6 +81,7 @@ class HomeViewModel(
             allTools = tools,
             filteredTools = filtered,
             favoriteTools = tools.filter { it.isFavorite },
+            recentTools = recentTools,
             expandedCategories = expanded,
             searchHistory = history
         )
@@ -139,6 +150,12 @@ class HomeViewModel(
                     searchHistoryRepository.clearAllSearchHistory()
                 }
             }
+        }
+    }
+
+    fun recordToolUsage(toolId: String) {
+        viewModelScope.launch {
+            recentToolsRepository.recordUsage(toolId)
         }
     }
 

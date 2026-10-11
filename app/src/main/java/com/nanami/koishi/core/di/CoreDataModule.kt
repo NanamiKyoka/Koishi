@@ -2,7 +2,9 @@ package com.nanami.koishi.core.di
 
 import androidx.room.Room
 import com.nanami.koishi.core.data.repository.InMemoryToolRepository
+import com.nanami.koishi.core.data.repository.RecentToolsRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
+import com.nanami.koishi.core.data.repository.SharedPreferencesRecentToolsRepository
 import com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepository
 import com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
@@ -34,6 +36,8 @@ val coreDataModule = module {
     single<ToolFavoritesRepository> { SharedPreferencesToolFavoritesRepository(get()) }
 
     single<SearchHistoryRepository> { SharedPreferencesSearchHistoryRepository(get()) }
+
+    single<RecentToolsRepository> { SharedPreferencesRecentToolsRepository(get()) }
 
     single { WebDavClient() }
 

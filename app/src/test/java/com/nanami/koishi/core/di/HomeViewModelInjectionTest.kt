@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Image
 import com.nanami.koishi.R
+import com.nanami.koishi.core.data.repository.RecentToolsRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
@@ -31,6 +32,7 @@ class HomeViewModelInjectionTest : KoinTest {
                 single<ToolRepository> { FakeToolRepository() }
                 single<ToolFavoritesRepository> { FakeFavoritesRepository() }
                 single<SearchHistoryRepository> { FakeSearchHistoryRepository() }
+                single<RecentToolsRepository> { FakeRecentToolsRepository() }
             }
         )
     }
@@ -85,6 +87,24 @@ class HomeViewModelInjectionTest : KoinTest {
 
         override suspend fun clearAllFavorites() {
             ids.value = emptySet()
+        }
+
+        override suspend fun reload() = Unit
+    }
+
+    private class FakeRecentToolsRepository : RecentToolsRepository {
+
+        private val ids = MutableStateFlow<List<String>>(emptyList())
+
+        override val recentToolIds: Flow<List<String>> = ids
+
+        override suspend fun recordUsage(toolId: String) {
+            if (toolId.isBlank()) return
+            ids.value = (listOf(toolId) + ids.value.filter { it != toolId }).take(12)
+        }
+
+        override suspend fun clearRecent() {
+            ids.value = emptyList()
         }
 
         override suspend fun reload() = Unit

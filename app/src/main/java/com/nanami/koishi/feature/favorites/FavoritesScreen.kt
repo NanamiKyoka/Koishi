@@ -55,6 +55,7 @@ import com.nanami.koishi.feature.home.components.ToolChip
 @Composable
 fun FavoritesScreen(
     favoriteTools: List<ToolItem>,
+    recentTools: List<ToolItem>,
     onToolClick: (ToolItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
     onNavigateToToolbox: () -> Unit,
@@ -76,7 +77,7 @@ fun FavoritesScreen(
             )
         )
 
-        if (favoriteTools.isEmpty()) {
+        if (favoriteTools.isEmpty() && recentTools.isEmpty()) {
             AdaptiveContentWidth(
                 maxWidth = 640.dp,
                 modifier = Modifier.weight(1f),
@@ -96,72 +97,102 @@ fun FavoritesScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .width(4.dp)
-                                                .height(18.dp)
-                                                .clip(RoundedCornerShape(2.dp))
-                                                .background(MaterialTheme.colorScheme.primary)
-                                        )
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Text(
-                                            text = stringResource(R.string.favorites_title),
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                    Text(
-                                        text = stringResource(R.string.tools_count_summary, favoriteTools.size),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    favoriteTools.forEach { tool ->
-                                        ToolChip(
-                                            tool = tool,
-                                            onClick = { onToolClick(tool) },
-                                            onLongClick = { onToggleFavorite(tool.id) }
-                                        )
-                                    }
-                                }
-                            }
+                    if (recentTools.isNotEmpty()) {
+                        item {
+                            ToolCollectionCard(
+                                title = stringResource(R.string.favorites_recent_title),
+                                tools = recentTools,
+                                countText = stringResource(R.string.tools_count_summary, recentTools.size),
+                                onToolClick = onToolClick,
+                                onToggleFavorite = onToggleFavorite
+                            )
                         }
                     }
-            }
+                    if (favoriteTools.isNotEmpty()) {
+                        item {
+                            ToolCollectionCard(
+                                title = stringResource(R.string.favorites_title),
+                                tools = favoriteTools,
+                                countText = stringResource(R.string.tools_count_summary, favoriteTools.size),
+                                onToolClick = onToolClick,
+                                onToggleFavorite = onToggleFavorite
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ToolCollectionCard(
+    title: String,
+    tools: List<ToolItem>,
+    countText: String,
+    onToolClick: (ToolItem) -> Unit,
+    onToggleFavorite: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .width(4.dp)
+                            .height(18.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Text(
+                    text = countText,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                tools.forEach { tool ->
+                    ToolChip(
+                        tool = tool,
+                        onClick = { onToolClick(tool) },
+                        onLongClick = { onToggleFavorite(tool.id) }
+                    )
+                }
+            }
+        }
+    }
+}
 /**
  * 图2风格的极简空状态视图（精致插画 + 胶囊跳转引导按钮）
  */

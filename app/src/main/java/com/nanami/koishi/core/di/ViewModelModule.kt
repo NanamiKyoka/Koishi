@@ -29,7 +29,7 @@ import org.koin.dsl.module
 
 val viewModelModule = module {
 
-    viewModel { HomeViewModel(get(), get(), get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get(), get(), get()) }
     viewModel { PoetryViewModel(get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
 

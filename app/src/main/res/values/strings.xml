@@ -48,6 +48,7 @@
 
     <!-- Favorites Tab -->
     <string name="favorites_title">收藏</string>
+    <string name="favorites_recent_title">最近使用</string>
     <string name="favorites_empty_title">暂无收藏</string>
     <string name="favorites_empty_desc">长按或点击工具即可加入您的专属快捷收藏夹</string>
     <string name="favorites_add_guide">暂无收藏</string>

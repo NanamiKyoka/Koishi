@@ -94,6 +94,7 @@ fun KoishiNavHost(
                     poetryViewModel = poetryViewModel,
                     settingsViewModel = settingsViewModel,
                     onNavigateToTool = { tool ->
+                        homeViewModel.recordToolUsage(tool.id)
                         when (tool.id) {
                             "image_stitching" -> navController.navigate(ImageStitchingRoute)
                             "image_search" -> navController.navigate(ImageSearchRoute)
