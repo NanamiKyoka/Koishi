@@ -142,7 +142,7 @@ fun ClassicColorPicker(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "色相 (Hue)",
+                    text = stringResource(R.string.classic_color_picker_hue),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -179,7 +179,7 @@ fun ClassicColorPicker(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "透明度 (Alpha)",
+                    text = stringResource(R.string.classic_color_picker_alpha),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -256,7 +256,7 @@ fun ClassicColorPicker(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("十六进制色彩代码") },
+                    label = { Text(stringResource(R.string.classic_color_picker_hex_label)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -670,7 +670,7 @@ fun ClassicColorPickerDialog(
                 }
             ) {
                 Text(
-                    text = "确定",
+                    text = stringResource(R.string.dialog_confirm),
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary
                 )
