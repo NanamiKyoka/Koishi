@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
+import com.nanami.koishi.core.designsystem.adaptive.LocalBottomBarVisibilityController
 import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
 import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
 import com.nanami.koishi.core.model.ToolItem
@@ -190,6 +192,8 @@ private fun ToolSearchContent(
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val bottomBarVisibilityController = LocalBottomBarVisibilityController.current
+    val scrollModifier = Modifier.nestedScroll(bottomBarVisibilityController.nestedScrollConnection)
 
     BackHandler(enabled = true) {
         keyboardController?.hide()
@@ -233,7 +237,8 @@ private fun ToolSearchContent(
                         onEvent(HomeUiEvent.OnSearchHistoryClick(keyword))
                     },
                     onDeleteItem = { onEvent(HomeUiEvent.OnDeleteSearchHistoryItem(it)) },
-                    onClearHistory = { onEvent(HomeUiEvent.OnClearHistory) }
+                    onClearHistory = { onEvent(HomeUiEvent.OnClearHistory) },
+                    modifier = scrollModifier
                 )
             }
         } else {
@@ -255,7 +260,8 @@ private fun ToolSearchContent(
                             onEvent(HomeUiEvent.OnSearchActiveChange(false))
                             onToolClick(tool)
                         },
-                        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) }
+                        onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) },
+                        modifier = scrollModifier
                     )
                 }
             }
@@ -268,10 +274,11 @@ private fun SearchResultList(
     query: String,
     tools: List<ToolItem>,
     onToolClick: (ToolItem) -> Unit,
-    onToggleFavorite: (String) -> Unit
+    onToggleFavorite: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -577,6 +584,8 @@ private fun ToolboxOverview(
         }
 
         val layoutMode = LocalWindowLayoutMode.current
+        val bottomBarVisibilityController = LocalBottomBarVisibilityController.current
+        val scrollModifier = Modifier.nestedScroll(bottomBarVisibilityController.nestedScrollConnection)
 
         AdaptiveContentWidth(
             maxWidth = if (layoutMode == WindowLayoutMode.EXPANDED) 1200.dp else 840.dp,
@@ -585,7 +594,9 @@ private fun ToolboxOverview(
             if (layoutMode == WindowLayoutMode.EXPANDED) {
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(minSize = 360.dp),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(scrollModifier),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     verticalItemSpacing = 14.dp,
@@ -604,7 +615,9 @@ private fun ToolboxOverview(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(scrollModifier),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
