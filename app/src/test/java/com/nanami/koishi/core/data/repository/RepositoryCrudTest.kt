@@ -158,6 +158,7 @@ class RepositoryCrudTest {
             Triple("meme_maker", ToolCategory.IMAGE_APPS, true),
             Triple("color_picker", ToolCategory.IMAGE_APPS, true),
             Triple("lan_transfer", ToolCategory.FILE_APPS, true),
+            Triple("noise_meter", ToolCategory.DEVICE_APPS, true),
             Triple("today_in_history", ToolCategory.LIFE, true),
             Triple("decision_maker", ToolCategory.LIFE, true),
             Triple("ruler", ToolCategory.LIFE, true),
