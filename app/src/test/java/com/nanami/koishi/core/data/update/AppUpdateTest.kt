@@ -1,6 +1,10 @@
 package com.nanami.koishi.core.data.update
 
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -12,6 +16,43 @@ class AppUpdateTest {
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
+    }
+
+    private val releaseJson = """
+        {
+          "tag_name": "v0.4.0",
+          "name": "Koishi v0.4.0",
+          "body": "Changelog details",
+          "html_url": "https://github.com/NanamiKyoka/Koishi/releases/tag/v0.4.0",
+          "assets": [
+            {
+              "name": "Koishi-v0.4.0-arm64-v8a.apk",
+              "browser_download_url": "https://github.com/download/arm64.apk",
+              "size": 1234567,
+              "content_type": "application/vnd.android.package-archive"
+            }
+          ]
+        }
+    """.trimIndent()
+
+    private class FakeUpdateCache(
+        var body: String? = null,
+        var checkedAt: Long = 0L
+    ) : UpdateCache {
+        override fun cachedReleaseBody(): String? = body
+        override fun lastCheckedAt(): Long = checkedAt
+        override fun save(releaseBody: String, checkedAt: Long) {
+            body = releaseBody
+            this.checkedAt = checkedAt
+        }
+    }
+
+    private fun manager(server: MockWebServer, cache: UpdateCache = NoopUpdateCache): AppUpdateManager {
+        return AppUpdateManager(
+            httpClient = OkHttpClient(),
+            cache = cache,
+            apiBaseUrl = server.url("/").toString().removeSuffix("/")
+        )
     }
 
     @Test
@@ -88,5 +129,68 @@ class AppUpdateTest {
         assertEquals(1, dto.assets.size)
         assertEquals("Koishi-v0.3.0-arm64-v8a.apk", dto.assets.first().name)
         assertEquals(1234567L, dto.assets.first().size)
+    }
+
+    @Test
+    fun reusesFreshCacheWithoutHittingNetwork() = runTest {
+        val server = MockWebServer()
+        server.start()
+        try {
+            val cache = FakeUpdateCache(body = releaseJson, checkedAt = System.currentTimeMillis())
+            val result = manager(server, cache).checkForUpdate("0.3.0", arrayOf("arm64-v8a"))
+
+            assertTrue(result is UpdateCheckResult.NewVersion)
+            assertEquals(0, server.requestCount)
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    @Test
+    fun cachesSuccessfulResponse() = runTest {
+        val server = MockWebServer()
+        server.enqueue(MockResponse().setResponseCode(200).setBody(releaseJson))
+        server.start()
+        try {
+            val cache = FakeUpdateCache()
+            val result = manager(server, cache).checkForUpdate("0.3.0", arrayOf("arm64-v8a"))
+
+            assertTrue(result is UpdateCheckResult.NewVersion)
+            assertEquals(releaseJson, cache.cachedReleaseBody())
+            assertTrue(cache.lastCheckedAt() > 0L)
+            assertEquals(1, server.requestCount)
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    @Test
+    fun fallsBackToCacheWhenRequestFails() = runTest {
+        val server = MockWebServer()
+        server.enqueue(MockResponse().setResponseCode(403))
+        server.start()
+        try {
+            val cache = FakeUpdateCache(body = releaseJson, checkedAt = 0L)
+            val result = manager(server, cache).checkForUpdate("0.3.0", arrayOf("arm64-v8a"))
+
+            assertTrue(result is UpdateCheckResult.NewVersion)
+            assertEquals(1, server.requestCount)
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    @Test
+    fun reportsUnavailableWhenRequestFailsWithoutCache() = runTest {
+        val server = MockWebServer()
+        server.enqueue(MockResponse().setResponseCode(403))
+        server.start()
+        try {
+            val result = manager(server, FakeUpdateCache()).checkForUpdate("0.3.0", arrayOf("arm64-v8a"))
+
+            assertTrue(result is UpdateCheckResult.Unavailable)
+        } finally {
+            server.shutdown()
+        }
     }
 }

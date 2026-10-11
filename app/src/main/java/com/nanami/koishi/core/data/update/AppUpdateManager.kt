@@ -22,7 +22,9 @@ class AppUpdateManager(
     private val httpClient: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+        .build(),
+    private val cache: UpdateCache = NoopUpdateCache,
+    private val apiBaseUrl: String = "https://api.github.com"
 ) {
 
     private val json = Json {
@@ -34,51 +36,35 @@ class AppUpdateManager(
         currentVersion: String,
         supportedAbis: Array<String> = Build.SUPPORTED_ABIS ?: emptyArray()
     ): UpdateCheckResult = withContext(Dispatchers.IO) {
+        val cachedBody = cache.cachedReleaseBody()
+        val checkedAt = System.currentTimeMillis()
+        if (cachedBody != null && checkedAt - cache.lastCheckedAt() < MIN_CHECK_INTERVAL_MS) {
+            return@withContext evaluate(cachedBody, currentVersion, supportedAbis)
+        }
+
         try {
             val request = Request.Builder()
-                .url("https://api.github.com/repos/$owner/$repo/releases/latest")
+                .url("$apiBaseUrl/repos/$owner/$repo/releases/latest")
                 .header("Accept", "application/vnd.github+json")
                 .header("User-Agent", "Koishi-App")
                 .get()
                 .build()
 
             httpClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    return@withContext UpdateCheckResult.Error("HTTP ${response.code}: ${response.message}")
-                }
-                val bodyString = response.body?.string().orEmpty()
-                if (bodyString.isBlank()) {
-                    return@withContext UpdateCheckResult.Error("Empty response body")
-                }
-                val dto = json.decodeFromString<GithubReleaseDto>(bodyString)
-                val release = AppRelease(
-                    tagName = dto.tagName,
-                    versionName = dto.tagName.trim().removePrefix("v").removePrefix("V"),
-                    name = dto.name.orEmpty().ifEmpty { dto.tagName },
-                    changelog = dto.body.orEmpty(),
-                    htmlUrl = dto.htmlUrl,
-                    assets = dto.assets.map { assetDto ->
-                        ReleaseAsset(
-                            name = assetDto.name,
-                            downloadUrl = assetDto.browserDownloadUrl,
-                            size = assetDto.size,
-                            contentType = assetDto.contentType.orEmpty()
-                        )
-                    }
-                )
-
-                val latestVersion = SemanticVersion.parse(release.versionName)
-                val current = SemanticVersion.parse(currentVersion)
-
-                if (latestVersion > current) {
-                    val matchedAsset = selectBestAsset(release.assets, supportedAbis)
-                    UpdateCheckResult.NewVersion(release, matchedAsset)
+                val bodyString = if (response.isSuccessful) {
+                    response.body?.string().orEmpty()
                 } else {
-                    UpdateCheckResult.AlreadyLatest(currentVersion)
+                    ""
+                }
+                if (bodyString.isBlank()) {
+                    fallback(cachedBody, currentVersion, supportedAbis)
+                } else {
+                    cache.save(bodyString, checkedAt)
+                    evaluate(bodyString, currentVersion, supportedAbis)
                 }
             }
-        } catch (e: Exception) {
-            UpdateCheckResult.Error(e.localizedMessage ?: "Unknown error")
+        } catch (_: Exception) {
+            fallback(cachedBody, currentVersion, supportedAbis)
         }
     }
 
@@ -191,5 +177,56 @@ class AppUpdateManager(
             context.startActivity(intent)
         } catch (_: Exception) {
         }
+    }
+
+    private fun fallback(
+        cachedBody: String?,
+        currentVersion: String,
+        supportedAbis: Array<String>
+    ): UpdateCheckResult = if (cachedBody != null) {
+        evaluate(cachedBody, currentVersion, supportedAbis)
+    } else {
+        UpdateCheckResult.Unavailable
+    }
+
+    private fun evaluate(
+        bodyString: String,
+        currentVersion: String,
+        supportedAbis: Array<String>
+    ): UpdateCheckResult {
+        val dto = try {
+            json.decodeFromString<GithubReleaseDto>(bodyString)
+        } catch (_: Exception) {
+            return UpdateCheckResult.Unavailable
+        }
+
+        val release = AppRelease(
+            tagName = dto.tagName,
+            versionName = dto.tagName.trim().removePrefix("v").removePrefix("V"),
+            name = dto.name.orEmpty().ifEmpty { dto.tagName },
+            changelog = dto.body.orEmpty(),
+            htmlUrl = dto.htmlUrl,
+            assets = dto.assets.map { assetDto ->
+                ReleaseAsset(
+                    name = assetDto.name,
+                    downloadUrl = assetDto.browserDownloadUrl,
+                    size = assetDto.size,
+                    contentType = assetDto.contentType.orEmpty()
+                )
+            }
+        )
+
+        val latestVersion = SemanticVersion.parse(release.versionName)
+        val current = SemanticVersion.parse(currentVersion)
+
+        return if (latestVersion > current) {
+            UpdateCheckResult.NewVersion(release, selectBestAsset(release.assets, supportedAbis))
+        } else {
+            UpdateCheckResult.AlreadyLatest(currentVersion)
+        }
+    }
+
+    private companion object {
+        const val MIN_CHECK_INTERVAL_MS = 60 * 60 * 1000L
     }
 }

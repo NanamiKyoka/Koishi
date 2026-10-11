@@ -57,9 +57,7 @@ sealed interface UpdateCheckResult {
         val currentVersion: String
     ) : UpdateCheckResult
 
-    data class Error(
-        val message: String
-    ) : UpdateCheckResult
+    data object Unavailable : UpdateCheckResult
 }
 
 data class SemanticVersion(

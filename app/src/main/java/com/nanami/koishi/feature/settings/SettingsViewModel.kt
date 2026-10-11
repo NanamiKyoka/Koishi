@@ -222,10 +222,8 @@ class SettingsViewModel(
                         it.copy(updateState = UpdateUiState.Latest(result.currentVersion))
                     }
                 }
-                is UpdateCheckResult.Error -> {
-                    _uiState.update {
-                        it.copy(updateState = UpdateUiState.Error(message = result.message))
-                    }
+                is UpdateCheckResult.Unavailable -> {
+                    _uiState.update { it.copy(updateState = UpdateUiState.Idle) }
                 }
             }
         }

@@ -12,6 +12,7 @@ import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import com.nanami.koishi.core.data.sync.WebDavClient
 import com.nanami.koishi.core.data.sync.WebDavSyncManager
 import com.nanami.koishi.core.data.update.AppUpdateManager
+import com.nanami.koishi.core.data.update.SharedPreferencesUpdateCache
 import org.koin.dsl.module
 
 val coreDataModule = module {
@@ -37,5 +38,5 @@ val coreDataModule = module {
     single { WebDavClient() }
 
     single { WebDavSyncManager(get(), get(), get(), get(), get()) }
-    single { AppUpdateManager() }
+    single { AppUpdateManager(cache = SharedPreferencesUpdateCache(get())) }
 }
