@@ -37,12 +37,3 @@ fun NoiseLevel.color(): Color = when (this) {
     NoiseLevel.EXTREME -> Color(0xFF8E0000)
 }
 
-fun NoiseLevel.upperBoundDb(): Double = when (this) {
-    NoiseLevel.VERY_QUIET -> 30.0
-    NoiseLevel.QUIET -> 40.0
-    NoiseLevel.MODERATE -> 55.0
-    NoiseLevel.NOISY -> 70.0
-    NoiseLevel.VERY_NOISY -> 85.0
-    NoiseLevel.DANGEROUS -> 100.0
-    NoiseLevel.EXTREME -> 120.0
-}
