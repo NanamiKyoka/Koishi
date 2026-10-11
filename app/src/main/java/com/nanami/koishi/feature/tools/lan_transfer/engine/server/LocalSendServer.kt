@@ -413,11 +413,11 @@ class LocalSendServer(
     private suspend inline fun <reified T> ApplicationCall.receiveProtocolJson(): T =
         json.decodeFromString<T>(receiveText())
 
-    private fun ApplicationCall.requestOriginHost(): String = request.origin.remoteHost
+    private fun ApplicationCall.requestOriginHost(): String = request.origin.remoteAddress
 
     private fun ApplicationCall.clientCertificateFingerprint(): String {
         val origin = request.origin
-        val certificate = clientCertificates.find(origin.remoteHost, origin.remotePort)
+        val certificate = clientCertificates.find(origin.remoteAddress, origin.remotePort)
             ?: throw ClientCertificateException("Client certificate is missing")
         return LocalSendCertificateFactory.fingerprint(certificate)
     }
