@@ -6,6 +6,7 @@ import com.nanami.koishi.feature.tools.bili_cover.engine.BiliCoverSettingsReposi
 import com.nanami.koishi.feature.tools.bmi_calculator.engine.BmiRepository
 import com.nanami.koishi.feature.tools.color_picker.engine.ColorPickerRepository
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyConverterRepository
+import com.nanami.koishi.feature.tools.unit_converter.engine.UnitConverterRepository
 import com.nanami.koishi.feature.tools.decision_maker.engine.BuiltInPresets
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionArchiveStore
 import com.nanami.koishi.feature.tools.decision_maker.engine.DecisionRepository
@@ -41,6 +42,7 @@ val featureModule = module {
     single { BmiRepository(get()) }
     single { ColorPickerRepository(get()) }
     single { CurrencyConverterRepository(get()) }
+    single { UnitConverterRepository(get()) }
     single { WorthRepository(get()) }
 
     single { BiliCoverSettingsRepository(get()) }

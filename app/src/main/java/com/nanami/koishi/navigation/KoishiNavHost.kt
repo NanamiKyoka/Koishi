@@ -41,6 +41,8 @@ import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
+import com.nanami.koishi.feature.tools.unit_converter.UnitConverterRoute
+import com.nanami.koishi.feature.tools.unit_converter.UnitConverterViewModel
 import com.nanami.koishi.feature.tools.watermark.WatermarkRoute
 import com.nanami.koishi.feature.tools.watermark.WatermarkViewModel
 
@@ -109,6 +111,7 @@ fun KoishiNavHost(
                             "decision_maker" -> navController.navigate(DecisionMakerRoute)
                             "ruler" -> navController.navigate(RulerRoute)
                             "currency_converter" -> navController.navigate(CurrencyConverterRoute)
+                            "unit_converter" -> navController.navigate(UnitConverterRoute)
                             "bmi_calculator" -> navController.navigate(BmiCalculatorRoute)
                             "worth_calculator" -> navController.navigate(WorthCalculatorRoute)
                             "postal_code" -> navController.navigate(PostalCodeRoute)
@@ -226,6 +229,14 @@ fun KoishiNavHost(
                 val currencyConverterViewModel: com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel = koinViewModel()
                 com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterRoute(
                     viewModel = currencyConverterViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<UnitConverterRoute> {
+                val unitConverterViewModel: UnitConverterViewModel = koinViewModel()
+                UnitConverterRoute(
+                    viewModel = unitConverterViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

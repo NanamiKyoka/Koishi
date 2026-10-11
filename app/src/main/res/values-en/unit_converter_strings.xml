@@ -1,0 +1,146 @@
+<resources>
+    <string name="tool_unit_converter_name">Universal Unit Converter</string>
+    <string name="tool_unit_converter_desc">Convert common length, area, volume, mass, temperature, speed, time, and data units offline with high precision</string>
+    <string name="unit_converter_title">Universal Unit Converter</string>
+    <string name="unit_converter_input_label">Value</string>
+    <string name="unit_converter_from">From</string>
+    <string name="unit_converter_to">To</string>
+    <string name="unit_converter_result">Result</string>
+    <string name="unit_converter_reverse">Reverse conversion</string>
+    <string name="unit_converter_swap">Swap units</string>
+    <string name="unit_converter_select_unit">Select unit</string>
+    <string name="unit_converter_search_unit">Search units</string>
+    <string name="unit_converter_no_unit">No units found</string>
+    <string name="unit_converter_invalid_input">Enter a valid number</string>
+    <string name="unit_converter_negative_not_allowed">Negative values are not supported in this category</string>
+    <string name="unit_converter_copied">Result copied</string>
+    <string name="unit_converter_copy">Copy result</string>
+    <string name="unit_converter_data_note">KB, MB, GB, and TB are decimal units; KiB, MiB, GiB, and TiB are binary units</string>
+
+    <string name="unit_category_length">Length</string>
+    <string name="unit_category_area">Area</string>
+    <string name="unit_category_volume">Volume</string>
+    <string name="unit_category_mass">Mass</string>
+    <string name="unit_category_temperature">Temperature</string>
+    <string name="unit_category_speed">Speed</string>
+    <string name="unit_category_time">Time</string>
+    <string name="unit_category_data">Data storage</string>
+    <string name="unit_category_pressure">Pressure</string>
+    <string name="unit_category_energy">Energy</string>
+    <string name="unit_category_power">Power</string>
+    <string name="unit_category_angle">Angle</string>
+    <string name="unit_category_frequency">Frequency</string>
+
+    <string name="unit_meter">Meter</string>
+    <string name="unit_kilometer">Kilometer</string>
+    <string name="unit_centimeter">Centimeter</string>
+    <string name="unit_millimeter">Millimeter</string>
+    <string name="unit_micrometer">Micrometer</string>
+    <string name="unit_nanometer">Nanometer</string>
+    <string name="unit_mile">Mile</string>
+    <string name="unit_yard">Yard</string>
+    <string name="unit_foot">Foot</string>
+    <string name="unit_inch">Inch</string>
+    <string name="unit_nautical_mile">Nautical mile</string>
+    <string name="unit_li">Li</string>
+
+    <string name="unit_square_meter">Square meter</string>
+    <string name="unit_square_kilometer">Square kilometer</string>
+    <string name="unit_square_centimeter">Square centimeter</string>
+    <string name="unit_hectare">Hectare</string>
+    <string name="unit_mu">Mu</string>
+    <string name="unit_acre">Acre</string>
+    <string name="unit_square_foot">Square foot</string>
+    <string name="unit_square_inch">Square inch</string>
+    <string name="unit_square_yard">Square yard</string>
+
+    <string name="unit_cubic_meter">Cubic meter</string>
+    <string name="unit_liter">Liter</string>
+    <string name="unit_milliliter">Milliliter</string>
+    <string name="unit_cubic_centimeter">Cubic centimeter</string>
+    <string name="unit_us_gallon">US gallon</string>
+    <string name="unit_imperial_gallon">Imperial gallon</string>
+    <string name="unit_us_quart">US quart</string>
+    <string name="unit_us_pint">US pint</string>
+    <string name="unit_us_fluid_ounce">US fluid ounce</string>
+    <string name="unit_us_cup">US cup</string>
+    <string name="unit_cubic_foot">Cubic foot</string>
+    <string name="unit_cubic_inch">Cubic inch</string>
+
+    <string name="unit_kilogram">Kilogram</string>
+    <string name="unit_gram">Gram</string>
+    <string name="unit_milligram">Milligram</string>
+    <string name="unit_metric_ton">Metric ton</string>
+    <string name="unit_pound">Pound</string>
+    <string name="unit_ounce">Ounce</string>
+    <string name="unit_stone">Stone</string>
+    <string name="unit_jin">Jin</string>
+    <string name="unit_liang">Liang</string>
+
+    <string name="unit_celsius">Celsius</string>
+    <string name="unit_fahrenheit">Fahrenheit</string>
+    <string name="unit_kelvin">Kelvin</string>
+
+    <string name="unit_meter_per_second">Meter per second</string>
+    <string name="unit_kilometer_per_hour">Kilometer per hour</string>
+    <string name="unit_mile_per_hour">Mile per hour</string>
+    <string name="unit_knot">Knot</string>
+    <string name="unit_foot_per_second">Foot per second</string>
+
+    <string name="unit_second">Second</string>
+    <string name="unit_minute">Minute</string>
+    <string name="unit_hour">Hour</string>
+    <string name="unit_day">Day</string>
+    <string name="unit_week">Week</string>
+    <string name="unit_millisecond">Millisecond</string>
+    <string name="unit_microsecond">Microsecond</string>
+    <string name="unit_nanosecond">Nanosecond</string>
+
+    <string name="unit_byte">Byte</string>
+    <string name="unit_bit">Bit</string>
+    <string name="unit_kilobyte">Kilobyte</string>
+    <string name="unit_megabyte">Megabyte</string>
+    <string name="unit_gigabyte">Gigabyte</string>
+    <string name="unit_terabyte">Terabyte</string>
+    <string name="unit_kibibyte">Kibibyte</string>
+    <string name="unit_mebibyte">Mebibyte</string>
+    <string name="unit_gibibyte">Gibibyte</string>
+    <string name="unit_tebibyte">Tebibyte</string>
+
+    <string name="unit_pascal">Pascal</string>
+    <string name="unit_hectopascal">Hectopascal</string>
+    <string name="unit_kilopascal">Kilopascal</string>
+    <string name="unit_megapascal">Megapascal</string>
+    <string name="unit_bar">Bar</string>
+    <string name="unit_millibar">Millibar</string>
+    <string name="unit_atmosphere">Standard atmosphere</string>
+    <string name="unit_millimeter_of_mercury">Millimeter of mercury</string>
+    <string name="unit_psi">Pound per square inch</string>
+
+    <string name="unit_joule">Joule</string>
+    <string name="unit_kilojoule">Kilojoule</string>
+    <string name="unit_calorie">Calorie</string>
+    <string name="unit_kilocalorie">Kilocalorie</string>
+    <string name="unit_watt_hour">Watt-hour</string>
+    <string name="unit_kilowatt_hour">Kilowatt-hour</string>
+    <string name="unit_btu">British thermal unit</string>
+    <string name="unit_electronvolt">Electronvolt</string>
+
+    <string name="unit_watt">Watt</string>
+    <string name="unit_kilowatt">Kilowatt</string>
+    <string name="unit_megawatt">Megawatt</string>
+    <string name="unit_metric_horsepower">Metric horsepower</string>
+    <string name="unit_mechanical_horsepower">Mechanical horsepower</string>
+
+    <string name="unit_degree">Degree</string>
+    <string name="unit_radian">Radian</string>
+    <string name="unit_gradian">Gradian</string>
+    <string name="unit_arcminute">Arcminute</string>
+    <string name="unit_arcsecond">Arcsecond</string>
+
+    <string name="unit_hertz">Hertz</string>
+    <string name="unit_kilohertz">Kilohertz</string>
+    <string name="unit_megahertz">Megahertz</string>
+    <string name="unit_gigahertz">Gigahertz</string>
+    <string name="unit_rpm">Revolutions per minute</string>
+</resources>

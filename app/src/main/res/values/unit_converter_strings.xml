@@ -1,0 +1,146 @@
+<resources>
+    <string name="tool_unit_converter_name">万能单位换算</string>
+    <string name="tool_unit_converter_desc">覆盖长度、面积、体积、质量、温度、速度、时间、数据等常用单位，离线高精度实时换算</string>
+    <string name="unit_converter_title">万能单位换算</string>
+    <string name="unit_converter_input_label">数值</string>
+    <string name="unit_converter_from">从</string>
+    <string name="unit_converter_to">到</string>
+    <string name="unit_converter_result">换算结果</string>
+    <string name="unit_converter_reverse">反向换算</string>
+    <string name="unit_converter_swap">交换单位</string>
+    <string name="unit_converter_select_unit">选择单位</string>
+    <string name="unit_converter_search_unit">搜索单位</string>
+    <string name="unit_converter_no_unit">未找到单位</string>
+    <string name="unit_converter_invalid_input">请输入有效数字</string>
+    <string name="unit_converter_negative_not_allowed">当前类别不支持负数</string>
+    <string name="unit_converter_copied">已复制结果</string>
+    <string name="unit_converter_copy">复制结果</string>
+    <string name="unit_converter_data_note">KB、MB、GB 为十进制单位；KiB、MiB、GiB 为二进制单位</string>
+
+    <string name="unit_category_length">长度</string>
+    <string name="unit_category_area">面积</string>
+    <string name="unit_category_volume">体积</string>
+    <string name="unit_category_mass">质量</string>
+    <string name="unit_category_temperature">温度</string>
+    <string name="unit_category_speed">速度</string>
+    <string name="unit_category_time">时间</string>
+    <string name="unit_category_data">数据存储</string>
+    <string name="unit_category_pressure">压力</string>
+    <string name="unit_category_energy">能量</string>
+    <string name="unit_category_power">功率</string>
+    <string name="unit_category_angle">角度</string>
+    <string name="unit_category_frequency">频率</string>
+
+    <string name="unit_meter">米</string>
+    <string name="unit_kilometer">千米</string>
+    <string name="unit_centimeter">厘米</string>
+    <string name="unit_millimeter">毫米</string>
+    <string name="unit_micrometer">微米</string>
+    <string name="unit_nanometer">纳米</string>
+    <string name="unit_mile">英里</string>
+    <string name="unit_yard">码</string>
+    <string name="unit_foot">英尺</string>
+    <string name="unit_inch">英寸</string>
+    <string name="unit_nautical_mile">海里</string>
+    <string name="unit_li">里</string>
+
+    <string name="unit_square_meter">平方米</string>
+    <string name="unit_square_kilometer">平方千米</string>
+    <string name="unit_square_centimeter">平方厘米</string>
+    <string name="unit_hectare">公顷</string>
+    <string name="unit_mu">亩</string>
+    <string name="unit_acre">英亩</string>
+    <string name="unit_square_foot">平方英尺</string>
+    <string name="unit_square_inch">平方英寸</string>
+    <string name="unit_square_yard">平方码</string>
+
+    <string name="unit_cubic_meter">立方米</string>
+    <string name="unit_liter">升</string>
+    <string name="unit_milliliter">毫升</string>
+    <string name="unit_cubic_centimeter">立方厘米</string>
+    <string name="unit_us_gallon">美制加仑</string>
+    <string name="unit_imperial_gallon">英制加仑</string>
+    <string name="unit_us_quart">美制夸脱</string>
+    <string name="unit_us_pint">美制品脱</string>
+    <string name="unit_us_fluid_ounce">美制液体盎司</string>
+    <string name="unit_us_cup">美制杯</string>
+    <string name="unit_cubic_foot">立方英尺</string>
+    <string name="unit_cubic_inch">立方英寸</string>
+
+    <string name="unit_kilogram">千克</string>
+    <string name="unit_gram">克</string>
+    <string name="unit_milligram">毫克</string>
+    <string name="unit_metric_ton">公吨</string>
+    <string name="unit_pound">磅</string>
+    <string name="unit_ounce">盎司</string>
+    <string name="unit_stone">英石</string>
+    <string name="unit_jin">斤</string>
+    <string name="unit_liang">两</string>
+
+    <string name="unit_celsius">摄氏度</string>
+    <string name="unit_fahrenheit">华氏度</string>
+    <string name="unit_kelvin">开尔文</string>
+
+    <string name="unit_meter_per_second">米/秒</string>
+    <string name="unit_kilometer_per_hour">千米/小时</string>
+    <string name="unit_mile_per_hour">英里/小时</string>
+    <string name="unit_knot">节</string>
+    <string name="unit_foot_per_second">英尺/秒</string>
+
+    <string name="unit_second">秒</string>
+    <string name="unit_minute">分钟</string>
+    <string name="unit_hour">小时</string>
+    <string name="unit_day">天</string>
+    <string name="unit_week">周</string>
+    <string name="unit_millisecond">毫秒</string>
+    <string name="unit_microsecond">微秒</string>
+    <string name="unit_nanosecond">纳秒</string>
+
+    <string name="unit_byte">字节</string>
+    <string name="unit_bit">比特</string>
+    <string name="unit_kilobyte">千字节</string>
+    <string name="unit_megabyte">兆字节</string>
+    <string name="unit_gigabyte">吉字节</string>
+    <string name="unit_terabyte">太字节</string>
+    <string name="unit_kibibyte">二进制千字节</string>
+    <string name="unit_mebibyte">二进制兆字节</string>
+    <string name="unit_gibibyte">二进制吉字节</string>
+    <string name="unit_tebibyte">二进制太字节</string>
+
+    <string name="unit_pascal">帕斯卡</string>
+    <string name="unit_hectopascal">百帕</string>
+    <string name="unit_kilopascal">千帕</string>
+    <string name="unit_megapascal">兆帕</string>
+    <string name="unit_bar">巴</string>
+    <string name="unit_millibar">毫巴</string>
+    <string name="unit_atmosphere">标准大气压</string>
+    <string name="unit_millimeter_of_mercury">毫米汞柱</string>
+    <string name="unit_psi">磅力/平方英寸</string>
+
+    <string name="unit_joule">焦耳</string>
+    <string name="unit_kilojoule">千焦</string>
+    <string name="unit_calorie">卡路里</string>
+    <string name="unit_kilocalorie">千卡</string>
+    <string name="unit_watt_hour">瓦时</string>
+    <string name="unit_kilowatt_hour">千瓦时</string>
+    <string name="unit_btu">英热单位</string>
+    <string name="unit_electronvolt">电子伏特</string>
+
+    <string name="unit_watt">瓦特</string>
+    <string name="unit_kilowatt">千瓦</string>
+    <string name="unit_megawatt">兆瓦</string>
+    <string name="unit_metric_horsepower">公制马力</string>
+    <string name="unit_mechanical_horsepower">机械马力</string>
+
+    <string name="unit_degree">度</string>
+    <string name="unit_radian">弧度</string>
+    <string name="unit_gradian">百分度</string>
+    <string name="unit_arcminute">角分</string>
+    <string name="unit_arcsecond">角秒</string>
+
+    <string name="unit_hertz">赫兹</string>
+    <string name="unit_kilohertz">千赫兹</string>
+    <string name="unit_megahertz">兆赫兹</string>
+    <string name="unit_gigahertz">吉赫兹</string>
+    <string name="unit_rpm">转/分钟</string>
+</resources>

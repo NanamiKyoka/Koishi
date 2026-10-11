@@ -7,6 +7,7 @@ import com.nanami.koishi.feature.tools.bili_cover.BiliCoverViewModel
 import com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
 import com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel
+import com.nanami.koishi.feature.tools.unit_converter.UnitConverterViewModel
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerViewModel
 import com.nanami.koishi.feature.tools.grid_split.GridSplitViewModel
 import com.nanami.koishi.feature.tools.image_obfuscation.ImageObfuscationViewModel
@@ -37,6 +38,7 @@ val viewModelModule = module {
     viewModel { BmiCalculatorViewModel(get(), get()) }
     viewModel { ColorPickerViewModel(get(), get()) }
     viewModel { CurrencyConverterViewModel(get(), get()) }
+    viewModel { UnitConverterViewModel(get(), get()) }
     viewModel { DecisionMakerViewModel(get(), get(), get()) }
     viewModel { GridSplitViewModel(get()) }
     viewModel { ImageObfuscationViewModel(get()) }

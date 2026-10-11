@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.MonitorWeight
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Straighten
+import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material.icons.rounded.Wallpaper
 import com.nanami.koishi.R
@@ -197,6 +198,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_currency_converter_name,
                 descriptionRes = R.string.tool_currency_converter_desc,
                 icon = Icons.Rounded.CurrencyExchange,
+                category = ToolCategory.CALCULATION,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "unit_converter",
+                nameRes = R.string.tool_unit_converter_name,
+                descriptionRes = R.string.tool_unit_converter_desc,
+                icon = Icons.Rounded.SwapHoriz,
                 category = ToolCategory.CALCULATION,
                 isFavorite = false,
                 hasDot = true

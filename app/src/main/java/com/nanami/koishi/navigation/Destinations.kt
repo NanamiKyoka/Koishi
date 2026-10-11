@@ -83,6 +83,9 @@ data object RulerRoute
 @Serializable
 data object CurrencyConverterRoute
 
+@Serializable
+data object UnitConverterRoute
+
 /**
  * BMI 计算独立小工具强类型路由
  */
