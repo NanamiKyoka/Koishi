@@ -1,5 +1,7 @@
 package com.nanami.koishi.core.designsystem.adaptive
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -63,5 +65,36 @@ class BottomBarVisibilityStateTest {
         state.onScroll(15f)
 
         assertTrue(state.isVisible)
+    }
+
+    @Test
+    fun nestedScroll_upwardGestureHides() {
+        val controller = BottomBarVisibilityController(hideThresholdPx = 16f, showThresholdPx = 10f)
+
+        controller.nestedScrollConnection.onPostScroll(
+            consumed = Offset(0f, -16f),
+            available = Offset.Zero,
+            source = NestedScrollSource.UserInput
+        )
+
+        assertFalse(controller.isVisible)
+    }
+
+    @Test
+    fun nestedScroll_downwardGestureShows() {
+        val controller = BottomBarVisibilityController(hideThresholdPx = 16f, showThresholdPx = 10f)
+        controller.nestedScrollConnection.onPostScroll(
+            consumed = Offset(0f, -16f),
+            available = Offset.Zero,
+            source = NestedScrollSource.UserInput
+        )
+
+        controller.nestedScrollConnection.onPostScroll(
+            consumed = Offset(0f, 10f),
+            available = Offset.Zero,
+            source = NestedScrollSource.UserInput
+        )
+
+        assertTrue(controller.isVisible)
     }
 }

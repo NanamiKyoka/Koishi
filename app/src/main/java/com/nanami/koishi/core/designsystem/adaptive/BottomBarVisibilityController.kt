@@ -67,8 +67,8 @@ class BottomBarVisibilityController internal constructor(
             source: NestedScrollSource
         ): Offset {
             if (source == NestedScrollSource.UserInput) {
-                val delta = consumed.y.takeIf { it != 0f } ?: available.y
-                onScroll(delta)
+                val upwardDelta = -(consumed.y.takeIf { it != 0f } ?: available.y)
+                onScroll(upwardDelta)
             }
             return Offset.Zero
         }
