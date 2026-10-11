@@ -168,6 +168,7 @@ class SettingsViewModel(
                 _uiState.update {
                     it.copy(
                         isLocalBackupBusy = false,
+                        showLocalBackupDialog = false,
                         userMessage = R.string.settings_local_backup_exported
                     )
                 }
@@ -194,7 +195,11 @@ class SettingsViewModel(
                 }
                 val backup = syncManager.decodeBackup(raw)
                 _uiState.update {
-                    it.copy(isLocalBackupBusy = false, pendingImportBackup = backup)
+                    it.copy(
+                        isLocalBackupBusy = false,
+                        showLocalBackupDialog = false,
+                        pendingImportBackup = backup
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update {
