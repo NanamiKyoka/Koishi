@@ -128,13 +128,17 @@ fun LanTransferRoute(
             viewModel.onEvent(LanTransferUiEvent.OnFolderPicked(uri.toString()))
         }
     }
+    val notificationPermissionHint = stringResource(R.string.lan_transfer_notification_permission_denied)
     var pendingEnableReceive by remember { mutableStateOf(false) }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (pendingEnableReceive) {
             pendingEnableReceive = false
-            if (granted) viewModel.onEvent(LanTransferUiEvent.OnToggleReceive(true))
+            viewModel.onEvent(LanTransferUiEvent.OnToggleReceive(true))
+            if (!granted) {
+                Toast.makeText(context, notificationPermissionHint, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
