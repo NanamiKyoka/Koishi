@@ -124,3 +124,9 @@ data object WorthCalculatorRoute
 
 @Serializable
 data object LanTransferRoute
+
+/**
+ * 噪音测量独立小工具强类型路由
+ */
+@Serializable
+data object NoiseMeterRoute

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.EmojiEmotions
 import androidx.compose.material.icons.rounded.Gif
+import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.FolderShared
 import androidx.compose.material.icons.rounded.HistoryEdu
@@ -152,6 +153,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_lan_transfer_desc,
                 icon = Icons.Rounded.FolderShared,
                 category = ToolCategory.FILE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "noise_meter",
+                nameRes = R.string.tool_noise_meter_name,
+                descriptionRes = R.string.tool_noise_meter_desc,
+                icon = Icons.Rounded.GraphicEq,
+                category = ToolCategory.DEVICE_APPS,
                 isFavorite = false,
                 hasDot = true
             ),

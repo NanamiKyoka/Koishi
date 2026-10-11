@@ -116,6 +116,7 @@ fun KoishiNavHost(
                             "meme_maker" -> navController.navigate(MemeMakerRoute)
                             "color_picker" -> navController.navigate(ColorPickerRoute)
                             "mini_apps" -> navController.navigate(MiniAppsRoute)
+                            "noise_meter" -> navController.navigate(NoiseMeterRoute)
                         }
                     }
                 )
@@ -288,6 +289,13 @@ fun KoishiNavHost(
                 val worthCalculatorViewModel: com.nanami.koishi.feature.tools.worth_calculator.WorthCalculatorViewModel = koinViewModel()
                 com.nanami.koishi.feature.tools.worth_calculator.WorthCalculatorRoute(
                     viewModel = worthCalculatorViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable<NoiseMeterRoute> {
+                val noiseMeterViewModel: com.nanami.koishi.feature.tools.noise_meter.NoiseMeterViewModel = koinViewModel()
+                com.nanami.koishi.feature.tools.noise_meter.NoiseMeterRoute(
+                    viewModel = noiseMeterViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
