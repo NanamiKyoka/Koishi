@@ -52,7 +52,11 @@ data class SettingsUiState(
     val webDavSyncState: WebDavSyncUiState = WebDavSyncUiState.Idle,
     val updateState: UpdateUiState = UpdateUiState.Idle,
     val isCheckingUpdate: Boolean = false,
-    val updateMessage: Int? = null,
+    val userMessage: Int? = null,
+    val cacheSizeBytes: Long = 0L,
+    val dataSizeBytes: Long = 0L,
+    val isClearingCache: Boolean = false,
+    val showClearCacheDialog: Boolean = false,
     val refreshKey: Long = 0L
 )
 
@@ -73,5 +77,8 @@ sealed interface SettingsUiEvent {
     data class OnInstallUpdate(val file: java.io.File) : SettingsUiEvent
     data object OnCancelDownload : SettingsUiEvent
     data object OnDismissUpdateDialog : SettingsUiEvent
-    data object OnDismissUpdateMessage : SettingsUiEvent
+    data object OnDismissUserMessage : SettingsUiEvent
+    data object OnRefreshStorageUsage : SettingsUiEvent
+    data object OnClearCache : SettingsUiEvent
+    data class OnShowClearCacheDialog(val show: Boolean) : SettingsUiEvent
 }

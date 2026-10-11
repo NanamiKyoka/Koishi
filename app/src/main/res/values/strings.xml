@@ -114,6 +114,15 @@
 
     <!-- WebDAV Sync -->
     <string name="settings_category_data">数据与同步</string>
+    <string name="settings_category_storage">存储</string>
+    <string name="settings_storage_cache">清理缓存</string>
+    <string name="settings_storage_cache_usage">缓存占用 %1$s</string>
+    <string name="settings_storage_cache_empty">暂无缓存</string>
+    <string name="settings_storage_data">应用数据</string>
+    <string name="settings_storage_data_usage">占用 %1$s</string>
+    <string name="settings_storage_clear_confirm">确定要清理缓存吗？已下载的更新包会保留。</string>
+    <string name="settings_storage_cleared">缓存已清理</string>
+    <string name="settings_storage_clear_action">清理</string>
     <string name="settings_webdav_sync">WebDAV 数据同步</string>
     <string name="settings_webdav_sync_desc">备份与恢复设置、收藏及工具数据</string>
     <string name="webdav_dialog_title">WebDAV 同步</string>

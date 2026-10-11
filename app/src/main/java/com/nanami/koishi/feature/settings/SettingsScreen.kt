@@ -21,9 +21,11 @@ import android.os.Build
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -59,6 +61,7 @@ import com.nanami.koishi.feature.settings.components.AppThemePicker
 import com.nanami.koishi.feature.settings.components.ThemeModeSelector
 import com.nanami.koishi.feature.settings.components.UpdateDialog
 import com.nanami.koishi.feature.settings.components.WebDavSyncDialog
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,13 +72,17 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val updateMessage = uiState.updateMessage
+    val userMessage = uiState.userMessage
 
-    LaunchedEffect(updateMessage) {
-        if (updateMessage != null) {
-            snackbarHostState.showSnackbar(context.getString(updateMessage))
-            onEvent(SettingsUiEvent.OnDismissUpdateMessage)
+    LaunchedEffect(userMessage) {
+        if (userMessage != null) {
+            snackbarHostState.showSnackbar(context.getString(userMessage))
+            onEvent(SettingsUiEvent.OnDismissUserMessage)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        onEvent(SettingsUiEvent.OnRefreshStorageUsage)
     }
 
     if (uiState.showLanguageDialog) {
@@ -127,6 +134,24 @@ fun SettingsScreen(
                 }
             },
             onOpenWebPage = { openWebPage(context, it) }
+        )
+    }
+
+    if (uiState.showClearCacheDialog) {
+        AlertDialog(
+            onDismissRequest = { onEvent(SettingsUiEvent.OnShowClearCacheDialog(false)) },
+            title = { Text(stringResource(R.string.settings_storage_cache)) },
+            text = { Text(stringResource(R.string.settings_storage_clear_confirm)) },
+            confirmButton = {
+                TextButton(onClick = { onEvent(SettingsUiEvent.OnClearCache) }) {
+                    Text(stringResource(R.string.settings_storage_clear_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onEvent(SettingsUiEvent.OnShowClearCacheDialog(false)) }) {
+                    Text(stringResource(R.string.dialog_cancel))
+                }
+            }
         )
     }
 
@@ -201,6 +226,38 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_webdav_sync),
                     subtitle = stringResource(R.string.settings_webdav_sync_desc),
                     onClick = { onEvent(SettingsUiEvent.OnShowWebDavDialog(true)) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsCategoryHeader(title = stringResource(R.string.settings_category_storage))
+
+                SettingsClickableItem(
+                    icon = Icons.Rounded.DeleteSweep,
+                    title = stringResource(R.string.settings_storage_cache),
+                    subtitle = if (uiState.cacheSizeBytes > 0) {
+                        stringResource(R.string.settings_storage_cache_usage, formatBytes(uiState.cacheSizeBytes))
+                    } else {
+                        stringResource(R.string.settings_storage_cache_empty)
+                    },
+                    onClick = { onEvent(SettingsUiEvent.OnShowClearCacheDialog(true)) },
+                    trailing = if (uiState.isClearingCache) {
+                        {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    } else {
+                        null
+                    }
+                )
+
+                SettingsClickableItem(
+                    icon = Icons.Rounded.Storage,
+                    title = stringResource(R.string.settings_storage_data),
+                    subtitle = stringResource(R.string.settings_storage_data_usage, formatBytes(uiState.dataSizeBytes)),
+                    onClick = {}
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -396,5 +453,18 @@ private fun openWebPage(context: Context, url: String) {
             )
         } catch (_: Exception) {
         }
+    }
+}
+
+private fun formatBytes(bytes: Long): String {
+    if (bytes <= 0) return "0 B"
+    val kb = 1024.0
+    val mb = kb * 1024
+    val gb = mb * 1024
+    return when {
+        bytes >= gb -> String.format(Locale.US, "%.1f GB", bytes / gb)
+        bytes >= mb -> String.format(Locale.US, "%.1f MB", bytes / mb)
+        bytes >= kb -> String.format(Locale.US, "%.1f KB", bytes / kb)
+        else -> "$bytes B"
     }
 }

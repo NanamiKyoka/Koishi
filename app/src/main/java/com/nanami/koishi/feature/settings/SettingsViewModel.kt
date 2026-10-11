@@ -4,7 +4,9 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import coil.imageLoader
 import com.nanami.koishi.R
+import com.nanami.koishi.core.data.cache.StorageUsage
 import com.nanami.koishi.core.data.preferences.ThemePreferences
 import com.nanami.koishi.core.data.sync.WebDavAuthException
 import com.nanami.koishi.core.data.sync.WebDavConfig
@@ -114,8 +116,46 @@ class SettingsViewModel(
             is SettingsUiEvent.OnInstallUpdate -> {
                 installUpdate(event.file)
             }
-            is SettingsUiEvent.OnDismissUpdateMessage -> {
-                _uiState.update { it.copy(updateMessage = null) }
+            is SettingsUiEvent.OnDismissUserMessage -> {
+                _uiState.update { it.copy(userMessage = null) }
+            }
+            is SettingsUiEvent.OnRefreshStorageUsage -> {
+                refreshStorageUsage()
+            }
+            is SettingsUiEvent.OnClearCache -> {
+                clearCache()
+            }
+            is SettingsUiEvent.OnShowClearCacheDialog -> {
+                _uiState.update { it.copy(showClearCacheDialog = event.show) }
+            }
+        }
+    }
+
+    private fun refreshStorageUsage() {
+        viewModelScope.launch {
+            val cacheSize = StorageUsage.cacheSizeBytes(context)
+            val dataSize = StorageUsage.dataSizeBytes(context)
+            _uiState.update {
+                it.copy(cacheSizeBytes = cacheSize, dataSizeBytes = dataSize)
+            }
+        }
+    }
+
+    private fun clearCache() {
+        if (_uiState.value.isClearingCache) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isClearingCache = true, showClearCacheDialog = false) }
+            context.imageLoader.memoryCache?.clear()
+            StorageUsage.clearCache(context)
+            val cacheSize = StorageUsage.cacheSizeBytes(context)
+            val dataSize = StorageUsage.dataSizeBytes(context)
+            _uiState.update {
+                it.copy(
+                    isClearingCache = false,
+                    cacheSizeBytes = cacheSize,
+                    dataSizeBytes = dataSize,
+                    userMessage = R.string.settings_storage_cleared
+                )
             }
         }
     }
@@ -226,7 +266,7 @@ class SettingsViewModel(
                     _uiState.update {
                         it.copy(
                             isCheckingUpdate = false,
-                            updateMessage = R.string.settings_update_latest
+                            userMessage = R.string.settings_update_latest
                         )
                     }
                 }
@@ -234,7 +274,7 @@ class SettingsViewModel(
                     _uiState.update {
                         it.copy(
                             isCheckingUpdate = false,
-                            updateMessage = R.string.settings_update_failed
+                            userMessage = R.string.settings_update_failed
                         )
                     }
                 }

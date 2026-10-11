@@ -114,6 +114,15 @@
 
     <!-- WebDAV Sync -->
     <string name="settings_category_data">Data &amp; Sync</string>
+    <string name="settings_category_storage">Storage</string>
+    <string name="settings_storage_cache">Clear Cache</string>
+    <string name="settings_storage_cache_usage">Cache size %1$s</string>
+    <string name="settings_storage_cache_empty">No cache</string>
+    <string name="settings_storage_data">App Data</string>
+    <string name="settings_storage_data_usage">%1$s used</string>
+    <string name="settings_storage_clear_confirm">Clear cache? Downloaded update packages will be kept.</string>
+    <string name="settings_storage_cleared">Cache cleared</string>
+    <string name="settings_storage_clear_action">Clear</string>
     <string name="settings_webdav_sync">WebDAV Data Sync</string>
     <string name="settings_webdav_sync_desc">Backup and restore settings, favorites and tool data</string>
     <string name="webdav_dialog_title">WebDAV Sync</string>
