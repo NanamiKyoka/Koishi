@@ -41,7 +41,7 @@ class WebDavSyncManager(
     }
 
     suspend fun backup(config: WebDavConfig): KoishiBackup = withContext(Dispatchers.IO) {
-        val backupData = createBackup(config.syncSensitive)
+        val backupData = createBackupSnapshot(config.syncSensitive)
         val backupJson = json.encodeToString(backupData)
         client.uploadBackup(config, backupJson)
         val now = System.currentTimeMillis()
@@ -52,13 +52,17 @@ class WebDavSyncManager(
     suspend fun restore(config: WebDavConfig): KoishiBackup = withContext(Dispatchers.IO) {
         val rawJson = client.downloadBackup(config)
         val backupData = json.decodeFromString<KoishiBackup>(rawJson)
-        restoreBackup(backupData, config.syncSensitive)
+        restoreBackupSnapshot(backupData, config.syncSensitive)
         val now = System.currentTimeMillis()
         WebDavPreferences.updateLastRestoreTime(context, now)
         backupData
     }
 
-    private suspend fun createBackup(includeSensitive: Boolean): KoishiBackup {
+    fun encodeBackup(backup: KoishiBackup): String = json.encodeToString(backup)
+
+    fun decodeBackup(raw: String): KoishiBackup = json.decodeFromString(raw)
+
+    suspend fun createBackupSnapshot(includeSensitive: Boolean): KoishiBackup {
         val settingsPrefs = context.getSharedPreferences("koishi_settings", Context.MODE_PRIVATE)
         val langOrdinal = settingsPrefs.getInt("language", AppLanguage.SYSTEM.ordinal)
         val language = AppLanguage.entries.getOrElse(langOrdinal) { AppLanguage.SYSTEM }
@@ -126,7 +130,7 @@ class WebDavSyncManager(
         )
     }
 
-    private suspend fun restoreBackup(backup: KoishiBackup, syncSensitive: Boolean) {
+    suspend fun restoreBackupSnapshot(backup: KoishiBackup, syncSensitive: Boolean) {
         val pref = backup.preferences
         ThemeMode.entries.find { it.name == pref.themeMode }?.let {
             ThemePreferences.setThemeMode(context, it)

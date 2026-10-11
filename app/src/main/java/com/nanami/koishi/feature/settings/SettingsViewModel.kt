@@ -2,6 +2,7 @@ package com.nanami.koishi.feature.settings
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import coil.imageLoader
@@ -13,11 +14,13 @@ import com.nanami.koishi.core.data.sync.WebDavConfig
 import com.nanami.koishi.core.data.sync.WebDavFileNotFoundException
 import com.nanami.koishi.core.data.sync.WebDavPreferences
 import com.nanami.koishi.core.data.sync.WebDavSyncManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 
 import com.nanami.koishi.BuildConfig
@@ -127,6 +130,105 @@ class SettingsViewModel(
             }
             is SettingsUiEvent.OnShowClearCacheDialog -> {
                 _uiState.update { it.copy(showClearCacheDialog = event.show) }
+            }
+            is SettingsUiEvent.OnShowLocalBackupDialog -> {
+                _uiState.update { it.copy(showLocalBackupDialog = event.show) }
+            }
+            is SettingsUiEvent.OnLocalBackupSensitiveChange -> {
+                _uiState.update { it.copy(localBackupIncludeSensitive = event.include) }
+            }
+            is SettingsUiEvent.OnExportLocalBackup -> {
+                exportLocalBackup(event.uri)
+            }
+            is SettingsUiEvent.OnImportLocalBackup -> {
+                importLocalBackup(event.uri)
+            }
+            is SettingsUiEvent.OnConfirmLocalImport -> {
+                confirmLocalImport()
+            }
+            is SettingsUiEvent.OnCancelLocalImport -> {
+                _uiState.update { it.copy(pendingImportBackup = null) }
+            }
+        }
+    }
+
+    private fun exportLocalBackup(uri: Uri) {
+        if (_uiState.value.isLocalBackupBusy) return
+        val includeSensitive = _uiState.value.localBackupIncludeSensitive
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocalBackupBusy = true) }
+            try {
+                val backup = syncManager.createBackupSnapshot(includeSensitive)
+                val payload = syncManager.encodeBackup(backup)
+                withContext(Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri)?.use { stream ->
+                        stream.write(payload.toByteArray(Charsets.UTF_8))
+                    } ?: throw IOException("Cannot open output stream")
+                }
+                _uiState.update {
+                    it.copy(
+                        isLocalBackupBusy = false,
+                        userMessage = R.string.settings_local_backup_exported
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLocalBackupBusy = false,
+                        userMessage = R.string.settings_local_backup_export_failed
+                    )
+                }
+            }
+        }
+    }
+
+    private fun importLocalBackup(uri: Uri) {
+        if (_uiState.value.isLocalBackupBusy) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocalBackupBusy = true) }
+            try {
+                val raw = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { stream ->
+                        stream.readBytes().toString(Charsets.UTF_8)
+                    } ?: throw IOException("Cannot open input stream")
+                }
+                val backup = syncManager.decodeBackup(raw)
+                _uiState.update {
+                    it.copy(isLocalBackupBusy = false, pendingImportBackup = backup)
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLocalBackupBusy = false,
+                        userMessage = R.string.settings_local_backup_import_failed
+                    )
+                }
+            }
+        }
+    }
+
+    private fun confirmLocalImport() {
+        val backup = _uiState.value.pendingImportBackup ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocalBackupBusy = true, pendingImportBackup = null) }
+            try {
+                syncManager.restoreBackupSnapshot(backup, syncSensitive = backup.includesSensitive)
+                val updated = loadSettings()
+                _uiState.update {
+                    updated.copy(
+                        isLocalBackupBusy = false,
+                        showLocalBackupDialog = false,
+                        userMessage = R.string.settings_local_backup_imported,
+                        refreshKey = System.currentTimeMillis()
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLocalBackupBusy = false,
+                        userMessage = R.string.settings_local_backup_import_failed
+                    )
+                }
             }
         }
     }

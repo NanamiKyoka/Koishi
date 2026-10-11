@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import android.os.Build
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.DeleteSweep
@@ -58,6 +59,8 @@ import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.theme.ThemeMode
 import com.nanami.koishi.core.designsystem.theme.isDarkTheme
 import com.nanami.koishi.feature.settings.components.AppThemePicker
+import com.nanami.koishi.feature.settings.components.LocalBackupDialog
+import com.nanami.koishi.feature.settings.components.LocalImportConfirmDialog
 import com.nanami.koishi.feature.settings.components.ThemeModeSelector
 import com.nanami.koishi.feature.settings.components.UpdateDialog
 import com.nanami.koishi.feature.settings.components.WebDavSyncDialog
@@ -155,6 +158,24 @@ fun SettingsScreen(
         )
     }
 
+    if (uiState.showLocalBackupDialog) {
+        LocalBackupDialog(
+            includeSensitive = uiState.localBackupIncludeSensitive,
+            busy = uiState.isLocalBackupBusy,
+            onIncludeSensitiveChange = { onEvent(SettingsUiEvent.OnLocalBackupSensitiveChange(it)) },
+            onExport = { onEvent(SettingsUiEvent.OnExportLocalBackup(it)) },
+            onImport = { onEvent(SettingsUiEvent.OnImportLocalBackup(it)) },
+            onDismiss = { onEvent(SettingsUiEvent.OnShowLocalBackupDialog(false)) }
+        )
+    }
+
+    if (uiState.pendingImportBackup != null) {
+        LocalImportConfirmDialog(
+            onConfirm = { onEvent(SettingsUiEvent.OnConfirmLocalImport) },
+            onDismiss = { onEvent(SettingsUiEvent.OnCancelLocalImport) }
+        )
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -226,6 +247,13 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_webdav_sync),
                     subtitle = stringResource(R.string.settings_webdav_sync_desc),
                     onClick = { onEvent(SettingsUiEvent.OnShowWebDavDialog(true)) }
+                )
+
+                SettingsClickableItem(
+                    icon = Icons.Rounded.Backup,
+                    title = stringResource(R.string.settings_local_backup),
+                    subtitle = stringResource(R.string.settings_local_backup_desc),
+                    onClick = { onEvent(SettingsUiEvent.OnShowLocalBackupDialog(true)) }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

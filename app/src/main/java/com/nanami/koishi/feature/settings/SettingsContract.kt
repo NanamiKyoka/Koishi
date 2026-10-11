@@ -1,8 +1,10 @@
 package com.nanami.koishi.feature.settings
 
+import android.net.Uri
 import androidx.annotation.StringRes
 import com.nanami.koishi.R
 import com.nanami.koishi.core.data.sync.WebDavConfig
+import com.nanami.koishi.core.data.sync.model.KoishiBackup
 import com.nanami.koishi.core.designsystem.theme.AppTheme
 import com.nanami.koishi.core.designsystem.theme.ThemeMode
 
@@ -57,6 +59,10 @@ data class SettingsUiState(
     val dataSizeBytes: Long = 0L,
     val isClearingCache: Boolean = false,
     val showClearCacheDialog: Boolean = false,
+    val showLocalBackupDialog: Boolean = false,
+    val localBackupIncludeSensitive: Boolean = false,
+    val isLocalBackupBusy: Boolean = false,
+    val pendingImportBackup: KoishiBackup? = null,
     val refreshKey: Long = 0L
 )
 
@@ -81,4 +87,10 @@ sealed interface SettingsUiEvent {
     data object OnRefreshStorageUsage : SettingsUiEvent
     data object OnClearCache : SettingsUiEvent
     data class OnShowClearCacheDialog(val show: Boolean) : SettingsUiEvent
+    data class OnShowLocalBackupDialog(val show: Boolean) : SettingsUiEvent
+    data class OnLocalBackupSensitiveChange(val include: Boolean) : SettingsUiEvent
+    data class OnExportLocalBackup(val uri: Uri) : SettingsUiEvent
+    data class OnImportLocalBackup(val uri: Uri) : SettingsUiEvent
+    data object OnConfirmLocalImport : SettingsUiEvent
+    data object OnCancelLocalImport : SettingsUiEvent
 }
