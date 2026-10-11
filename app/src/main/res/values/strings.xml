@@ -21,7 +21,7 @@
     <string name="category_image_apps">图片应用</string>
     <string name="category_file_apps">文件应用</string>
     <string name="category_device_apps">设备应用</string>
-    <string name="category_calculation">计算工具</string>
+    <string name="category_calculation">计算应用</string>
     <string name="category_query">查询应用</string>
     <string name="category_other">其他应用</string>
     <string name="tools_count_summary">共 %1$d 个工具</string>
