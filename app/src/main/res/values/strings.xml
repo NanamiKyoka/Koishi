@@ -158,6 +158,15 @@
     <string name="mode_prefix">模式: </string>
     <string name="select_mode">选择模式</string>
     <string name="preview_image">预览图片</string>
+    <string name="image_preview_title">图片预览</string>
+    <string name="image_preview_close">关闭预览</string>
+    <string name="image_preview_save">保存到相册</string>
+    <string name="image_preview_saved">已保存到相册</string>
+    <string name="image_preview_save_failed">保存失败</string>
+    <string name="image_preview_share">分享</string>
+    <string name="image_preview_share_failed">分享失败</string>
+    <string name="image_preview_load_failed">无法加载图片</string>
+    <string name="image_preview_share_chooser">分享图片</string>
     <string name="btn_obfuscate">混淆</string>
     <string name="btn_deobfuscate">解混淆</string>
     <string name="btn_remove">移除</string>
@@ -1061,6 +1070,9 @@
     <string name="color_picker_format_argb">ARGB</string>
     <string name="color_picker_format_compose">Compose Color</string>
     <string name="color_picker_format_xml">Android XML</string>
+    <string name="classic_color_picker_hue">色相 (Hue)</string>
+    <string name="classic_color_picker_alpha">透明度 (Alpha)</string>
+    <string name="classic_color_picker_hex_label">十六进制色彩代码</string>
 
     <!-- Postal Code Tool -->
     <string name="tool_postal_code_name">邮编查询</string>
@@ -1174,6 +1186,8 @@
     <string name="worth_section_schedule">工时与考勤</string>
     <string name="worth_input_work_days">每周工作天数</string>
     <string name="worth_input_wfh_days">每周远程天数</string>
+    <string name="worth_unit_day_per_week">天/周</string>
+    <string name="worth_unit_day">天</string>
     <string name="worth_input_annual_leave">年假天数</string>
     <string name="worth_input_public_holidays">法定节假日</string>
     <string name="worth_input_paid_sick_leave">带薪病假</string>

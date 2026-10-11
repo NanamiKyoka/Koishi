@@ -1,7 +1,9 @@
 package com.nanami.koishi.core.image.preview
 
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -36,6 +38,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,18 +64,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.nanami.koishi.R
+import com.nanami.koishi.core.data.cache.TempImageStore
 import com.nanami.koishi.core.util.AlbumFolders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -92,7 +99,7 @@ import kotlin.math.min
 fun ImagePreviewDialog(
     images: List<Any>,
     initialIndex: Int = 0,
-    title: String = "图片预览",
+    title: String? = null,
     albumFolder: String = AlbumFolders.ROOT,
     showSaveButton: Boolean = true,
     onIndexChanged: ((Int) -> Unit)? = null,
@@ -104,6 +111,7 @@ fun ImagePreviewDialog(
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val resolvedTitle = title ?: stringResource(R.string.image_preview_title)
     val safeInitialIndex = initialIndex.coerceIn(0, images.size - 1)
     val pagerState = rememberPagerState(initialPage = safeInitialIndex) { images.size }
 
@@ -180,7 +188,7 @@ fun ImagePreviewDialog(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
-                                contentDescription = "关闭预览",
+                                contentDescription = stringResource(R.string.image_preview_close),
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -189,9 +197,9 @@ fun ImagePreviewDialog(
                     Spacer(modifier = Modifier.size(12.dp))
 
                     val displayTitle = if (images.size > 1) {
-                        "$title (${pagerState.currentPage + 1} / ${images.size})"
+                        "$resolvedTitle (${pagerState.currentPage + 1} / ${images.size})"
                     } else {
-                        title
+                        resolvedTitle
                     }
 
                     Text(
@@ -215,7 +223,7 @@ fun ImagePreviewDialog(
                                         val success = saveItemToGallery(context, currentItem, albumFolder)
                                         Toast.makeText(
                                             context,
-                                            if (success) "已保存到相册" else "保存失败",
+                                            if (success) context.getString(R.string.image_preview_saved) else context.getString(R.string.image_preview_save_failed),
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -229,7 +237,40 @@ fun ImagePreviewDialog(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Rounded.Download,
-                                    contentDescription = "保存到相册",
+                                    contentDescription = stringResource(R.string.image_preview_save),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.size(12.dp))
+
+                        Surface(
+                            onClick = {
+                                val currentItem = images.getOrNull(pagerState.currentPage)
+                                if (currentItem != null) {
+                                    coroutineScope.launch {
+                                        val shareUri = buildShareUri(context, currentItem)
+                                        val shared = shareUri != null && launchShare(context, shareUri)
+                                        if (!shared) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.image_preview_share_failed),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }
+                            },
+                            shape = CircleShape,
+                            color = Color.Black.copy(alpha = 0.5f),
+                            contentColor = Color.White,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Share,
+                                    contentDescription = stringResource(R.string.image_preview_share),
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -267,7 +308,7 @@ fun ImagePreviewDialog(
 fun ImagePreviewDialog(
     bitmap: Bitmap? = null,
     uri: Uri? = null,
-    title: String = "图片预览",
+    title: String? = null,
     albumFolder: String = AlbumFolders.ROOT,
     showSaveButton: Boolean = true,
     onDismissRequest: () -> Unit
@@ -585,7 +626,7 @@ private fun ZoomableImagePage(
                 )
             } else {
                 Text(
-                    text = "无法加载图片",
+                    text = stringResource(R.string.image_preview_load_failed),
                     color = Color.White.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -751,3 +792,44 @@ private suspend fun saveItemToGallery(context: Context, item: Any, albumFolder: 
         false
     }
 }
+
+private suspend fun buildShareUri(context: Context, item: Any): Uri? = withContext(Dispatchers.IO) {
+    try {
+        when (item) {
+            is Bitmap -> writeShareFile(context, item, Bitmap.CompressFormat.PNG, "png")
+            is Uri -> item
+            is String -> {
+                val bitmap = decodeSampledBitmapFromUrl(context, item) ?: return@withContext null
+                writeShareFile(context, bitmap, Bitmap.CompressFormat.JPEG, "jpg")
+            }
+            else -> null
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+private fun writeShareFile(
+    context: Context,
+    bitmap: Bitmap,
+    format: Bitmap.CompressFormat,
+    extension: String
+): Uri {
+    val file = TempImageStore.newFile(context, "share", extension)
+    file.outputStream().use { bitmap.compress(format, 95, it) }
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+}
+
+private fun launchShare(context: Context, uri: Uri): Boolean = runCatching {
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/*"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    val chooser = Intent.createChooser(sendIntent, context.getString(R.string.image_preview_share_chooser))
+    if (context !is Activity) {
+        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(chooser)
+}.isSuccess
