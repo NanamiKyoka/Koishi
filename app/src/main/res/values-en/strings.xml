@@ -93,9 +93,8 @@
     <!-- App Update -->
     <string name="settings_check_update">Check for Updates</string>
     <string name="settings_check_update_desc">Check the latest GitHub Release</string>
-    <string name="update_dialog_checking">Checking for updates…</string>
-    <string name="update_dialog_latest_title">Up to Date</string>
-    <string name="update_dialog_latest_desc">Current version %1$s is the latest version</string>
+    <string name="settings_update_latest">You are on the latest version</string>
+    <string name="settings_update_failed">Failed to check for updates, please try again later</string>
     <string name="update_dialog_new_version_title">New Version Available</string>
     <string name="update_dialog_new_version_label">Version: %1$s</string>
     <string name="update_dialog_changelog">Changelog</string>

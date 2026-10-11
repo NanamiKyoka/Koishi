@@ -114,6 +114,9 @@ class SettingsViewModel(
             is SettingsUiEvent.OnInstallUpdate -> {
                 installUpdate(event.file)
             }
+            is SettingsUiEvent.OnDismissUpdateMessage -> {
+                _uiState.update { it.copy(updateMessage = null) }
+            }
         }
     }
 
@@ -204,12 +207,14 @@ class SettingsViewModel(
     }
 
     private fun checkForUpdate() {
+        if (_uiState.value.isCheckingUpdate) return
         viewModelScope.launch {
-            _uiState.update { it.copy(updateState = UpdateUiState.Checking) }
+            _uiState.update { it.copy(isCheckingUpdate = true) }
             when (val result = updateManager.checkForUpdate(BuildConfig.VERSION_NAME)) {
                 is UpdateCheckResult.NewVersion -> {
                     _uiState.update {
                         it.copy(
+                            isCheckingUpdate = false,
                             updateState = UpdateUiState.Available(
                                 release = result.release,
                                 matchedAsset = result.matchedAsset
@@ -219,11 +224,19 @@ class SettingsViewModel(
                 }
                 is UpdateCheckResult.AlreadyLatest -> {
                     _uiState.update {
-                        it.copy(updateState = UpdateUiState.Latest(result.currentVersion))
+                        it.copy(
+                            isCheckingUpdate = false,
+                            updateMessage = R.string.settings_update_latest
+                        )
                     }
                 }
                 is UpdateCheckResult.Unavailable -> {
-                    _uiState.update { it.copy(updateState = UpdateUiState.Idle) }
+                    _uiState.update {
+                        it.copy(
+                            isCheckingUpdate = false,
+                            updateMessage = R.string.settings_update_failed
+                        )
+                    }
                 }
             }
         }

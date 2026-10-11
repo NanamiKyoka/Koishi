@@ -23,8 +23,6 @@ sealed interface WebDavSyncUiState {
 
 sealed interface UpdateUiState {
     data object Idle : UpdateUiState
-    data object Checking : UpdateUiState
-    data class Latest(val currentVersion: String) : UpdateUiState
     data class Available(
         val release: com.nanami.koishi.core.data.update.AppRelease,
         val matchedAsset: com.nanami.koishi.core.data.update.ReleaseAsset?
@@ -53,6 +51,8 @@ data class SettingsUiState(
     val webDavConfig: WebDavConfig = WebDavConfig(),
     val webDavSyncState: WebDavSyncUiState = WebDavSyncUiState.Idle,
     val updateState: UpdateUiState = UpdateUiState.Idle,
+    val isCheckingUpdate: Boolean = false,
+    val updateMessage: Int? = null,
     val refreshKey: Long = 0L
 )
 
@@ -73,4 +73,5 @@ sealed interface SettingsUiEvent {
     data class OnInstallUpdate(val file: java.io.File) : SettingsUiEvent
     data object OnCancelDownload : SettingsUiEvent
     data object OnDismissUpdateDialog : SettingsUiEvent
+    data object OnDismissUpdateMessage : SettingsUiEvent
 }
