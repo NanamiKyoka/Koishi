@@ -19,6 +19,8 @@ import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerRoute
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
+import com.nanami.koishi.feature.tools.date_time_calculator.DateTimeCalculatorRoute
+import com.nanami.koishi.feature.tools.date_time_calculator.DateTimeCalculatorViewModel
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerRoute
 import com.nanami.koishi.feature.tools.decision_maker.DecisionMakerViewModel
 import com.nanami.koishi.feature.tools.grid_split.GridSplitRoute
@@ -112,6 +114,7 @@ fun KoishiNavHost(
                             "ruler" -> navController.navigate(RulerRoute)
                             "currency_converter" -> navController.navigate(CurrencyConverterRoute)
                             "unit_converter" -> navController.navigate(UnitConverterRoute)
+                            "date_time_calculator" -> navController.navigate(DateTimeCalculatorRoute)
                             "bmi_calculator" -> navController.navigate(BmiCalculatorRoute)
                             "worth_calculator" -> navController.navigate(WorthCalculatorRoute)
                             "postal_code" -> navController.navigate(PostalCodeRoute)
@@ -237,6 +240,14 @@ fun KoishiNavHost(
                 val unitConverterViewModel: UnitConverterViewModel = koinViewModel()
                 UnitConverterRoute(
                     viewModel = unitConverterViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<DateTimeCalculatorRoute> {
+                val dateTimeCalculatorViewModel: DateTimeCalculatorViewModel = koinViewModel()
+                DateTimeCalculatorRoute(
+                    viewModel = dateTimeCalculatorViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

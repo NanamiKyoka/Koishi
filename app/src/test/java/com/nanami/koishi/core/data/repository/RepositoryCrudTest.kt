@@ -163,6 +163,8 @@ class RepositoryCrudTest {
             Triple("decision_maker", ToolCategory.LIFE, true),
             Triple("ruler", ToolCategory.LIFE, true),
             Triple("currency_converter", ToolCategory.CALCULATION, true),
+            Triple("unit_converter", ToolCategory.CALCULATION, true),
+            Triple("date_time_calculator", ToolCategory.CALCULATION, true),
             Triple("bmi_calculator", ToolCategory.CALCULATION, true),
             Triple("worth_calculator", ToolCategory.CALCULATION, true),
             Triple("postal_code", ToolCategory.QUERY, true),

@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.BrandingWatermark
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.AutoFixHigh
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.Contrast
@@ -207,6 +208,15 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_unit_converter_name,
                 descriptionRes = R.string.tool_unit_converter_desc,
                 icon = Icons.Rounded.SwapHoriz,
+                category = ToolCategory.CALCULATION,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "date_time_calculator",
+                nameRes = R.string.tool_date_time_calculator_name,
+                descriptionRes = R.string.tool_date_time_calculator_desc,
+                icon = Icons.Rounded.CalendarMonth,
                 category = ToolCategory.CALCULATION,
                 isFavorite = false,
                 hasDot = true
