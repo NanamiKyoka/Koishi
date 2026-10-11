@@ -59,11 +59,15 @@ import com.nanami.koishi.feature.tools.decision_maker.engine.playableOptions
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.random.Random
 
 private const val POINTER_ANGLE = -90f
 private const val FULL_TURNS = 5
 private const val SLICE_GAP_DEGREES = 0.6f
 private const val MIN_LABEL_SWEEP_DEGREES = 8f
+private const val MIN_RANDOMIZABLE_SWEEP_DEGREES = 3f
+private const val LANDING_MIN_FRACTION = 0.15f
+private const val LANDING_MAX_FRACTION = 0.85f
 
 private val WHEEL_MAX_SIZE = 340.dp
 private val POINTER_OVERFLOW = 26.dp
@@ -130,7 +134,12 @@ fun DecisionWheel(
         if (index < 0) return@LaunchedEffect
 
         val slice = slices[index]
-        val target = nextTarget(rotation.value, POINTER_ANGLE - (slice.startAngle + slice.sweep / 2f))
+        val landingAngle = randomizedLandingAngle(
+            startAngle = slice.startAngle,
+            sweep = slice.sweep,
+            randomValue = Random.nextFloat()
+        )
+        val target = nextTarget(rotation.value, POINTER_ANGLE - landingAngle)
         var lastTick = -1
 
         rotation.animateTo(
@@ -473,7 +482,21 @@ private fun normalizeDegrees(value: Float): Float {
     return if (mod < 0f) mod + 360f else mod
 }
 
-private fun nextTarget(currentRotation: Float, desiredAngle: Float): Float {
+internal fun randomizedLandingAngle(
+    startAngle: Float,
+    sweep: Float,
+    randomValue: Float
+): Float {
+    val fraction = if (sweep < MIN_RANDOMIZABLE_SWEEP_DEGREES) {
+        0.5f
+    } else {
+        LANDING_MIN_FRACTION + randomValue.coerceIn(0f, 1f) *
+            (LANDING_MAX_FRACTION - LANDING_MIN_FRACTION)
+    }
+    return startAngle + sweep * fraction
+}
+
+internal fun nextTarget(currentRotation: Float, desiredAngle: Float): Float {
     var delta = normalizeDegrees(desiredAngle) - normalizeDegrees(currentRotation)
     if (delta <= 0f) delta += 360f
     return currentRotation + delta + 360f * FULL_TURNS
