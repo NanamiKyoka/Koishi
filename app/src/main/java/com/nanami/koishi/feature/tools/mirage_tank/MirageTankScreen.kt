@@ -93,6 +93,7 @@ import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
+import com.nanami.koishi.core.image.picker.ImageSourceCard
 import com.nanami.koishi.core.image.preview.ImagePreviewDialog
 import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankMode
@@ -259,7 +260,8 @@ fun MirageTankScreen(
                     title = stringResource(R.string.mirage_tank_front_image),
                     subTitle = stringResource(R.string.mirage_tank_front_image_desc),
                     badgeColor = MaterialTheme.colorScheme.primary,
-                    imageItem = state.frontImage,
+                    bitmap = state.frontImage?.bitmap,
+                    placeholderText = stringResource(R.string.mirage_tank_tap_to_pick),
                     onPick = {
                         frontPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     },
@@ -271,7 +273,8 @@ fun MirageTankScreen(
                     title = stringResource(R.string.mirage_tank_back_image),
                     subTitle = stringResource(R.string.mirage_tank_back_image_desc),
                     badgeColor = MaterialTheme.colorScheme.tertiary,
-                    imageItem = state.backImage,
+                    bitmap = state.backImage?.bitmap,
+                    placeholderText = stringResource(R.string.mirage_tank_tap_to_pick),
                     onPick = {
                         backPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     },
@@ -677,111 +680,6 @@ fun MirageTankScreen(
 }
 
 @Composable
-private fun ImageSourceCard(
-    title: String,
-    subTitle: String,
-    badgeColor: Color,
-    imageItem: MirageTankImageItem?,
-    onPick: () -> Unit,
-    onClear: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = ToolCardShape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = badgeColor
-                )
-                if (imageItem != null) {
-                    IconButton(
-                        onClick = onClear,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = stringResource(R.string.grid_split_clear_image),
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-
-            Text(
-                text = subTitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1.1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .clickable { onPick() },
-                contentAlignment = Alignment.Center
-            ) {
-                if (imageItem != null) {
-                    Image(
-                        bitmap = imageItem.bitmap.asImageBitmap(),
-                        contentDescription = title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.AddPhotoAlternate,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.mirage_tank_tap_to_pick),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            if (imageItem != null) {
-                Text(
-                    text = "${imageItem.width}×${imageItem.height}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun ParameterSlider(
     label: String,
     value: Float,
@@ -940,7 +838,8 @@ private fun RevealPanel(
             title = stringResource(R.string.mirage_tank_source_image),
             subTitle = stringResource(R.string.mirage_tank_source_desc),
             badgeColor = MaterialTheme.colorScheme.primary,
-            imageItem = state.sourceImage,
+            bitmap = state.sourceImage?.bitmap,
+            placeholderText = stringResource(R.string.mirage_tank_tap_to_pick),
             onPick = onPickSource,
             onClear = { onEvent(MirageTankUiEvent.OnClearSourceImage) },
             modifier = Modifier.fillMaxWidth(0.5f)

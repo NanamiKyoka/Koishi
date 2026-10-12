@@ -25,8 +25,6 @@ class PrismTankContractTest {
         assertNull(state.userMessage)
         assertFalse(state.hasBothImages)
         assertFalse(state.canSave)
-        assertFalse(state.canReveal)
-        assertFalse(state.canSaveRevealed)
         assertFalse(state.isProcessing)
         assertFalse(state.isSaving)
 

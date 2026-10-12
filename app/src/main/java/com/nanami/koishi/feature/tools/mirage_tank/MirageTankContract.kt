@@ -85,12 +85,6 @@ data class MirageTankUiState(
         get() = resultBitmap != null && !isProcessing && !isSaving
 
     /**
-     * 是否可以执行还原操作
-     */
-    val canReveal: Boolean
-        get() = sourceImage != null && !isProcessing
-
-    /**
      * 是否已还原出表图或里图
      */
     val hasRevealed: Boolean

@@ -41,11 +41,6 @@ data class PrismTankUiState(
     val canSave: Boolean
         get() = resultBitmap != null && !isProcessing && !isSaving
 
-    val canReveal: Boolean
-        get() = sourceImage != null && !isProcessing
-
-    val canSaveRevealed: Boolean
-        get() = (revealedInner != null || revealedCover != null) && !isSaving
 
     companion object {
         const val MIN_EXPOSURE_GAIN = 1f
