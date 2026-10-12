@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.Difference
 import androidx.compose.material.icons.rounded.EmojiEmotions
 import androidx.compose.material.icons.rounded.FindReplace
 import androidx.compose.material.icons.rounded.Fingerprint
+import androidx.compose.material.icons.rounded.Flare
 import androidx.compose.material.icons.rounded.Gif
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.GridView
@@ -78,6 +79,14 @@ class InMemoryToolRepository : ToolRepository {
                 nameRes = R.string.tool_mirage_tank_name,
                 descriptionRes = R.string.tool_mirage_tank_desc,
                 icon = Icons.Rounded.Contrast,
+                category = ToolCategory.IMAGE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),            ToolItem(
+                id = "prism_tank",
+                nameRes = R.string.tool_prism_tank_name,
+                descriptionRes = R.string.tool_prism_tank_desc,
+                icon = Icons.Rounded.Flare,
                 category = ToolCategory.IMAGE_APPS,
                 isFavorite = false,
                 hasDot = true

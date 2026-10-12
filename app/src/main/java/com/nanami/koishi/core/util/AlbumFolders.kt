@@ -15,6 +15,8 @@ object AlbumFolders {
 
     const val MIRAGE_TANK = "$ROOT/MirageTank"
 
+    const val PRISM_TANK = "$ROOT/PrismTank"
+
     const val WATERMARK = "$ROOT/Watermark"
 
     const val QR_CODE = "$ROOT/QrCode"

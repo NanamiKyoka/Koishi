@@ -42,15 +42,14 @@ object PrismTankEngine {
                 val fromCover = isCoverPixel(x, y, params)
                 val pixel = if (fromCover) coverPixels[index] else innerPixels[index]
                 val luma = luma(pixel)
-                val contrast = if (fromCover) params.coverContrast else params.innerContrast
                 val gray = if (fromCover) params.isCoverGray else params.isInnerGray
                 val threshold = if (fromCover) coverThreshold else innerThreshold
 
                 output[index] = toArgb(
                     255,
-                    scaleChannel(channel(getRed(pixel), luma, gray), contrast, threshold, fromCover, params.isReverse),
-                    scaleChannel(channel(getGreen(pixel), luma, gray), contrast, threshold, fromCover, params.isReverse),
-                    scaleChannel(channel(getBlue(pixel), luma, gray), contrast, threshold, fromCover, params.isReverse)
+                    scaleChannel(channel(getRed(pixel), luma, gray), threshold, fromCover, params.isReverse),
+                    scaleChannel(channel(getGreen(pixel), luma, gray), threshold, fromCover, params.isReverse),
+                    scaleChannel(channel(getBlue(pixel), luma, gray), threshold, fromCover, params.isReverse)
                 )
             }
         }
@@ -143,18 +142,6 @@ object PrismTankEngine {
         return output
     }
 
-    fun applyExposurePixels(pixels: IntArray, gain: Float): IntArray {
-        val safeGain = gain.coerceAtLeast(0f)
-        return IntArray(pixels.size) { index ->
-            val pixel = pixels[index]
-            toArgb(
-                getAlpha(pixel),
-                (getRed(pixel) * safeGain).roundToInt().coerceIn(0, 255),
-                (getGreen(pixel) * safeGain).roundToInt().coerceIn(0, 255),
-                (getBlue(pixel) * safeGain).roundToInt().coerceIn(0, 255)
-            )
-        }
-    }
 
     private fun inpaint(output: IntArray, resolved: BooleanArray, width: Int, height: Int) {
         var pass = 0
@@ -202,19 +189,12 @@ object PrismTankEngine {
     private fun channel(value: Int, luma: Float, gray: Boolean): Float =
         if (gray) luma else value.toFloat()
 
-    private fun scaleChannel(
-        value: Float,
-        contrast: Float,
-        threshold: Int,
-        fromCover: Boolean,
-        reverse: Boolean
-    ): Int {
-        val adjusted = adjustContrast(value, contrast)
+    private fun scaleChannel(value: Float, threshold: Int, fromCover: Boolean, reverse: Boolean): Int {
         val scaled = when {
-            reverse && fromCover -> adjusted * (255 - threshold) / 255f
-            reverse -> 255 - threshold + adjusted * threshold / 255f
-            fromCover -> threshold + adjusted * (255 - threshold) / 255f
-            else -> adjusted * threshold / 255f
+            reverse && fromCover -> value * (255 - threshold) / 255f
+            reverse -> 255 - threshold + value * threshold / 255f
+            fromCover -> threshold + value * (255 - threshold) / 255f
+            else -> value * threshold / 255f
         }
         return scaled.roundToInt().coerceIn(0, 255)
     }
@@ -233,7 +213,7 @@ object PrismTankEngine {
         adjustContrast((value - lower) * 255f / span, contrast).roundToInt().coerceIn(0, 255)
 
     private fun adjustContrast(value: Float, contrast: Float): Float {
-        val factor = contrast.coerceIn(PrismTankParams.MIN_CONTRAST, PrismTankParams.MAX_CONTRAST)
+        val factor = contrast.coerceIn(PrismTankRevealConfig.MIN_CONTRAST, PrismTankRevealConfig.MAX_CONTRAST)
         return ((value - 127.5f) * factor + 127.5f).coerceIn(0f, 255f)
     }
 

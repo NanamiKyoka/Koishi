@@ -5,15 +5,13 @@ import kotlinx.serialization.Serializable
 /**
  * 光棱坦克合成参数
  *
- * [innerThreshold] 为里图亮度压缩上限，[coverThreshold] 为表图亮度下限，
- * 两段区间不得重叠，否则里图会在正常亮度下显形。
+ * [innerThreshold] 为里图亮度压缩上限，[coverThreshold] 为表图亮度下限，两段区间
+ * 不重叠时里图才会完全藏进暗部。
  */
 @Serializable
 data class PrismTankParams(
     val innerThreshold: Int = DEFAULT_INNER_THRESHOLD,
     val coverThreshold: Int = DEFAULT_COVER_THRESHOLD,
-    val innerContrast: Float = DEFAULT_CONTRAST,
-    val coverContrast: Float = DEFAULT_CONTRAST,
     val isInnerGray: Boolean = false,
     val isCoverGray: Boolean = true,
     val isReverse: Boolean = false,
@@ -30,14 +28,11 @@ data class PrismTankParams(
     companion object {
         const val DEFAULT_INNER_THRESHOLD = 24
         const val DEFAULT_COVER_THRESHOLD = 42
-        const val DEFAULT_CONTRAST = 1f
         const val DEFAULT_SLOPE = 1
         const val DEFAULT_GAP = 1
 
         const val MIN_THRESHOLD = 1
-        const val MAX_THRESHOLD = 180
-        const val MIN_CONTRAST = 0.5f
-        const val MAX_CONTRAST = 1.5f
+        const val MAX_THRESHOLD = 200
         const val MIN_SLOPE = 1
         const val MAX_SLOPE = 4
         const val MIN_GAP = 1
@@ -59,22 +54,26 @@ enum class PrismTankFill {
 /**
  * 光棱坦克还原参数
  *
- * 落在 [lowerThreshold, higherThreshold] 区间内的像素视为里图，线性拉伸回 0..255。
+ * 亮度落在 [lowerThreshold, higherThreshold] 区间内的像素视为里图，线性拉伸回 0..255。
  */
 @Serializable
 data class PrismTankRevealConfig(
-    val lowerThreshold: Int = 0,
+    val lowerThreshold: Int = MIN_LOWER_THRESHOLD,
     val higherThreshold: Int = PrismTankParams.DEFAULT_INNER_THRESHOLD,
-    val contrast: Float = PrismTankParams.DEFAULT_CONTRAST,
+    val contrast: Float = DEFAULT_CONTRAST,
     val fill: PrismTankFill = PrismTankFill.NEIGHBOR_AVG
 ) {
     val usableLower: Int
-        get() = lowerThreshold.coerceIn(0, MAX_THRESHOLD)
+        get() = lowerThreshold.coerceIn(MIN_LOWER_THRESHOLD, MAX_THRESHOLD - 1)
 
     val usableUpper: Int
         get() = higherThreshold.coerceIn(usableLower + 1, MAX_THRESHOLD)
 
     companion object {
+        const val MIN_LOWER_THRESHOLD = 0
         const val MAX_THRESHOLD = 255
+        const val DEFAULT_CONTRAST = 1f
+        const val MIN_CONTRAST = 0.5f
+        const val MAX_CONTRAST = 1.5f
     }
 }

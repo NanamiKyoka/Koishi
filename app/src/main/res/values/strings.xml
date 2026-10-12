@@ -181,6 +181,7 @@
     <string name="mode_prefix">模式: </string>
     <string name="select_mode">选择模式</string>
     <string name="preview_image">预览图片</string>
+    <string name="image_source_clear">清除图片</string>
     <string name="image_preview_title">图片预览</string>
     <string name="image_preview_close">关闭预览</string>
     <string name="image_preview_save">保存到相册</string>
@@ -478,6 +479,76 @@
     <string name="mirage_tank_help_p1">【什么是幻影坦克？】利用 PNG 图片的透明通道 (Alpha Channel)，同一张图片在浅色（白底）与深色（黑底）背景下会混合出完全不同的色彩与内容，类似《红色警戒》中隐藏伪装的幻影坦克。</string>
     <string name="mirage_tank_help_p2">【选图建议】表图建议选择线条分明、整体偏亮或纯白底的图片；里图建议选择主体清晰、整体偏暗的图片。表里两图的反差越大，在黑白背景下各自的显隐效果越惊艳。</string>
     <string name="mirage_tank_help_p3">【调参技巧】若在黑底模式下仍能看到表图轮廓，可适当提高表图亮度或调低里图亮度；对于彩色模式，开启“棋盘格空间调和”可有效利用人眼空间视觉平滑通道溢出，提升色彩保真度。</string>
+
+    <!-- Mirage Tank Reveal -->
+    <string name="mirage_tank_tab_create">制作</string>
+    <string name="mirage_tank_tab_reveal">还原</string>
+    <string name="mirage_tank_source_image">待还原图片</string>
+    <string name="mirage_tank_source_desc">选择带透明通道的幻影坦克 PNG</string>
+    <string name="mirage_tank_result_front">表图（白底）</string>
+    <string name="mirage_tank_result_back">里图（黑底）</string>
+    <string name="mirage_tank_save_front">保存表图</string>
+    <string name="mirage_tank_save_back">保存里图</string>
+    <string name="mirage_tank_front_saved">表图已保存至相册 (Pictures/Koishi/MirageTank)</string>
+    <string name="mirage_tank_back_saved">里图已保存至相册 (Pictures/Koishi/MirageTank)</string>
+    <string name="mirage_tank_no_alpha">这张图片没有透明通道，可能不是幻影坦克图，或已被压平压缩</string>
+    <string name="mirage_tank_no_source">请先选择待还原图片</string>
+
+    <!-- Prism Tank Tool -->
+    <string name="tool_prism_tank_name">光棱坦克</string>
+    <string name="tool_prism_tank_desc">亮度分层加斜纹交织藏入里图，调高亮度与曝光即可让里图显影</string>
+    <string name="prism_tank_title">光棱坦克</string>
+    <string name="prism_tank_tab_create">制作</string>
+    <string name="prism_tank_tab_reveal">还原</string>
+    <string name="prism_tank_inner_image">里图（藏进暗部）</string>
+    <string name="prism_tank_inner_image_desc">建议选择主体清晰、细节丰富的画面</string>
+    <string name="prism_tank_cover_image">表图（正常可见）</string>
+    <string name="prism_tank_cover_image_desc">建议选择整体明亮的画面</string>
+    <string name="prism_tank_tap_to_pick">点击选取图片</string>
+    <string name="prism_tank_swap_images">互换表里图</string>
+    <string name="prism_tank_params">条纹与亮度参数</string>
+    <string name="prism_tank_inner_threshold">里图亮度上限</string>
+    <string name="prism_tank_cover_threshold">表图亮度下限</string>
+    <string name="prism_tank_gap">条纹间隔</string>
+    <string name="prism_tank_slope">条纹斜率</string>
+    <string name="prism_tank_inner_gray">里图转灰度</string>
+    <string name="prism_tank_cover_gray">表图转灰度</string>
+    <string name="prism_tank_reverse">反向模式（调暗显影）</string>
+    <string name="prism_tank_reset_params">重置参数</string>
+    <string name="prism_tank_preview_title">效果预览</string>
+    <string name="prism_tank_exposure">曝光增益</string>
+    <string name="prism_tank_exposure_hint">向右拖动曝光，模拟在相册里调亮查看里图</string>
+    <string name="prism_tank_hint_pick_both">请先分别选取里图与表图</string>
+    <string name="prism_tank_hint_pick_source">请先选择待还原图片</string>
+    <string name="prism_tank_hint_ready">已就绪，拖动曝光即可预览显影效果</string>
+    <string name="prism_tank_generate">合成图片</string>
+    <string name="prism_tank_save_lossless">保存无损 PNG</string>
+    <string name="prism_tank_source_image">待还原图片</string>
+    <string name="prism_tank_source_desc">选择光棱坦克图片</string>
+    <string name="prism_tank_reveal_band">里图亮度区间</string>
+    <string name="prism_tank_reveal_lower">区间下限</string>
+    <string name="prism_tank_reveal_upper">区间上限</string>
+    <string name="prism_tank_reveal_contrast">还原对比度</string>
+    <string name="prism_tank_reveal_fill">表图像素填充</string>
+    <string name="prism_tank_fill_black">纯黑</string>
+    <string name="prism_tank_fill_white">纯白</string>
+    <string name="prism_tank_fill_transparent">透明</string>
+    <string name="prism_tank_fill_neighbor">邻域填充</string>
+    <string name="prism_tank_result_inner">还原里图</string>
+    <string name="prism_tank_result_cover">还原表图</string>
+    <string name="prism_tank_save_inner">保存里图</string>
+    <string name="prism_tank_save_cover">保存表图</string>
+    <string name="prism_tank_saved_success">已成功保存无损 PNG 至相册 (Pictures/Koishi/PrismTank)</string>
+    <string name="prism_tank_inner_saved">里图已保存至相册 (Pictures/Koishi/PrismTank)</string>
+    <string name="prism_tank_cover_saved">表图已保存至相册 (Pictures/Koishi/PrismTank)</string>
+    <string name="prism_tank_save_failed">保存图片至相册失败</string>
+    <string name="prism_tank_load_failed">图片加载失败</string>
+    <string name="prism_tank_process_failed">处理失败，请重试</string>
+    <string name="prism_tank_no_result_to_save">尚未生成结果</string>
+    <string name="prism_tank_help_title">光棱坦克原理解析与技巧</string>
+    <string name="prism_tank_help_p1">【什么是光棱坦克？】把里图压进最暗的色阶、表图放在亮部，再按斜向细纹逐像素交错织在一起。正常观看时只能看到表图；在相册里调高亮度与曝光后，表图过曝为白，里图便从暗部显影。</string>
+    <string name="prism_tank_help_p2">【怎么查看？】光棱坦克不是加密，任何人调亮都能看到。要调的是图片的亮度／曝光而不是屏幕亮度；缩略图、二次压缩与截图都会破坏一像素宽的细纹，务必使用原图查看。</string>
+    <string name="prism_tank_help_p3">【调参建议】里图亮度上限越低藏得越深，但显影后色阶也越少；条纹间隔越大里图越稀疏、还原越模糊。想还原别人发来的图片，可切到「还原」页调整亮度区间。</string>
 
     <!-- Watermark Tool -->
     <string name="tool_watermark_name">水印图</string>

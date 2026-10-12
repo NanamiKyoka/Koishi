@@ -21,6 +21,7 @@ import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.noise_meter.NoiseMeterViewModel
 import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
+import com.nanami.koishi.feature.tools.prism_tank.PrismTankViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
 import com.nanami.koishi.feature.tools.video_to_gif.VideoToGifViewModel
@@ -50,6 +51,7 @@ val viewModelModule = module {
     viewModel { MemeMakerViewModel(get(), get(), get()) }
     viewModel { MiniAppsViewModel(get(), get()) }
     viewModel { MirageTankViewModel(get()) }
+    viewModel { PrismTankViewModel(get(), get()) }
     viewModel { NoiseMeterViewModel(get(), get(), get()) }
     viewModel { PostalCodeViewModel(get(), get(), get(), get()) }
     viewModel { QrToolViewModel(get()) }

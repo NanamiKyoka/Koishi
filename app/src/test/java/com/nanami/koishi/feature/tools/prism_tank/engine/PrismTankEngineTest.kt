@@ -176,22 +176,6 @@ class PrismTankEngineTest {
         }
     }
 
-    @Test
-    fun applyExposure_brightensDarkPixelsAndClipsBrightOnes() {
-        val pixels = intArrayOf(
-            packArgb(255, 0, 0, 0),
-            packArgb(255, 20, 20, 20),
-            packArgb(255, 128, 128, 128),
-            packArgb(255, 255, 255, 255)
-        )
-
-        val exposed = PrismTankEngine.applyExposurePixels(pixels, gain = 10f)
-
-        assertEquals(packArgb(255, 0, 0, 0), exposed[0])
-        assertEquals(packArgb(255, 200, 200, 200), exposed[1])
-        assertEquals(packArgb(255, 255, 255, 255), exposed[2])
-        assertEquals(packArgb(255, 255, 255, 255), exposed[3])
-    }
 
     @Test
     fun encode_respectsGapPattern() {

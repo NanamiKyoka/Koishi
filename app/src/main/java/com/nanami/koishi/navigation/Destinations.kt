@@ -52,6 +52,11 @@ data object ImageSearchRoute
  */
 @Serializable
 data object MirageTankRoute
+/**
+ * 光棱坦克小工具强类型路由
+ */
+@Serializable
+data object PrismTankRoute
 
 /**
  * 水印图独立小工具强类型路由

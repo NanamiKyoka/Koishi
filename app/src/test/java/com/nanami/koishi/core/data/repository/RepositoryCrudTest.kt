@@ -149,6 +149,7 @@ class RepositoryCrudTest {
             Triple("grid_split", ToolCategory.IMAGE_APPS, true),
             Triple("image_obfuscation", ToolCategory.IMAGE_APPS, false),
             Triple("mirage_tank", ToolCategory.IMAGE_APPS, true),
+            Triple("prism_tank", ToolCategory.IMAGE_APPS, true),
             Triple("qr_code", ToolCategory.IMAGE_APPS, false),
             Triple("image_search", ToolCategory.IMAGE_APPS, true),
             Triple("watermark", ToolCategory.IMAGE_APPS, true),

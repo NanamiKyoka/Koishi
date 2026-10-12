@@ -181,6 +181,7 @@
     <string name="mode_prefix">Mode: </string>
     <string name="select_mode">Select mode</string>
     <string name="preview_image">Preview</string>
+    <string name="image_source_clear">Clear image</string>
     <string name="image_preview_title">Image Preview</string>
     <string name="image_preview_close">Close preview</string>
     <string name="image_preview_save">Save to gallery</string>
@@ -477,6 +478,76 @@
     <string name="mirage_tank_help_p1">[What is Mirage Tank?] By controlling PNG Alpha transparency, a single picture renders distinct visuals when blended against light (white) vs. dark (black) background platforms.</string>
     <string name="mirage_tank_help_p2">[Selection Tips] Front image is recommended to be clean, line-defined or light-toned; Back image is recommended to be deeper or dark-toned. Greater contrast yields superior disguise.</string>
     <string name="mirage_tank_help_p3">[Tuning Tips] If the front image bleeds into dark backgrounds, increase front lightness or lower back lightness. Enable Checkerboard Blending in color mode for better color fidelity.</string>
+
+    <!-- Mirage Tank Reveal -->
+    <string name="mirage_tank_tab_create">Create</string>
+    <string name="mirage_tank_tab_reveal">Reveal</string>
+    <string name="mirage_tank_source_image">Tank Image</string>
+    <string name="mirage_tank_source_desc">Pick a mirage tank PNG with an alpha channel</string>
+    <string name="mirage_tank_result_front">Front Image (White Bg)</string>
+    <string name="mirage_tank_result_back">Back Image (Black Bg)</string>
+    <string name="mirage_tank_save_front">Save Front Image</string>
+    <string name="mirage_tank_save_back">Save Back Image</string>
+    <string name="mirage_tank_front_saved">Front image saved to gallery (Pictures/Koishi/MirageTank)</string>
+    <string name="mirage_tank_back_saved">Back image saved to gallery (Pictures/Koishi/MirageTank)</string>
+    <string name="mirage_tank_no_alpha">This image has no alpha channel; it may not be a mirage tank image, or it was flattened by re-compression</string>
+    <string name="mirage_tank_no_source">Pick a tank image first</string>
+
+    <!-- Prism Tank Tool -->
+    <string name="tool_prism_tank_name">Prism Tank</string>
+    <string name="tool_prism_tank_desc">Hide an inner image in a dark brightness band with diagonal stripes; raise brightness and exposure to reveal it</string>
+    <string name="prism_tank_title">Prism Tank</string>
+    <string name="prism_tank_tab_create">Create</string>
+    <string name="prism_tank_tab_reveal">Reveal</string>
+    <string name="prism_tank_inner_image">Inner Image (Hidden)</string>
+    <string name="prism_tank_inner_image_desc">A detailed, subject-focused picture works best</string>
+    <string name="prism_tank_cover_image">Cover Image (Visible)</string>
+    <string name="prism_tank_cover_image_desc">An overall bright picture works best</string>
+    <string name="prism_tank_tap_to_pick">Tap to pick image</string>
+    <string name="prism_tank_swap_images">Swap Inner/Cover Images</string>
+    <string name="prism_tank_params">Stripe &amp; Brightness</string>
+    <string name="prism_tank_inner_threshold">Inner Brightness Ceiling</string>
+    <string name="prism_tank_cover_threshold">Cover Brightness Floor</string>
+    <string name="prism_tank_gap">Stripe Gap</string>
+    <string name="prism_tank_slope">Stripe Slope</string>
+    <string name="prism_tank_inner_gray">Grayscale Inner Image</string>
+    <string name="prism_tank_cover_gray">Grayscale Cover Image</string>
+    <string name="prism_tank_reverse">Reverse Mode (darken to reveal)</string>
+    <string name="prism_tank_reset_params">Reset</string>
+    <string name="prism_tank_preview_title">Preview</string>
+    <string name="prism_tank_exposure">Exposure Gain</string>
+    <string name="prism_tank_exposure_hint">Drag exposure to simulate brightening the image in a gallery app</string>
+    <string name="prism_tank_hint_pick_both">Pick both the inner and the cover image first</string>
+    <string name="prism_tank_hint_pick_source">Pick a tank image first</string>
+    <string name="prism_tank_hint_ready">Ready. Drag exposure to preview the reveal.</string>
+    <string name="prism_tank_generate">Compose</string>
+    <string name="prism_tank_save_lossless">Save Lossless PNG</string>
+    <string name="prism_tank_source_image">Tank Image</string>
+    <string name="prism_tank_source_desc">Pick a prism tank image</string>
+    <string name="prism_tank_reveal_band">Inner Brightness Band</string>
+    <string name="prism_tank_reveal_lower">Lower Bound</string>
+    <string name="prism_tank_reveal_upper">Upper Bound</string>
+    <string name="prism_tank_reveal_contrast">Reveal Contrast</string>
+    <string name="prism_tank_reveal_fill">Cover Pixel Fill</string>
+    <string name="prism_tank_fill_black">Black</string>
+    <string name="prism_tank_fill_white">White</string>
+    <string name="prism_tank_fill_transparent">Transparent</string>
+    <string name="prism_tank_fill_neighbor">Neighbor Average</string>
+    <string name="prism_tank_result_inner">Revealed Inner</string>
+    <string name="prism_tank_result_cover">Revealed Cover</string>
+    <string name="prism_tank_save_inner">Save Inner</string>
+    <string name="prism_tank_save_cover">Save Cover</string>
+    <string name="prism_tank_saved_success">Saved lossless PNG to gallery (Pictures/Koishi/PrismTank)</string>
+    <string name="prism_tank_inner_saved">Inner image saved to gallery (Pictures/Koishi/PrismTank)</string>
+    <string name="prism_tank_cover_saved">Cover image saved to gallery (Pictures/Koishi/PrismTank)</string>
+    <string name="prism_tank_save_failed">Failed to save image to gallery</string>
+    <string name="prism_tank_load_failed">Failed to load image</string>
+    <string name="prism_tank_process_failed">Processing failed, please retry</string>
+    <string name="prism_tank_no_result_to_save">Nothing to save yet</string>
+    <string name="prism_tank_help_title">Prism Tank Guide &amp; Tips</string>
+    <string name="prism_tank_help_p1">[What is Prism Tank?] The inner image is compressed into the darkest levels and the cover image into the brighter ones, then interleaved pixel by pixel along diagonal stripes. At normal brightness you only see the cover; raise brightness and exposure in a gallery app and the cover blows out to white while the inner image emerges from the shadows.</string>
+    <string name="prism_tank_help_p2">[How to view it?] Prism Tank is not encryption - anyone can reveal it by brightening. Raise the image brightness/exposure, not screen brightness. Thumbnails, re-compression and screenshots destroy the one-pixel stripes, so always view the original file.</string>
+    <string name="prism_tank_help_p3">[Tuning Tips] A lower inner brightness ceiling hides the image deeper but leaves fewer levels when revealed; a larger stripe gap makes the inner image sparser and blurrier. To recover a tank image someone sent you, switch to the Reveal tab and adjust the brightness band.</string>
 
     <!-- Watermark Tool -->
     <string name="tool_watermark_name">Watermark</string>

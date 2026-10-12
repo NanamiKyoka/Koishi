@@ -38,6 +38,8 @@ import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsRoute
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
 import com.nanami.koishi.feature.tools.postal_code.PostalCodeRoute
+import com.nanami.koishi.feature.tools.prism_tank.PrismTankRoute
+import com.nanami.koishi.feature.tools.prism_tank.PrismTankViewModel
 import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
@@ -111,6 +113,7 @@ fun KoishiNavHost(
                             "grid_split" -> navController.navigate(GridSplitRoute)
                             "image_obfuscation" -> navController.navigate(ImageObfuscationRoute)
                             "mirage_tank" -> navController.navigate(MirageTankRoute)
+                            "prism_tank" -> navController.navigate(PrismTankRoute)
                             "qr_code" -> navController.navigate(QrToolRoute)
                             "watermark" -> navController.navigate(WatermarkRoute)
                             "image_sketch" -> navController.navigate(ImageSketchRoute)
@@ -177,6 +180,14 @@ fun KoishiNavHost(
                 val mirageTankViewModel: MirageTankViewModel = koinViewModel()
                 MirageTankRoute(
                     viewModel = mirageTankViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<PrismTankRoute> {
+                val prismTankViewModel: PrismTankViewModel = koinViewModel()
+                PrismTankRoute(
+                    viewModel = prismTankViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
