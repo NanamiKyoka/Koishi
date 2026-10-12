@@ -20,6 +20,7 @@
     <string name="category_life">Life Apps</string>
     <string name="category_image_apps">Image Apps</string>
     <string name="category_file_apps">File Apps</string>
+    <string name="category_text_apps">Text Apps</string>
     <string name="category_device_apps">Device Apps</string>
     <string name="category_calculation">Calculation Apps</string>
     <string name="category_query">Query Apps</string>
@@ -1402,6 +1403,18 @@
     <string name="lan_transfer_text_hint">Enter text</string>
     <string name="lan_transfer_text_message">Text message</string>
     <string name="lan_transfer_send">Send</string>
+    <string name="tool_json_formatter_name">JSON Formatter</string>
+    <string name="tool_json_formatter_desc">Validate, format, and minify JSON with indentation, error feedback, and one-tap copy</string>
+    <string name="tool_text_encoding_name">Base64 / URL Codec</string>
+    <string name="tool_text_encoding_desc">Encode and decode Base64 or URL text with URL-safe, padding, and form options</string>
+    <string name="tool_text_hash_name">MD5 / SHA Hash</string>
+    <string name="tool_text_hash_desc">Calculate MD5, SHA-1, SHA-256, and SHA-512 digests at once</string>
+    <string name="tool_regex_tool_name">Regex Extract &amp; Replace</string>
+    <string name="tool_regex_tool_desc">Extract matches and capture groups or replace text with regular expressions</string>
+    <string name="tool_text_process_name">Text Cleanup</string>
+    <string name="tool_text_process_desc">Change case, remove duplicate lines, sort lines, and inspect character stats</string>
+    <string name="tool_text_diff_name">Text Diff</string>
+    <string name="tool_text_diff_desc">Compare two texts line by line and review additions, deletions, and summary counts</string>
     <!-- Noise Meter -->
     <string name="tool_noise_meter_name">Noise Meter</string>
     <string name="tool_noise_meter_desc">Measure ambient noise in real time with approximate dB(A) readings, calibration and level descriptions</string>

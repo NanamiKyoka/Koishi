@@ -20,6 +20,7 @@
     <string name="category_life">生活应用</string>
     <string name="category_image_apps">图片应用</string>
     <string name="category_file_apps">文件应用</string>
+    <string name="category_text_apps">文本应用</string>
     <string name="category_device_apps">设备应用</string>
     <string name="category_calculation">计算应用</string>
     <string name="category_query">查询应用</string>
@@ -1403,6 +1404,18 @@
     <string name="lan_transfer_text_hint">输入文本内容</string>
     <string name="lan_transfer_text_message">文本消息</string>
     <string name="lan_transfer_send">发送</string>
+    <string name="tool_json_formatter_name">JSON 格式化</string>
+    <string name="tool_json_formatter_desc">校验、格式化与压缩 JSON，支持缩进调整、错误提示和一键复制</string>
+    <string name="tool_text_encoding_name">Base64 / URL 编解码</string>
+    <string name="tool_text_encoding_desc">Base64 与 URL 文本编码解码，支持 URL-safe、padding 与表单模式</string>
+    <string name="tool_text_hash_name">MD5 / SHA 哈希</string>
+    <string name="tool_text_hash_desc">同时计算 MD5、SHA-1、SHA-256 与 SHA-512 摘要</string>
+    <string name="tool_regex_tool_name">正则提取替换</string>
+    <string name="tool_regex_tool_desc">使用正则提取匹配与捕获组，或按规则批量替换文本</string>
+    <string name="tool_text_process_name">文本整理</string>
+    <string name="tool_text_process_desc">大小写转换、按行去重、排序与字符统计</string>
+    <string name="tool_text_diff_name">文本对比</string>
+    <string name="tool_text_diff_desc">逐行比较两段文本，查看新增、删除内容并统计差异</string>
     <!-- Noise Meter -->
     <string name="tool_noise_meter_name">噪音测量</string>
     <string name="tool_noise_meter_desc">实时测量环境噪音，近似 dB(A) 读数，支持校准偏移与噪音等级描述</string>

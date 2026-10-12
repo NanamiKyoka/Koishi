@@ -9,7 +9,11 @@ import androidx.compose.material.icons.rounded.Casino
 import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.CurrencyExchange
+import androidx.compose.material.icons.rounded.DataObject
+import androidx.compose.material.icons.rounded.Difference
 import androidx.compose.material.icons.rounded.EmojiEmotions
+import androidx.compose.material.icons.rounded.FindReplace
+import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.Gif
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.GridView
@@ -23,6 +27,7 @@ import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.QrCode2
 import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material.icons.rounded.Wallpaper
 import com.nanami.koishi.R
@@ -155,6 +160,60 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_lan_transfer_desc,
                 icon = Icons.Rounded.FolderShared,
                 category = ToolCategory.FILE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "json_formatter",
+                nameRes = R.string.tool_json_formatter_name,
+                descriptionRes = R.string.tool_json_formatter_desc,
+                icon = Icons.Rounded.DataObject,
+                category = ToolCategory.TEXT_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "text_encoding",
+                nameRes = R.string.tool_text_encoding_name,
+                descriptionRes = R.string.tool_text_encoding_desc,
+                icon = Icons.Rounded.SwapHoriz,
+                category = ToolCategory.TEXT_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "text_hash",
+                nameRes = R.string.tool_text_hash_name,
+                descriptionRes = R.string.tool_text_hash_desc,
+                icon = Icons.Rounded.Fingerprint,
+                category = ToolCategory.TEXT_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "regex_tool",
+                nameRes = R.string.tool_regex_tool_name,
+                descriptionRes = R.string.tool_regex_tool_desc,
+                icon = Icons.Rounded.FindReplace,
+                category = ToolCategory.TEXT_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "text_process",
+                nameRes = R.string.tool_text_process_name,
+                descriptionRes = R.string.tool_text_process_desc,
+                icon = Icons.Rounded.TextFields,
+                category = ToolCategory.TEXT_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "text_diff",
+                nameRes = R.string.tool_text_diff_name,
+                descriptionRes = R.string.tool_text_diff_desc,
+                icon = Icons.Rounded.Difference,
+                category = ToolCategory.TEXT_APPS,
                 isFavorite = false,
                 hasDot = true
             ),
