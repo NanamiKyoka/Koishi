@@ -20,5 +20,6 @@ data class KoishiPreferencesBackup(
     val appTheme: String = "",
     val amoled: Boolean = false,
     val language: String = "",
+    val lastMainTab: String = "TOOLBOX",
     val cropConstrainToImage: Boolean = true
 )

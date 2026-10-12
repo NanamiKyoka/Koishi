@@ -6,6 +6,8 @@ import androidx.compose.material.icons.rounded.Image
 import com.nanami.koishi.R
 import com.nanami.koishi.core.data.repository.RecentToolsRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
+import com.nanami.koishi.core.data.repository.LaunchTab
+import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
 import com.nanami.koishi.core.model.ToolCategory
@@ -33,6 +35,7 @@ class HomeViewModelInjectionTest : KoinTest {
                 single<ToolFavoritesRepository> { FakeFavoritesRepository() }
                 single<SearchHistoryRepository> { FakeSearchHistoryRepository() }
                 single<RecentToolsRepository> { FakeRecentToolsRepository() }
+                single<NavigationPreferencesRepository> { FakeNavigationPreferencesRepository() }
             }
         )
     }
@@ -44,6 +47,16 @@ class HomeViewModelInjectionTest : KoinTest {
         val tool = viewModel.uiState.value.allTools.single()
         assertEquals("image_obfuscation", tool.id)
         assertEquals(R.string.app_name, tool.nameRes)
+    }
+
+    @Test
+    fun homeViewModelStartsWithLastMainTab() {
+        getKoin().get<NavigationPreferencesRepository>()
+            .setLastMainTab(LaunchTab.FAVORITES)
+
+        val viewModel = getKoin().get<HomeViewModel>()
+
+        assertEquals(com.nanami.koishi.feature.home.MainTab.FAVORITES, viewModel.uiState.value.currentTab)
     }
 
     private class FakeToolRepository : ToolRepository {
@@ -131,5 +144,17 @@ class HomeViewModelInjectionTest : KoinTest {
         }
 
         override suspend fun reload() = Unit
+    }
+
+    private class FakeNavigationPreferencesRepository : NavigationPreferencesRepository {
+
+        private var savedTab: LaunchTab = LaunchTab.TOOLBOX
+
+        override val lastMainTab: LaunchTab
+            get() = savedTab
+
+        override fun setLastMainTab(tab: LaunchTab) {
+            savedTab = tab
+        }
     }
 }

@@ -2,9 +2,11 @@ package com.nanami.koishi.core.di
 
 import androidx.room.Room
 import com.nanami.koishi.core.data.repository.InMemoryToolRepository
+import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.RecentToolsRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
 import com.nanami.koishi.core.data.repository.SharedPreferencesRecentToolsRepository
+import com.nanami.koishi.core.data.repository.SharedPreferencesNavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepository
 import com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
@@ -39,8 +41,10 @@ val coreDataModule = module {
 
     single<RecentToolsRepository> { SharedPreferencesRecentToolsRepository(get()) }
 
+    single<NavigationPreferencesRepository> { SharedPreferencesNavigationPreferencesRepository(get()) }
+
     single { WebDavClient() }
 
-    single { WebDavSyncManager(get(), get(), get(), get(), get()) }
+    single { WebDavSyncManager(get(), get(), get(), get(), get(), get()) }
     single { AppUpdateManager(cache = SharedPreferencesUpdateCache(get())) }
 }

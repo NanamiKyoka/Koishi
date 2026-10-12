@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nanami.koishi.core.data.repository.RecentToolsRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
+import com.nanami.koishi.core.data.repository.LaunchTab
+import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
 import com.nanami.koishi.core.model.ToolCategory
@@ -23,10 +25,11 @@ class HomeViewModel(
     private val toolRepository: ToolRepository,
     private val favoritesRepository: ToolFavoritesRepository,
     private val searchHistoryRepository: SearchHistoryRepository,
-    private val recentToolsRepository: RecentToolsRepository
+    private val recentToolsRepository: RecentToolsRepository,
+    private val navigationPreferencesRepository: NavigationPreferencesRepository
 ) : AndroidViewModel(application) {
 
-    private val _currentTab = MutableStateFlow(MainTab.TOOLBOX)
+    private val _currentTab = MutableStateFlow(navigationPreferencesRepository.lastMainTab.toMainTab())
     private val _searchQuery = MutableStateFlow("")
     private val _isSearchActive = MutableStateFlow(false)
     private val _selectedCategory = MutableStateFlow(ToolCategory.ALL)
@@ -89,6 +92,7 @@ class HomeViewModel(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState(
+            currentTab = _currentTab.value,
             categories = ToolCategory.entries.filter { it != ToolCategory.ALL },
             allTools = toolRepository.getToolById("image_obfuscation")?.let { listOf(it) } ?: emptyList(),
             filteredTools = toolRepository.getToolById("image_obfuscation")?.let { listOf(it) } ?: emptyList(),
@@ -100,6 +104,7 @@ class HomeViewModel(
         when (event) {
             is HomeUiEvent.OnSelectTab -> {
                 _currentTab.value = event.tab
+                event.tab.toLaunchTab()?.let(navigationPreferencesRepository::setLastMainTab)
             }
             is HomeUiEvent.OnSearchQueryChange -> {
                 _searchQuery.value = event.query
@@ -165,5 +170,16 @@ class HomeViewModel(
                 searchHistoryRepository.addSearchHistory(keyword)
             }
         }
+    }
+
+    private fun LaunchTab.toMainTab(): MainTab = when (this) {
+        LaunchTab.FAVORITES -> MainTab.FAVORITES
+        LaunchTab.TOOLBOX -> MainTab.TOOLBOX
+    }
+
+    private fun MainTab.toLaunchTab(): LaunchTab? = when (this) {
+        MainTab.FAVORITES -> LaunchTab.FAVORITES
+        MainTab.TOOLBOX -> LaunchTab.TOOLBOX
+        MainTab.SETTINGS -> null
     }
 }

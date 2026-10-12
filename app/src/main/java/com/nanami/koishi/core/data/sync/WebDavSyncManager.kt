@@ -3,6 +3,8 @@ package com.nanami.koishi.core.data.sync
 import android.content.Context
 import com.nanami.koishi.BuildConfig
 import com.nanami.koishi.core.data.preferences.ThemePreferences
+import com.nanami.koishi.core.data.repository.LaunchTab
+import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.storage.ToolStorageDao
@@ -27,6 +29,7 @@ class WebDavSyncManager(
     private val dao: ToolStorageDao,
     private val favoritesRepository: ToolFavoritesRepository,
     private val searchHistoryRepository: SearchHistoryRepository,
+    private val navigationPreferencesRepository: NavigationPreferencesRepository,
     private val client: WebDavClient = WebDavClient()
 ) {
 
@@ -122,6 +125,7 @@ class WebDavSyncManager(
                 appTheme = ThemePreferences.appTheme(context).name,
                 amoled = ThemePreferences.isAmoled(context),
                 language = language.name,
+                lastMainTab = navigationPreferencesRepository.lastMainTab.name,
                 cropConstrainToImage = CropPreferences.isConstrainToImage(context)
             ),
             favorites = favorites,
@@ -145,6 +149,10 @@ class WebDavSyncManager(
                 .edit()
                 .putInt("language", lang.ordinal)
                 .commit()
+        }
+
+        LaunchTab.entries.find { it.name == pref.lastMainTab }?.let {
+            navigationPreferencesRepository.setLastMainTab(it)
         }
 
         CropPreferences.setConstrainToImage(context, pref.cropConstrainToImage)
