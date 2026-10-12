@@ -28,6 +28,7 @@ import com.nanami.koishi.feature.tools.noise_meter.engine.NoiseMeterRepository
 import com.nanami.koishi.feature.tools.postal_code.engine.PostalDatasetRepository
 import com.nanami.koishi.feature.tools.postal_code.engine.PostalRepository
 import com.nanami.koishi.feature.tools.postal_code.engine.PostalSettingsRepository
+import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankSettingsRepository
 import com.nanami.koishi.feature.tools.prism_tank.engine.PrismTankSettingsRepository
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryCache
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistoryRepository
@@ -50,6 +51,7 @@ val featureModule = module {
 
     single { BiliCoverSettingsRepository(get()) }
     single { ImageSearchSettingsRepository(get()) }
+    single { MirageTankSettingsRepository(get()) }
     single { PrismTankSettingsRepository(get()) }
 
     single { HistorySettingsRepository(get()) }

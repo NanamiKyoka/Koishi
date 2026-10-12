@@ -1,8 +1,11 @@
 package com.nanami.koishi.feature.tools.mirage_tank.engine
 
+import kotlinx.serialization.Serializable
+
 /**
  * 幻影坦克色彩模式
  */
+@Serializable
 enum class MirageTankMode {
     /**
      * 黑白模式（经典灰度 Alpha 解算，表图亮化 + 里图暗化）
@@ -26,6 +29,7 @@ enum class MirageTankMode {
  * @property enableCheckerboard 启用棋盘格调和（通过空间微交错平滑颜色与过渡边界）
  * @property checkerboardStrength 棋盘格调和强度（0.0f ~ 0.5f，默认 0.15f）
  */
+@Serializable
 data class MirageTankParams(
     val mode: MirageTankMode = MirageTankMode.GRAYSCALE,
     val frontLightness: Float = 1.0f,

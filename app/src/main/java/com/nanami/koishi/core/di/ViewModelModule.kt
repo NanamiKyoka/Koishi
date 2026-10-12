@@ -50,7 +50,7 @@ val viewModelModule = module {
     viewModel { ImageStitchingViewModel(get()) }
     viewModel { MemeMakerViewModel(get(), get(), get()) }
     viewModel { MiniAppsViewModel(get(), get()) }
-    viewModel { MirageTankViewModel(get()) }
+    viewModel { MirageTankViewModel(get(), get()) }
     viewModel { PrismTankViewModel(get(), get()) }
     viewModel { NoiseMeterViewModel(get(), get(), get()) }
     viewModel { PostalCodeViewModel(get(), get(), get(), get()) }

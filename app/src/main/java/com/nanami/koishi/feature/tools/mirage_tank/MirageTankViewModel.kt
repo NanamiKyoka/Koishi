@@ -11,7 +11,9 @@ import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankEngine
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankMode
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankParams
+import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankSettingsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,13 +23,22 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MirageTankViewModel(
-    application: Application
+    application: Application,
+    private val settingsRepository: MirageTankSettingsRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(MirageTankUiState())
     val uiState: StateFlow<MirageTankUiState> = _uiState.asStateFlow()
 
     private var processJob: Job? = null
+    private var persistJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            val stored = settingsRepository.currentData()
+            _uiState.update { it.copy(params = stored.params) }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
@@ -57,39 +68,22 @@ class MirageTankViewModel(
             is MirageTankUiEvent.OnClearBackImage -> clearBackImage()
             is MirageTankUiEvent.OnSwapImages -> swapImages()
 
-            is MirageTankUiEvent.OnModeChanged -> {
-                _uiState.update { it.copy(params = it.params.copy(mode = event.mode)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnFrontLightnessChanged -> {
-                _uiState.update { it.copy(params = it.params.copy(frontLightness = event.value)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnFrontContrastChanged -> {
-                _uiState.update { it.copy(params = it.params.copy(frontContrast = event.value)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnBackLightnessChanged -> {
-                _uiState.update { it.copy(params = it.params.copy(backLightness = event.value)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnBackContrastChanged -> {
-                _uiState.update { it.copy(params = it.params.copy(backContrast = event.value)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnCheckerboardToggled -> {
-                _uiState.update { it.copy(params = it.params.copy(enableCheckerboard = event.enabled)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnCheckerboardStrengthChanged -> {
-                _uiState.update { it.copy(params = it.params.copy(checkerboardStrength = event.value)) }
-                triggerAutoGenerateIfReady()
-            }
-            is MirageTankUiEvent.OnResetParams -> {
-                val currentMode = _uiState.value.params.mode
-                _uiState.update { it.copy(params = MirageTankParams(mode = currentMode)) }
-                triggerAutoGenerateIfReady()
-            }
+            is MirageTankUiEvent.OnModeChanged ->
+                updateParams { it.copy(mode = event.mode) }
+            is MirageTankUiEvent.OnFrontLightnessChanged ->
+                updateParams { it.copy(frontLightness = event.value) }
+            is MirageTankUiEvent.OnFrontContrastChanged ->
+                updateParams { it.copy(frontContrast = event.value) }
+            is MirageTankUiEvent.OnBackLightnessChanged ->
+                updateParams { it.copy(backLightness = event.value) }
+            is MirageTankUiEvent.OnBackContrastChanged ->
+                updateParams { it.copy(backContrast = event.value) }
+            is MirageTankUiEvent.OnCheckerboardToggled ->
+                updateParams { it.copy(enableCheckerboard = event.enabled) }
+            is MirageTankUiEvent.OnCheckerboardStrengthChanged ->
+                updateParams { it.copy(checkerboardStrength = event.value) }
+            is MirageTankUiEvent.OnResetParams ->
+                updateParams { MirageTankParams(mode = it.mode) }
 
             is MirageTankUiEvent.OnPreviewBackgroundModeChanged -> {
                 _uiState.update { it.copy(previewBackgroundMode = event.mode) }
@@ -111,6 +105,20 @@ class MirageTankViewModel(
             is MirageTankUiEvent.OnDismissMessage -> {
                 _uiState.update { it.copy(userMessage = null) }
             }
+        }
+    }
+
+    private fun updateParams(transform: (MirageTankParams) -> MirageTankParams) {
+        _uiState.update { it.copy(params = transform(it.params)) }
+        triggerAutoGenerateIfReady()
+        schedulePersist()
+    }
+
+    private fun schedulePersist() {
+        persistJob?.cancel()
+        persistJob = viewModelScope.launch {
+            delay(PERSIST_DELAY_MILLIS)
+            settingsRepository.saveParams(_uiState.value.params)
         }
     }
 
@@ -430,4 +438,8 @@ class MirageTankViewModel(
         val backPixels: IntArray,
         val hasTransparency: Boolean
     )
+
+    private companion object {
+        const val PERSIST_DELAY_MILLIS = 400L
+    }
 }
