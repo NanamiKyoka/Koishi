@@ -131,6 +131,12 @@ data object WorthCalculatorRoute
 @Serializable
 data object LanTransferRoute
 
+@Serializable
+data object JsonFormatterRoute
+
+@Serializable
+data object EncodingRoute
+
 /**
  * 噪音测量独立小工具强类型路由
  */

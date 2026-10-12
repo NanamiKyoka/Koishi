@@ -41,6 +41,8 @@ import com.nanami.koishi.feature.tools.postal_code.PostalCodeRoute
 import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
+import com.nanami.koishi.feature.tools.text_apps.encoding.EncodingRoute
+import com.nanami.koishi.feature.tools.text_apps.json.JsonFormatterRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
 import com.nanami.koishi.feature.tools.unit_converter.UnitConverterRoute
@@ -123,6 +125,8 @@ fun KoishiNavHost(
                             "meme_maker" -> navController.navigate(MemeMakerRoute)
                             "color_picker" -> navController.navigate(ColorPickerRoute)
                             "mini_apps" -> navController.navigate(MiniAppsRoute)
+                            "json_formatter" -> navController.navigate(JsonFormatterRoute)
+                            "text_encoding" -> navController.navigate(EncodingRoute)
                             "noise_meter" -> navController.navigate(NoiseMeterRoute)
                         }
                     }
@@ -315,6 +319,18 @@ fun KoishiNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable<JsonFormatterRoute> {
+                JsonFormatterRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<EncodingRoute> {
+                EncodingRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
             composable<NoiseMeterRoute> {
                 val noiseMeterViewModel: com.nanami.koishi.feature.tools.noise_meter.NoiseMeterViewModel = koinViewModel()
                 com.nanami.koishi.feature.tools.noise_meter.NoiseMeterRoute(
