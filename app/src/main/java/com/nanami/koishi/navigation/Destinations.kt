@@ -143,6 +143,12 @@ data object HashRoute
 @Serializable
 data object RegexRoute
 
+@Serializable
+data object TextProcessRoute
+
+@Serializable
+data object TextDiffRoute
+
 /**
  * 噪音测量独立小工具强类型路由
  */

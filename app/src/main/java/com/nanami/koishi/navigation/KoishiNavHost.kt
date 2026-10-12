@@ -44,6 +44,8 @@ import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.text_apps.encoding.EncodingRoute
 import com.nanami.koishi.feature.tools.text_apps.hash.HashRoute
 import com.nanami.koishi.feature.tools.text_apps.regex.RegexRoute
+import com.nanami.koishi.feature.tools.text_apps.text_process.TextProcessRoute
+import com.nanami.koishi.feature.tools.text_apps.diff.DiffRoute
 import com.nanami.koishi.feature.tools.text_apps.json.JsonFormatterRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
@@ -131,6 +133,8 @@ fun KoishiNavHost(
                             "text_encoding" -> navController.navigate(EncodingRoute)
                             "text_hash" -> navController.navigate(HashRoute)
                             "regex_tool" -> navController.navigate(RegexRoute)
+                            "text_process" -> navController.navigate(TextProcessRoute)
+                            "text_diff" -> navController.navigate(TextDiffRoute)
                             "noise_meter" -> navController.navigate(NoiseMeterRoute)
                         }
                     }
@@ -343,6 +347,18 @@ fun KoishiNavHost(
 
             composable<RegexRoute> {
                 RegexRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<TextProcessRoute> {
+                TextProcessRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<TextDiffRoute> {
+                DiffRoute(
                     onBack = { navController.popBackStack() }
                 )
             }
