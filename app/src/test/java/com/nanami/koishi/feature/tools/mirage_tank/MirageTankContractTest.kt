@@ -24,6 +24,9 @@ class MirageTankContractTest {
         assertFalse(state.isHelpDialogOpen)
         assertFalse(state.hasBothImages)
         assertFalse(state.canSave)
+        assertFalse(state.canReveal)
+        assertFalse(state.hasRevealed)
+        assertEquals(MirageTankPanel.CREATE, state.panel)
 
         assertEquals(MirageTankMode.GRAYSCALE, state.params.mode)
         assertEquals(PreviewBackgroundMode.WHITE, state.previewBackgroundMode)

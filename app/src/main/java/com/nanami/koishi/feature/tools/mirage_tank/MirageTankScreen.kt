@@ -1,5 +1,6 @@
 package com.nanami.koishi.feature.tools.mirage_tank
 
+import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -71,6 +72,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -91,6 +93,8 @@ import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.PillShape
 import com.nanami.koishi.core.designsystem.ToolCardShape
+import com.nanami.koishi.core.image.preview.ImagePreviewDialog
+import com.nanami.koishi.core.util.AlbumFolders
 import com.nanami.koishi.feature.tools.mirage_tank.engine.MirageTankMode
 import java.util.Locale
 
@@ -138,8 +142,26 @@ fun MirageTankScreen(
         uri?.let { onEvent(MirageTankUiEvent.OnBackImageSelected(it)) }
     }
 
+    val sourcePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let { onEvent(MirageTankUiEvent.OnSourceImageSelected(it)) }
+    }
+
+    var previewImages by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
+    var previewIndex by remember { mutableIntStateOf(0) }
+
     if (state.isHelpDialogOpen) {
         MirageTankHelpDialog(onDismiss = { onEvent(MirageTankUiEvent.OnToggleHelpDialog(false)) })
+    }
+
+    if (previewImages.isNotEmpty()) {
+        ImagePreviewDialog(
+            images = previewImages,
+            initialIndex = previewIndex,
+            albumFolder = AlbumFolders.MIRAGE_TANK,
+            onDismissRequest = { previewImages = emptyList() }
+        )
     }
 
     Scaffold(
@@ -163,7 +185,9 @@ fun MirageTankScreen(
                     }
                 },
                 actions = {
-                    if (state.frontImage != null || state.backImage != null) {
+                    if (state.panel == MirageTankPanel.CREATE &&
+                        (state.frontImage != null || state.backImage != null)
+                    ) {
                         IconButton(onClick = { onEvent(MirageTankUiEvent.OnSwapImages) }) {
                             Icon(
                                 imageVector = Icons.Rounded.SwapHoriz,
@@ -195,6 +219,37 @@ fun MirageTankScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            PrimaryTabRow(
+                selectedTabIndex = if (state.panel == MirageTankPanel.CREATE) 0 else 1,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(PillShape),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.primary
+            ) {
+                Tab(
+                    selected = state.panel == MirageTankPanel.CREATE,
+                    onClick = { onEvent(MirageTankUiEvent.OnPanelChanged(MirageTankPanel.CREATE)) },
+                    text = {
+                        Text(
+                            text = stringResource(R.string.mirage_tank_tab_create),
+                            fontWeight = if (state.panel == MirageTankPanel.CREATE) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                )
+                Tab(
+                    selected = state.panel == MirageTankPanel.REVEAL,
+                    onClick = { onEvent(MirageTankUiEvent.OnPanelChanged(MirageTankPanel.REVEAL)) },
+                    text = {
+                        Text(
+                            text = stringResource(R.string.mirage_tank_tab_reveal),
+                            fontWeight = if (state.panel == MirageTankPanel.REVEAL) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                )
+            }
+
+            if (state.panel == MirageTankPanel.CREATE) {
             // 1. 表图与里图选取卡片区域
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -601,6 +656,21 @@ fun MirageTankScreen(
                     }
                 }
             }
+            }
+
+            if (state.panel == MirageTankPanel.REVEAL) {
+                RevealPanel(
+                    state = state,
+                    onEvent = onEvent,
+                    onPickSource = {
+                        sourcePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                    onPreview = { index ->
+                        previewImages = listOfNotNull(state.revealedFront, state.revealedBack)
+                        previewIndex = index
+                    }
+                )
+            }
         }
             }
 }
@@ -856,4 +926,161 @@ private fun MirageTankHelpDialog(
             }
         }
     )
+}
+
+@Composable
+private fun RevealPanel(
+    state: MirageTankUiState,
+    onEvent: (MirageTankUiEvent) -> Unit,
+    onPickSource: () -> Unit,
+    onPreview: (Int) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        ImageSourceCard(
+            title = stringResource(R.string.mirage_tank_source_image),
+            subTitle = stringResource(R.string.mirage_tank_source_desc),
+            badgeColor = MaterialTheme.colorScheme.primary,
+            imageItem = state.sourceImage,
+            onPick = onPickSource,
+            onClear = { onEvent(MirageTankUiEvent.OnClearSourceImage) },
+            modifier = Modifier.fillMaxWidth(0.5f)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = ToolCardShape,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.mirage_tank_preview_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    RevealResultCard(
+                        title = stringResource(R.string.mirage_tank_result_front),
+                        bitmap = state.revealedFront,
+                        onClick = { onPreview(0) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    RevealResultCard(
+                        title = stringResource(R.string.mirage_tank_result_back),
+                        bitmap = state.revealedBack,
+                        onClick = { onPreview(1) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                if (!state.hasRevealed) {
+                    Text(
+                        text = stringResource(R.string.mirage_tank_no_source),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (state.isProcessing) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = { onEvent(MirageTankUiEvent.OnSaveRevealedFront) },
+                enabled = state.revealedFront != null && !state.isSaving,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = PillShape
+            ) {
+                Icon(imageVector = Icons.Rounded.SaveAlt, contentDescription = null)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = stringResource(R.string.mirage_tank_save_front), fontWeight = FontWeight.SemiBold)
+            }
+
+            Button(
+                onClick = { onEvent(MirageTankUiEvent.OnSaveRevealedBack) },
+                enabled = state.revealedBack != null && !state.isSaving,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = PillShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                if (state.isSaving) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(imageVector = Icons.Rounded.SaveAlt, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(R.string.mirage_tank_save_back), fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RevealResultCard(
+    title: String,
+    bitmap: Bitmap?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .clickable(enabled = bitmap != null) { onClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Rounded.Contrast,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                )
+            }
+        }
+    }
 }

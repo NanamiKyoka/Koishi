@@ -36,12 +36,24 @@ enum class PreviewBackgroundMode {
 }
 
 /**
+ * 幻影坦克页面分区
+ */
+enum class MirageTankPanel {
+    CREATE,
+    REVEAL
+}
+
+/**
  * 幻影坦克 UI 状态
  */
 data class MirageTankUiState(
+    val panel: MirageTankPanel = MirageTankPanel.CREATE,
     val frontImage: MirageTankImageItem? = null,
     val backImage: MirageTankImageItem? = null,
     val resultBitmap: Bitmap? = null,
+    val sourceImage: MirageTankImageItem? = null,
+    val revealedFront: Bitmap? = null,
+    val revealedBack: Bitmap? = null,
     val params: MirageTankParams = MirageTankParams(),
     val previewBackgroundMode: PreviewBackgroundMode = PreviewBackgroundMode.WHITE,
     val customBackgroundRatio: Float = 0.5f,
@@ -71,12 +83,25 @@ data class MirageTankUiState(
      */
     val canSave: Boolean
         get() = resultBitmap != null && !isProcessing && !isSaving
+
+    /**
+     * 是否可以执行还原操作
+     */
+    val canReveal: Boolean
+        get() = sourceImage != null && !isProcessing
+
+    /**
+     * 是否已还原出表图或里图
+     */
+    val hasRevealed: Boolean
+        get() = revealedFront != null || revealedBack != null
 }
 
 /**
  * 幻影坦克 UI 事件交互接口
  */
 sealed interface MirageTankUiEvent {
+    data class OnPanelChanged(val panel: MirageTankPanel) : MirageTankUiEvent
     data class OnFrontImageSelected(val uri: Uri) : MirageTankUiEvent
     data class OnBackImageSelected(val uri: Uri) : MirageTankUiEvent
     data object OnClearFrontImage : MirageTankUiEvent
@@ -94,6 +119,11 @@ sealed interface MirageTankUiEvent {
 
     data class OnPreviewBackgroundModeChanged(val mode: PreviewBackgroundMode) : MirageTankUiEvent
     data class OnCustomBackgroundRatioChanged(val ratio: Float) : MirageTankUiEvent
+
+    data class OnSourceImageSelected(val uri: Uri) : MirageTankUiEvent
+    data object OnClearSourceImage : MirageTankUiEvent
+    data object OnSaveRevealedFront : MirageTankUiEvent
+    data object OnSaveRevealedBack : MirageTankUiEvent
 
     data object OnGenerateTank : MirageTankUiEvent
     data object OnSaveTank : MirageTankUiEvent

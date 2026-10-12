@@ -58,6 +58,30 @@ class MirageTankEngineTest {
     }
 
     @Test
+    fun simulateDisplay_separatesFrontOnWhiteAndBackOnBlack() {
+        val width = 8
+        val height = 8
+        val front = IntArray(width * height) { packArgb(255, 220, 220, 220) }
+        val back = IntArray(width * height) { packArgb(255, 40, 40, 40) }
+
+        val tank = MirageTankEngine.processPixels(
+            frontPixels = front,
+            backPixels = back,
+            width = width,
+            height = height,
+            params = MirageTankParams(mode = MirageTankMode.GRAYSCALE)
+        )
+
+        val white = MirageTankEngine.simulateDisplayPixels(tank, width, height, 1.0f)
+        val black = MirageTankEngine.simulateDisplayPixels(tank, width, height, 0.0f)
+
+        val whiteLuma = getRed(white[0])
+        val blackLuma = getRed(black[0])
+
+        assertTrue("白底渲染应更接近表图", kotlin.math.abs(whiteLuma - 220) < kotlin.math.abs(whiteLuma - 40))
+        assertTrue("黑底渲染应更接近里图", kotlin.math.abs(blackLuma - 40) < kotlin.math.abs(blackLuma - 220))
+    }
+    @Test
     fun grayscale_arbitraryRandomPixels_keepsValuesClampedAndConsistent() {
         val random = Random(12345)
         val width = 32
