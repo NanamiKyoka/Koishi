@@ -42,6 +42,8 @@ import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolRoute
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
 import com.nanami.koishi.feature.tools.text_apps.encoding.EncodingRoute
+import com.nanami.koishi.feature.tools.text_apps.hash.HashRoute
+import com.nanami.koishi.feature.tools.text_apps.regex.RegexRoute
 import com.nanami.koishi.feature.tools.text_apps.json.JsonFormatterRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
@@ -127,6 +129,8 @@ fun KoishiNavHost(
                             "mini_apps" -> navController.navigate(MiniAppsRoute)
                             "json_formatter" -> navController.navigate(JsonFormatterRoute)
                             "text_encoding" -> navController.navigate(EncodingRoute)
+                            "text_hash" -> navController.navigate(HashRoute)
+                            "regex_tool" -> navController.navigate(RegexRoute)
                             "noise_meter" -> navController.navigate(NoiseMeterRoute)
                         }
                     }
@@ -327,6 +331,18 @@ fun KoishiNavHost(
 
             composable<EncodingRoute> {
                 EncodingRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<HashRoute> {
+                HashRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<RegexRoute> {
+                RegexRoute(
                     onBack = { navController.popBackStack() }
                 )
             }

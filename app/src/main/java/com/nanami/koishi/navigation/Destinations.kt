@@ -137,6 +137,12 @@ data object JsonFormatterRoute
 @Serializable
 data object EncodingRoute
 
+@Serializable
+data object HashRoute
+
+@Serializable
+data object RegexRoute
+
 /**
  * 噪音测量独立小工具强类型路由
  */
