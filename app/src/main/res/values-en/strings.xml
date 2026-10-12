@@ -1464,7 +1464,6 @@
     <string name="text_regex_pattern_placeholder">Example: \b\w+@\w+\.com\b</string>
     <string name="text_regex_replacement">Replacement</string>
     <string name="text_regex_replacement_placeholder">Supports capture group references such as $1 and $2</string>
-    <string name="text_regex_flags">Match options</string>
     <string name="text_regex_ignore_case">Ignore case</string>
     <string name="text_regex_multiline">Multiline</string>
     <string name="text_regex_dot_all">Dot matches newline</string>
@@ -1493,7 +1492,6 @@
     <string name="text_tool_valid_json">Valid JSON</string>
     <string name="text_tool_json_placeholder">Enter or paste JSON here</string>
     <string name="text_tool_json_output_placeholder">Formatted JSON will appear here</string>
-    <string name="text_tool_indent">Indent</string>
     <string name="text_tool_indent_spaces">%1$d spaces</string>
     <string name="text_tool_reverse_direction">Reverse direction</string>
     <string name="text_encoding_base64">Base64</string>

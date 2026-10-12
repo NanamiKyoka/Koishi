@@ -1465,7 +1465,6 @@
     <string name="text_regex_pattern_placeholder">例如：\b\w+@\w+\.com\b</string>
     <string name="text_regex_replacement">替换内容</string>
     <string name="text_regex_replacement_placeholder">支持 $1、$2 等捕获组引用</string>
-    <string name="text_regex_flags">匹配选项</string>
     <string name="text_regex_ignore_case">忽略大小写</string>
     <string name="text_regex_multiline">多行</string>
     <string name="text_regex_dot_all">点匹配换行</string>
@@ -1494,7 +1493,6 @@
     <string name="text_tool_valid_json">JSON 格式有效</string>
     <string name="text_tool_json_placeholder">在此输入或粘贴 JSON</string>
     <string name="text_tool_json_output_placeholder">格式化结果将显示在这里</string>
-    <string name="text_tool_indent">缩进</string>
     <string name="text_tool_indent_spaces">%1$d 空格</string>
     <string name="text_tool_reverse_direction">切换方向</string>
     <string name="text_encoding_base64">Base64</string>
