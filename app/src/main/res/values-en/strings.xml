@@ -50,6 +50,10 @@
     <!-- Favorites Tab -->
     <string name="favorites_title">Favorites</string>
     <string name="favorites_recent_title">Recently Used</string>
+    <string name="favorites_recent_expand">Expand recently used</string>
+    <string name="favorites_recent_collapse">Collapse recently used</string>
+    <string name="favorites_expand">Expand favorites</string>
+    <string name="favorites_collapse">Collapse favorites</string>
     <string name="favorites_empty_title">No favorite tools yet</string>
     <string name="favorites_empty_desc">Tap the heart icon on any tool card in the toolbox to add it here</string>
     <string name="favorites_add_guide">No favorite tools yet</string>

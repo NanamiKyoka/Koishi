@@ -1,5 +1,11 @@
 package com.nanami.koishi.feature.favorites
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,10 +28,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -33,9 +41,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -56,8 +66,12 @@ import com.nanami.koishi.feature.home.components.ToolChip
 fun FavoritesScreen(
     favoriteTools: List<ToolItem>,
     recentTools: List<ToolItem>,
+    isRecentExpanded: Boolean,
+    isFavoritesExpanded: Boolean,
     onToolClick: (ToolItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
+    onToggleRecentExpanded: () -> Unit,
+    onToggleFavoritesExpanded: () -> Unit,
     onNavigateToToolbox: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -103,8 +117,14 @@ fun FavoritesScreen(
                                 title = stringResource(R.string.favorites_recent_title),
                                 tools = recentTools,
                                 countText = stringResource(R.string.tools_count_summary, recentTools.size),
+                                toggleContentDescription = stringResource(
+                                    if (isRecentExpanded) R.string.favorites_recent_collapse
+                                    else R.string.favorites_recent_expand
+                                ),
+                                isExpanded = isRecentExpanded,
                                 onToolClick = onToolClick,
-                                onToggleFavorite = onToggleFavorite
+                                onToggleFavorite = onToggleFavorite,
+                                onToggleExpand = onToggleRecentExpanded
                             )
                         }
                     }
@@ -114,8 +134,14 @@ fun FavoritesScreen(
                                 title = stringResource(R.string.favorites_title),
                                 tools = favoriteTools,
                                 countText = stringResource(R.string.tools_count_summary, favoriteTools.size),
+                                toggleContentDescription = stringResource(
+                                    if (isFavoritesExpanded) R.string.favorites_collapse
+                                    else R.string.favorites_expand
+                                ),
+                                isExpanded = isFavoritesExpanded,
                                 onToolClick = onToolClick,
-                                onToggleFavorite = onToggleFavorite
+                                onToggleFavorite = onToggleFavorite,
+                                onToggleExpand = onToggleFavoritesExpanded
                             )
                         }
                     }
@@ -131,9 +157,17 @@ private fun ToolCollectionCard(
     title: String,
     tools: List<ToolItem>,
     countText: String,
+    toggleContentDescription: String,
+    isExpanded: Boolean,
     onToolClick: (ToolItem) -> Unit,
-    onToggleFavorite: (String) -> Unit
+    onToggleFavorite: (String) -> Unit,
+    onToggleExpand: () -> Unit
 ) {
+    val rotationState by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        label = "collectionArrowRotation"
+    )
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -148,7 +182,11 @@ private fun ToolCollectionCard(
                 .padding(16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(onClick = onToggleExpand)
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -168,26 +206,45 @@ private fun ToolCollectionCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Text(
-                    text = countText,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = countText,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    IconButton(
+                        onClick = onToggleExpand,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = toggleContentDescription,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.rotate(rotationState)
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
-                tools.forEach { tool ->
-                    ToolChip(
-                        tool = tool,
-                        onClick = { onToolClick(tool) },
-                        onLongClick = { onToggleFavorite(tool.id) }
-                    )
+                Column(modifier = Modifier.padding(top = 12.dp)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        tools.forEach { tool ->
+                            ToolChip(
+                                tool = tool,
+                                onClick = { onToolClick(tool) },
+                                onLongClick = { onToggleFavorite(tool.id) }
+                            )
+                        }
+                    }
                 }
             }
         }

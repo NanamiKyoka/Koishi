@@ -42,7 +42,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -111,6 +114,9 @@ fun HomeScreen(
     settingsContent: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isRecentExpanded by rememberSaveable { mutableStateOf(true) }
+    var isFavoritesExpanded by rememberSaveable { mutableStateOf(true) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -126,8 +132,12 @@ fun HomeScreen(
                     FavoritesScreen(
                         favoriteTools = uiState.favoriteTools,
                         recentTools = uiState.recentTools,
+                        isRecentExpanded = isRecentExpanded,
+                        isFavoritesExpanded = isFavoritesExpanded,
                         onToolClick = onToolClick,
                         onToggleFavorite = { onEvent(HomeUiEvent.OnToggleFavorite(it)) },
+                        onToggleRecentExpanded = { isRecentExpanded = !isRecentExpanded },
+                        onToggleFavoritesExpanded = { isFavoritesExpanded = !isFavoritesExpanded },
                         onNavigateToToolbox = { onEvent(HomeUiEvent.OnSelectTab(MainTab.TOOLBOX)) }
                     )
                 }
