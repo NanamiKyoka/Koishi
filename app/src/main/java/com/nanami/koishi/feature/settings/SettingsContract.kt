@@ -7,6 +7,7 @@ import com.nanami.koishi.core.data.sync.WebDavConfig
 import com.nanami.koishi.core.data.sync.model.KoishiBackup
 import com.nanami.koishi.core.designsystem.theme.AppTheme
 import com.nanami.koishi.core.designsystem.theme.ThemeMode
+import com.nanami.koishi.core.model.ToolItem
 
 enum class AppLanguage(@StringRes val titleRes: Int, val tag: String) {
     SYSTEM(R.string.settings_lang_system, ""),
@@ -49,6 +50,9 @@ data class SettingsUiState(
     val amoled: Boolean = false,
     val language: AppLanguage = AppLanguage.SYSTEM,
     val showLanguageDialog: Boolean = false,
+    val allTools: List<ToolItem> = emptyList(),
+    val hiddenToolIds: Set<String> = emptySet(),
+    val showToolVisibilityDialog: Boolean = false,
     val showWebDavDialog: Boolean = false,
     val webDavConfig: WebDavConfig = WebDavConfig(),
     val webDavSyncState: WebDavSyncUiState = WebDavSyncUiState.Idle,
@@ -72,6 +76,9 @@ sealed interface SettingsUiEvent {
     data class OnAmoledToggled(val enabled: Boolean) : SettingsUiEvent
     data class OnLanguageSelected(val language: AppLanguage) : SettingsUiEvent
     data class OnShowLanguageDialog(val show: Boolean) : SettingsUiEvent
+    data class OnShowToolVisibilityDialog(val show: Boolean) : SettingsUiEvent
+    data class OnSetToolHidden(val toolId: String, val hidden: Boolean) : SettingsUiEvent
+    data object OnShowAllTools : SettingsUiEvent
     data class OnShowWebDavDialog(val show: Boolean) : SettingsUiEvent
     data class OnUpdateWebDavConfig(val config: WebDavConfig) : SettingsUiEvent
     data object OnTestWebDavConnection : SettingsUiEvent

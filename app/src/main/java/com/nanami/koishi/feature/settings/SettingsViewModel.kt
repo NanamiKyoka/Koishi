@@ -9,6 +9,8 @@ import coil.imageLoader
 import com.nanami.koishi.R
 import com.nanami.koishi.core.data.cache.StorageUsage
 import com.nanami.koishi.core.data.preferences.ThemePreferences
+import com.nanami.koishi.core.data.repository.ToolRepository
+import com.nanami.koishi.core.data.repository.ToolVisibilityRepository
 import com.nanami.koishi.core.data.sync.WebDavAuthException
 import com.nanami.koishi.core.data.sync.WebDavConfig
 import com.nanami.koishi.core.data.sync.WebDavFileNotFoundException
@@ -34,7 +36,9 @@ import java.io.File
 class SettingsViewModel(
     application: Application,
     private val syncManager: WebDavSyncManager,
-    private val updateManager: AppUpdateManager
+    private val updateManager: AppUpdateManager,
+    private val toolRepository: ToolRepository,
+    private val toolVisibilityRepository: ToolVisibilityRepository
 ) : AndroidViewModel(application) {
 
     private var downloadJob: Job? = null
@@ -44,6 +48,19 @@ class SettingsViewModel(
 
     private val _uiState = MutableStateFlow(loadSettings())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            toolRepository.availableTools.collect { tools ->
+                _uiState.update { it.copy(allTools = tools) }
+            }
+        }
+        viewModelScope.launch {
+            toolVisibilityRepository.hiddenToolIds.collect { hiddenIds ->
+                _uiState.update { it.copy(hiddenToolIds = hiddenIds) }
+            }
+        }
+    }
 
     private fun loadSettings(): SettingsUiState {
         val langOrdinal = prefs.getInt(KEY_LANGUAGE, AppLanguage.SYSTEM.ordinal)
@@ -78,6 +95,19 @@ class SettingsViewModel(
             }
             is SettingsUiEvent.OnShowLanguageDialog -> {
                 _uiState.update { it.copy(showLanguageDialog = event.show) }
+            }
+            is SettingsUiEvent.OnShowToolVisibilityDialog -> {
+                _uiState.update { it.copy(showToolVisibilityDialog = event.show) }
+            }
+            is SettingsUiEvent.OnSetToolHidden -> {
+                viewModelScope.launch {
+                    toolVisibilityRepository.setToolHidden(event.toolId, event.hidden)
+                }
+            }
+            SettingsUiEvent.OnShowAllTools -> {
+                viewModelScope.launch {
+                    toolVisibilityRepository.clearHiddenTools()
+                }
             }
             is SettingsUiEvent.OnShowWebDavDialog -> {
                 _uiState.update {

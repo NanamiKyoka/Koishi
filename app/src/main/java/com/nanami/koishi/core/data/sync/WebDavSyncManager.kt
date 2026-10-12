@@ -7,6 +7,7 @@ import com.nanami.koishi.core.data.repository.LaunchTab
 import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.SearchHistoryRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
+import com.nanami.koishi.core.data.repository.ToolVisibilityRepository
 import com.nanami.koishi.core.data.storage.ToolStorageDao
 import com.nanami.koishi.core.data.storage.ToolStorageEntity
 import com.nanami.koishi.core.data.sync.model.KoishiBackup
@@ -20,6 +21,7 @@ import com.nanami.koishi.feature.tools.image_search.engine.ImageSearchSettingsRe
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistorySettings
 import com.nanami.koishi.feature.tools.today_in_history.engine.HistorySettingsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,6 +32,7 @@ class WebDavSyncManager(
     private val favoritesRepository: ToolFavoritesRepository,
     private val searchHistoryRepository: SearchHistoryRepository,
     private val navigationPreferencesRepository: NavigationPreferencesRepository,
+    private val toolVisibilityRepository: ToolVisibilityRepository,
     private val client: WebDavClient = WebDavClient()
 ) {
 
@@ -126,6 +129,7 @@ class WebDavSyncManager(
                 amoled = ThemePreferences.isAmoled(context),
                 language = language.name,
                 lastMainTab = navigationPreferencesRepository.lastMainTab.name,
+                hiddenToolIds = toolVisibilityRepository.hiddenToolIds.first(),
                 cropConstrainToImage = CropPreferences.isConstrainToImage(context)
             ),
             favorites = favorites,
@@ -154,6 +158,7 @@ class WebDavSyncManager(
         LaunchTab.entries.find { it.name == pref.lastMainTab }?.let {
             navigationPreferencesRepository.setLastMainTab(it)
         }
+        toolVisibilityRepository.setHiddenToolIds(pref.hiddenToolIds)
 
         CropPreferences.setConstrainToImage(context, pref.cropConstrainToImage)
 

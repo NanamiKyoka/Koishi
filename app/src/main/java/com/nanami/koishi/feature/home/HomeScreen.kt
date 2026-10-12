@@ -28,6 +28,8 @@ import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SearchOff
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -601,7 +603,11 @@ private fun ToolboxOverview(
             maxWidth = if (layoutMode == WindowLayoutMode.EXPANDED) 1200.dp else 840.dp,
             modifier = Modifier.weight(1f),
         ) {
-            if (layoutMode == WindowLayoutMode.EXPANDED) {
+            if (categoriesToDisplay.isEmpty()) {
+                ToolboxNoVisibleTools(
+                    onOpenSettings = { onEvent(HomeUiEvent.OnSelectTab(MainTab.SETTINGS)) }
+                )
+            } else if (layoutMode == WindowLayoutMode.EXPANDED) {
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(minSize = 360.dp),
                     modifier = Modifier
@@ -643,6 +649,44 @@ private fun ToolboxOverview(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToolboxNoVisibleTools(
+    onOpenSettings: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Rounded.VisibilityOff,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.toolbox_no_visible_tools_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.toolbox_no_visible_tools_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(onClick = onOpenSettings) {
+                Text(stringResource(R.string.toolbox_open_settings))
             }
         }
     }

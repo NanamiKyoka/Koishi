@@ -34,6 +34,7 @@ class WebDavSyncTest {
                 amoled = true,
                 language = "ZH",
                 lastMainTab = "FAVORITES",
+                hiddenToolIds = setOf("tool_3"),
                 cropConstrainToImage = true
             ),
             favorites = setOf("tool_1", "tool_2"),
@@ -52,6 +53,7 @@ class WebDavSyncTest {
         assertEquals(backup.preferences.appTheme, decoded.preferences.appTheme)
         assertEquals(backup.preferences.amoled, decoded.preferences.amoled)
         assertEquals(backup.preferences.lastMainTab, decoded.preferences.lastMainTab)
+        assertEquals(backup.preferences.hiddenToolIds, decoded.preferences.hiddenToolIds)
         assertEquals(backup.favorites, decoded.favorites)
         assertEquals(backup.searchHistory, decoded.searchHistory)
         assertEquals(backup.toolStorage, decoded.toolStorage)

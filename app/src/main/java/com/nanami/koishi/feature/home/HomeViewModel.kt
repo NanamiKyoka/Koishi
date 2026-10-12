@@ -9,6 +9,7 @@ import com.nanami.koishi.core.data.repository.LaunchTab
 import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
+import com.nanami.koishi.core.data.repository.ToolVisibilityRepository
 import com.nanami.koishi.core.model.ToolCategory
 import com.nanami.koishi.core.model.ToolItem
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +27,8 @@ class HomeViewModel(
     private val favoritesRepository: ToolFavoritesRepository,
     private val searchHistoryRepository: SearchHistoryRepository,
     private val recentToolsRepository: RecentToolsRepository,
-    private val navigationPreferencesRepository: NavigationPreferencesRepository
+    private val navigationPreferencesRepository: NavigationPreferencesRepository,
+    private val toolVisibilityRepository: ToolVisibilityRepository
 ) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(navigationPreferencesRepository.lastMainTab.toMainTab())
@@ -40,11 +42,12 @@ class HomeViewModel(
     // 动态将持久化的收藏 ID 注入到可用工具流中
     private val _toolsWithFavoriteState: Flow<List<ToolItem>> = combine(
         toolRepository.availableTools,
-        favoritesRepository.favoriteToolIds
-    ) { tools, favIds ->
-        tools.map { tool ->
-            tool.copy(isFavorite = favIds.contains(tool.id))
-        }
+        favoritesRepository.favoriteToolIds,
+        toolVisibilityRepository.hiddenToolIds
+    ) { tools, favIds, hiddenIds ->
+        tools
+            .filterNot { hiddenIds.contains(it.id) }
+            .map { tool -> tool.copy(isFavorite = favIds.contains(tool.id)) }
     }
 
     private val _toolsAndRecent: Flow<Pair<List<ToolItem>, List<ToolItem>>> = combine(
@@ -94,8 +97,14 @@ class HomeViewModel(
         initialValue = HomeUiState(
             currentTab = _currentTab.value,
             categories = ToolCategory.entries.filter { it != ToolCategory.ALL },
-            allTools = toolRepository.getToolById("image_obfuscation")?.let { listOf(it) } ?: emptyList(),
-            filteredTools = toolRepository.getToolById("image_obfuscation")?.let { listOf(it) } ?: emptyList(),
+            allTools = toolRepository.getToolById("image_obfuscation")
+                ?.takeUnless { toolVisibilityRepository.isHidden(it.id) }
+                ?.let { listOf(it) }
+                ?: emptyList(),
+            filteredTools = toolRepository.getToolById("image_obfuscation")
+                ?.takeUnless { toolVisibilityRepository.isHidden(it.id) }
+                ?.let { listOf(it) }
+                ?: emptyList(),
             expandedCategories = ToolCategory.entries.filter { it != ToolCategory.ALL }.toSet()
         )
     )

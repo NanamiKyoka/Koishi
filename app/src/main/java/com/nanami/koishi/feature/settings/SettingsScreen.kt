@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.SystemUpdate
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,6 +63,7 @@ import com.nanami.koishi.feature.settings.components.AppThemePicker
 import com.nanami.koishi.feature.settings.components.LocalBackupDialog
 import com.nanami.koishi.feature.settings.components.LocalImportConfirmDialog
 import com.nanami.koishi.feature.settings.components.ThemeModeSelector
+import com.nanami.koishi.feature.settings.components.ToolVisibilityDialog
 import com.nanami.koishi.feature.settings.components.UpdateDialog
 import com.nanami.koishi.feature.settings.components.WebDavSyncDialog
 import java.util.Locale
@@ -93,6 +95,18 @@ fun SettingsScreen(
             currentLanguage = uiState.language,
             onSelect = { onEvent(SettingsUiEvent.OnLanguageSelected(it)) },
             onDismiss = { onEvent(SettingsUiEvent.OnShowLanguageDialog(false)) }
+        )
+    }
+
+    if (uiState.showToolVisibilityDialog) {
+        ToolVisibilityDialog(
+            tools = uiState.allTools,
+            hiddenToolIds = uiState.hiddenToolIds,
+            onToolHiddenChange = { toolId, hidden ->
+                onEvent(SettingsUiEvent.OnSetToolHidden(toolId, hidden))
+            },
+            onShowAll = { onEvent(SettingsUiEvent.OnShowAllTools) },
+            onDismiss = { onEvent(SettingsUiEvent.OnShowToolVisibilityDialog(false)) }
         )
     }
 
@@ -236,6 +250,20 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_language),
                     subtitle = stringResource(uiState.language.titleRes),
                     onClick = { onEvent(SettingsUiEvent.OnShowLanguageDialog(true)) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsCategoryHeader(title = stringResource(R.string.settings_category_tools))
+
+                SettingsClickableItem(
+                    icon = Icons.Rounded.VisibilityOff,
+                    title = stringResource(R.string.settings_tool_visibility),
+                    subtitle = stringResource(
+                        R.string.settings_tool_visibility_desc,
+                        uiState.allTools.count { it.id in uiState.hiddenToolIds }
+                    ),
+                    onClick = { onEvent(SettingsUiEvent.OnShowToolVisibilityDialog(true)) }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

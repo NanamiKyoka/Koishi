@@ -87,6 +87,16 @@
     <string name="settings_lang_system">跟随系统</string>
     <string name="settings_lang_zh">简体中文</string>
     <string name="settings_lang_en">English</string>
+    <string name="settings_category_tools">工具管理</string>
+    <string name="settings_tool_visibility">隐藏工具</string>
+    <string name="settings_tool_visibility_desc">已隐藏 %1$d 个工具</string>
+    <string name="settings_tool_visibility_dialog_title">工具可见性</string>
+    <string name="settings_tool_visibility_dialog_desc">隐藏的工具不会出现在工具箱、搜索、收藏或最近使用中。</string>
+    <string name="settings_tool_visibility_show_all">全部显示</string>
+    <string name="settings_tool_visibility_done">完成</string>
+    <string name="toolbox_no_visible_tools_title">暂无可见工具</string>
+    <string name="toolbox_no_visible_tools_desc">你隐藏了所有工具，可以在设置中重新显示。</string>
+    <string name="toolbox_open_settings">前往设置</string>
     <string name="settings_category_about">关于</string>
     <string name="settings_version">版本</string>
     <string name="settings_about_desc">轻量、优雅的现代 Material 3 工具箱</string>

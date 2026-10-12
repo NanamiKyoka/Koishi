@@ -11,6 +11,8 @@ import com.nanami.koishi.core.data.repository.SharedPreferencesSearchHistoryRepo
 import com.nanami.koishi.core.data.repository.SharedPreferencesToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
+import com.nanami.koishi.core.data.repository.SharedPreferencesToolVisibilityRepository
+import com.nanami.koishi.core.data.repository.ToolVisibilityRepository
 import com.nanami.koishi.core.data.storage.ToolStorageDao
 import com.nanami.koishi.core.data.storage.ToolStorageDatabase
 import com.nanami.koishi.core.data.sync.WebDavClient
@@ -37,6 +39,8 @@ val coreDataModule = module {
 
     single<ToolFavoritesRepository> { SharedPreferencesToolFavoritesRepository(get()) }
 
+    single<ToolVisibilityRepository> { SharedPreferencesToolVisibilityRepository(get()) }
+
     single<SearchHistoryRepository> { SharedPreferencesSearchHistoryRepository(get()) }
 
     single<RecentToolsRepository> { SharedPreferencesRecentToolsRepository(get()) }
@@ -45,6 +49,6 @@ val coreDataModule = module {
 
     single { WebDavClient() }
 
-    single { WebDavSyncManager(get(), get(), get(), get(), get(), get()) }
+    single { WebDavSyncManager(get(), get(), get(), get(), get(), get(), get()) }
     single { AppUpdateManager(cache = SharedPreferencesUpdateCache(get())) }
 }

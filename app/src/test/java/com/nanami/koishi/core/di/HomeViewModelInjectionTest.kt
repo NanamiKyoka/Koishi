@@ -10,12 +10,15 @@ import com.nanami.koishi.core.data.repository.LaunchTab
 import com.nanami.koishi.core.data.repository.NavigationPreferencesRepository
 import com.nanami.koishi.core.data.repository.ToolFavoritesRepository
 import com.nanami.koishi.core.data.repository.ToolRepository
+import com.nanami.koishi.core.data.repository.ToolVisibilityRepository
 import com.nanami.koishi.core.model.ToolCategory
 import com.nanami.koishi.core.model.ToolItem
 import com.nanami.koishi.feature.home.HomeViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.koin.android.ext.koin.androidContext
@@ -36,6 +39,7 @@ class HomeViewModelInjectionTest : KoinTest {
                 single<SearchHistoryRepository> { FakeSearchHistoryRepository() }
                 single<RecentToolsRepository> { FakeRecentToolsRepository() }
                 single<NavigationPreferencesRepository> { FakeNavigationPreferencesRepository() }
+                single<ToolVisibilityRepository> { FakeToolVisibilityRepository() }
             }
         )
     }
@@ -57,6 +61,16 @@ class HomeViewModelInjectionTest : KoinTest {
         val viewModel = getKoin().get<HomeViewModel>()
 
         assertEquals(com.nanami.koishi.feature.home.MainTab.FAVORITES, viewModel.uiState.value.currentTab)
+    }
+
+    @Test
+    fun homeViewModelFiltersHiddenTools() = runBlocking {
+        getKoin().get<ToolVisibilityRepository>()
+            .setToolHidden("image_obfuscation", true)
+
+        val viewModel = getKoin().get<HomeViewModel>()
+
+        assertTrue(viewModel.uiState.value.allTools.isEmpty())
     }
 
     private class FakeToolRepository : ToolRepository {
@@ -156,5 +170,28 @@ class HomeViewModelInjectionTest : KoinTest {
         override fun setLastMainTab(tab: LaunchTab) {
             savedTab = tab
         }
+    }
+
+    private class FakeToolVisibilityRepository : ToolVisibilityRepository {
+
+        private val ids = MutableStateFlow<Set<String>>(emptySet())
+
+        override val hiddenToolIds: Flow<Set<String>> = ids
+
+        override fun isHidden(toolId: String): Boolean = ids.value.contains(toolId)
+
+        override suspend fun setToolHidden(toolId: String, hidden: Boolean) {
+            ids.value = if (hidden) ids.value + toolId else ids.value - toolId
+        }
+
+        override suspend fun setHiddenToolIds(toolIds: Set<String>) {
+            ids.value = toolIds
+        }
+
+        override suspend fun clearHiddenTools() {
+            ids.value = emptySet()
+        }
+
+        override suspend fun reload() = Unit
     }
 }

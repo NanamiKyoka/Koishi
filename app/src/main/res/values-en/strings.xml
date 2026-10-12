@@ -87,6 +87,16 @@
     <string name="settings_lang_system">System Default</string>
     <string name="settings_lang_zh">Simplified Chinese</string>
     <string name="settings_lang_en">English</string>
+    <string name="settings_category_tools">Tool Management</string>
+    <string name="settings_tool_visibility">Hidden Tools</string>
+    <string name="settings_tool_visibility_desc">%1$d tools hidden</string>
+    <string name="settings_tool_visibility_dialog_title">Tool Visibility</string>
+    <string name="settings_tool_visibility_dialog_desc">Hidden tools will not appear in the toolbox, search, favorites, or recent tools.</string>
+    <string name="settings_tool_visibility_show_all">Show All</string>
+    <string name="settings_tool_visibility_done">Done</string>
+    <string name="toolbox_no_visible_tools_title">No visible tools</string>
+    <string name="toolbox_no_visible_tools_desc">You hid every tool. Restore them from Settings.</string>
+    <string name="toolbox_open_settings">Open Settings</string>
     <string name="settings_category_about">About</string>
     <string name="settings_version">Version</string>
     <string name="settings_about_desc">A lightweight, elegant Modern Material 3 Toolbox</string>
