@@ -105,6 +105,16 @@ object TextFileIo {
     fun createCacheFile(context: Context, prefix: String, suffix: String): File =
         File.createTempFile(prefix, suffix, context.cacheDir)
 
+    fun cleanupCacheFiles(
+        context: Context,
+        prefix: String,
+        maxAgeMillis: Long = 24L * 60L * 60L * 1000L
+    ) {
+        val cutoff = System.currentTimeMillis() - maxAgeMillis
+        context.cacheDir.listFiles { file -> file.name.startsWith(prefix) && file.lastModified() < cutoff }
+            ?.forEach(File::delete)
+    }
+
     fun openTextReader(context: Context, uri: Uri): Reader {
         val input = BufferedInputStream(
             context.contentResolver.openInputStream(uri) ?: error("Unable to open input stream")

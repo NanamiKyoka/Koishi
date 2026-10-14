@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -98,6 +100,8 @@ val TEXT_FILE_MIME_TYPES = arrayOf(
     "application/octet-stream"
 )
 
+const val MAX_INLINE_TEXT_CHARS = 1024 * 1024
+
 @Composable
 fun TextToolLargeFileCard(
     file: ImportedTextFile,
@@ -164,11 +168,19 @@ fun TextEditorField(
     readOnly: Boolean = false,
     isError: Boolean = false,
     minLines: Int = 6,
-    maxLines: Int = 12
+    maxLines: Int = 12,
+    maxChars: Int = MAX_INLINE_TEXT_CHARS
 ) {
+    val context = LocalContext.current
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { updated ->
+            if (updated.length <= maxChars) {
+                onValueChange(updated)
+            } else {
+                Toast.makeText(context, R.string.text_tool_text_too_large, Toast.LENGTH_SHORT).show()
+            }
+        },
         modifier = modifier.fillMaxWidth(),
         label = { Text(label) },
         placeholder = placeholder?.let { hint -> { Text(hint) } },

@@ -153,7 +153,8 @@ fun RegexRoute(
         isProcessing = false
     }
     val error = extraction?.exceptionOrNull() ?: replacementResult?.exceptionOrNull()
-    val matches = extraction?.getOrNull()?.matches.orEmpty()
+    val extractionResult = extraction?.getOrNull()
+    val matches = extractionResult?.matches.orEmpty()
 
     Scaffold(
         modifier = modifier,
@@ -295,7 +296,7 @@ fun RegexRoute(
 
                 when (mode) {
                     RegexScreenMode.EXTRACT -> RegexExtractionSection(
-                        matches = matches,
+                        result = extractionResult ?: RegexExtractionResult(emptyList(), 0),
                         onCopy = { value ->
                             copyTextToClipboard(context, value)
                             scope.launch { snackbarHostState.showSnackbar(copied) }
@@ -344,9 +345,10 @@ fun RegexRoute(
 
 @Composable
 private fun RegexExtractionSection(
-    matches: List<RegexMatchResult>,
+    result: RegexExtractionResult,
     onCopy: (String) -> Unit
 ) {
+    val matches = result.matches
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -357,7 +359,7 @@ private fun RegexExtractionSection(
                 text = if (matches.isEmpty()) {
                     stringResource(R.string.text_regex_no_matches)
                 } else {
-                    stringResource(R.string.text_regex_match_count, matches.size)
+                    stringResource(R.string.text_regex_match_count, result.matchCount)
                 },
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -423,7 +425,7 @@ private fun RegexExtractionSection(
             }
         }
 
-        if (matches.size > 200) {
+        if (result.matchCount > matches.size) {
             Text(
                 text = stringResource(R.string.text_regex_truncated),
                 style = MaterialTheme.typography.bodySmall,

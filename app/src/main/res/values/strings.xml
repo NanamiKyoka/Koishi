@@ -1571,6 +1571,7 @@
     <string name="text_tool_imported">已导入 %1$s</string>
     <string name="text_tool_import_failed">文件读取失败</string>
     <string name="text_tool_file_too_large">当前操作最多支持 %1$s 的内联文本</string>
+    <string name="text_tool_text_too_large">文本过长，请改用文件导入</string>
     <string name="text_tool_unsupported_encoding">文件编码不受支持，请使用 UTF-8 或 UTF-16</string>
     <string name="text_tool_large_file">大文件模式</string>
     <string name="text_tool_large_file_desc">文件不会加载到编辑器，可直接进行流式处理</string>

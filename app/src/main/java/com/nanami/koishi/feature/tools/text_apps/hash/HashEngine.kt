@@ -16,8 +16,12 @@ object HashEngine {
             .digest(input.toByteArray(Charsets.UTF_8))
             .toHex()
 
-    fun digestAll(input: String): Map<HashAlgorithm, String> =
-        HashAlgorithm.entries.associateWith { digest(input, it) }
+    fun digestAll(input: String): Map<HashAlgorithm, String> {
+        val bytes = input.toByteArray(Charsets.UTF_8)
+        return HashAlgorithm.entries.associateWith { algorithm ->
+            MessageDigest.getInstance(algorithm.jcaName).digest(bytes).toHex()
+        }
+    }
 
 }
 

@@ -44,13 +44,17 @@ object TextProcessEngine {
         CaseMode.UPPERCASE -> input.uppercase(Locale.ROOT)
         CaseMode.TITLE -> toTitleCase(input)
         CaseMode.SENTENCE -> toSentenceCase(input)
-        CaseMode.SWAP -> input.map { char ->
-            when {
-                char.isUpperCase() -> char.lowercaseChar()
-                char.isLowerCase() -> char.uppercaseChar()
-                else -> char
+        CaseMode.SWAP -> buildString(input.length) {
+            input.forEach { char ->
+                append(
+                    when {
+                        char.isUpperCase() -> char.lowercaseChar()
+                        char.isLowerCase() -> char.uppercaseChar()
+                        else -> char
+                    }
+                )
             }
-        }.joinToString("")
+        }
     }
 
     fun deduplicate(input: String, options: TextProcessOptions): String =
@@ -65,19 +69,39 @@ object TextProcessEngine {
     }
 
     fun statistics(input: String): TextStatistics {
-        val codePoints = input.toCodePoints()
-        val whitespace = codePoints.count(Character::isWhitespace)
+        var characters = 0
+        var whitespace = 0
+        var letters = 0
+        var digits = 0
+        var cjkCharacters = 0
+        var utf8Bytes = 0
+        var index = 0
+        while (index < input.length) {
+            val codePoint = input.codePointAt(index)
+            characters++
+            if (Character.isWhitespace(codePoint)) whitespace++
+            if (Character.isLetter(codePoint)) letters++
+            if (Character.isDigit(codePoint)) digits++
+            if (isCjk(codePoint)) cjkCharacters++
+            utf8Bytes += when {
+                codePoint <= 0x7F -> 1
+                codePoint <= 0x7FF -> 2
+                codePoint <= 0xFFFF -> 3
+                else -> 4
+            }
+            index += Character.charCount(codePoint)
+        }
         return TextStatistics(
-            characters = codePoints.size,
-            charactersWithoutWhitespace = codePoints.size - whitespace,
-            letters = codePoints.count(Character::isLetter),
-            digits = codePoints.count(Character::isDigit),
-            cjkCharacters = codePoints.count(::isCjk),
+            characters = characters,
+            charactersWithoutWhitespace = characters - whitespace,
+            letters = letters,
+            digits = digits,
+            cjkCharacters = cjkCharacters,
             whitespaceCharacters = whitespace,
             words = WORD_REGEX.findAll(input).count(),
             lines = if (input.isEmpty()) 0 else input.lines().size,
             paragraphs = if (input.isBlank()) 0 else input.trim().split(PARAGRAPH_REGEX).count { it.isNotBlank() },
-            utf8Bytes = input.toByteArray(Charsets.UTF_8).size
+            utf8Bytes = utf8Bytes
         )
     }
 
@@ -171,17 +195,6 @@ object TextProcessEngine {
             codePoint in 0x4E00..0x9FFF ||
             codePoint in 0xF900..0xFAFF ||
             codePoint in 0x20000..0x2FA1F
-
-    private fun String.toCodePoints(): List<Int> {
-        val result = ArrayList<Int>(length)
-        var index = 0
-        while (index < length) {
-            val codePoint = codePointAt(index)
-            result += codePoint
-            index += Character.charCount(codePoint)
-        }
-        return result
-    }
 
     private val WORD_REGEX = Regex("[\\p{L}\\p{N}_]+")
     private val PARAGRAPH_REGEX = Regex("\\n\\s*\\n")

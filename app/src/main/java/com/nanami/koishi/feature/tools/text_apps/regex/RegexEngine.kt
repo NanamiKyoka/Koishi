@@ -22,10 +22,9 @@ data class RegexMatchResult(
 )
 
 data class RegexExtractionResult(
-    val matches: List<RegexMatchResult>
-) {
-    val matchCount: Int get() = matches.size
-}
+    val matches: List<RegexMatchResult>,
+    val matchCount: Int = matches.size
+)
 
 object RegexEngine {
 
@@ -35,9 +34,11 @@ object RegexEngine {
         options: RegexOptions = RegexOptions()
     ): Result<RegexExtractionResult> = runCatching {
         val regex = compile(pattern, options)
-        RegexExtractionResult(
-            matches = regex.findAll(input).map { match ->
-                RegexMatchResult(
+        val matches = ArrayList<RegexMatchResult>(MAX_RETAINED_MATCHES)
+        var matchCount = 0
+        regex.findAll(input).forEach { match ->
+            if (matches.size < MAX_RETAINED_MATCHES) {
+                matches += RegexMatchResult(
                     value = match.value,
                     start = match.range.first,
                     end = match.range.last + 1,
@@ -50,8 +51,10 @@ object RegexEngine {
                         )
                     }
                 )
-            }.toList()
-        )
+            }
+            matchCount++
+        }
+        RegexExtractionResult(matches = matches, matchCount = matchCount)
     }
 
     fun replace(
@@ -74,4 +77,6 @@ object RegexEngine {
         }
         return Regex(pattern, regexOptions)
     }
+
+    private const val MAX_RETAINED_MATCHES = 200
 }

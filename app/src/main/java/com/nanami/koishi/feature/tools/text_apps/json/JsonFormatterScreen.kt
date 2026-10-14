@@ -134,6 +134,9 @@ fun JsonFormatterRoute(
     }
 
     LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            TextFileIo.cleanupCacheFiles(context, "koishi-json-")
+        }
         while (true) {
             val uri = JsonShareStore.consume() ?: break
             importSharedUri(uri)

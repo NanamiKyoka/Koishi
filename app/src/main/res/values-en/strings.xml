@@ -1570,6 +1570,7 @@
     <string name="text_tool_imported">Imported %1$s</string>
     <string name="text_tool_import_failed">Failed to read file</string>
     <string name="text_tool_file_too_large">This operation supports inline text up to %1$s</string>
+    <string name="text_tool_text_too_large">Text is too long. Import it from a file instead</string>
     <string name="text_tool_unsupported_encoding">Unsupported encoding. Use UTF-8 or UTF-16</string>
     <string name="text_tool_large_file">Large file mode</string>
     <string name="text_tool_large_file_desc">The file stays out of the editor and is processed as a stream</string>
