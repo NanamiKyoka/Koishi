@@ -19,13 +19,14 @@ object HashEngine {
     fun digestAll(input: String): Map<HashAlgorithm, String> =
         HashAlgorithm.entries.associateWith { digest(input, it) }
 
-    private fun ByteArray.toHex(): String = buildString(size * 2) {
-        for (byte in this@toHex) {
-            val value = byte.toInt() and 0xFF
-            append(HEX[value ushr 4])
-            append(HEX[value and 0x0F])
-        }
-    }
-
-    private const val HEX = "0123456789abcdef"
 }
+
+internal fun ByteArray.toHex(): String = buildString(size * 2) {
+    for (byte in this@toHex) {
+        val value = byte.toInt() and 0xFF
+        append(HEX[value ushr 4])
+        append(HEX[value and 0x0F])
+    }
+}
+
+private const val HEX = "0123456789abcdef"

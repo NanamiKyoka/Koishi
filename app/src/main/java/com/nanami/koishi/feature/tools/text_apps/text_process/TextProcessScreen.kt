@@ -16,12 +16,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
@@ -30,6 +32,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,10 +47,18 @@ import androidx.compose.ui.unit.dp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.text_apps.common.TextEditorField
+import com.nanami.koishi.feature.tools.text_apps.common.TextFileIo
 import com.nanami.koishi.feature.tools.text_apps.common.TextToolTopBar
+import com.nanami.koishi.feature.tools.text_apps.common.TEXT_FILE_MIME_TYPES
 import com.nanami.koishi.feature.tools.text_apps.common.copyTextToClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.formatByteCount
 import com.nanami.koishi.feature.tools.text_apps.common.readTextFromClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.rememberTextFileImportLauncher
+import com.nanami.koishi.feature.tools.text_apps.common.textImportErrorMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private enum class TextProcessTab(@StringRes val labelRes: Int) {
     CASE(R.string.text_process_case),
@@ -62,13 +73,16 @@ fun TextProcessRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var input by rememberSaveable { mutableStateOf("") }
+    var input by remember { mutableStateOf("") }
     var tab by rememberSaveable { mutableStateOf(TextProcessTab.CASE) }
     var caseMode by rememberSaveable { mutableStateOf(CaseMode.LOWERCASE) }
     var sortMode by rememberSaveable { mutableStateOf(SortMode.ASCENDING) }
     var trimLines by rememberSaveable { mutableStateOf(false) }
     var removeEmpty by rememberSaveable { mutableStateOf(false) }
     var ignoreCase by rememberSaveable { mutableStateOf(false) }
+    var output by remember { mutableStateOf("") }
+    var statistics by remember { mutableStateOf(TextProcessEngine.statistics("")) }
+    var isProcessing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -78,15 +92,52 @@ fun TextProcessRoute(
         removeEmpty = removeEmpty,
         ignoreCase = ignoreCase
     )
-    val output = remember(input, tab, caseMode, sortMode, options) {
-        when (tab) {
-            TextProcessTab.CASE -> TextProcessEngine.transformCase(input, caseMode)
-            TextProcessTab.DEDUPLICATE -> TextProcessEngine.deduplicate(input, options)
-            TextProcessTab.SORT -> TextProcessEngine.sortLines(input, sortMode, options)
-            TextProcessTab.STATISTICS -> ""
-        }
+    fun showMessage(message: String) {
+        scope.launch { snackbarHostState.showSnackbar(message) }
     }
-    val statistics = remember(input) { TextProcessEngine.statistics(input) }
+
+    val importLauncher = rememberTextFileImportLauncher(
+        onImported = { file ->
+            val text = file.inlineText
+            if (text == null) {
+                showMessage(
+                    context.getString(
+                        R.string.text_tool_file_too_large,
+                        formatByteCount(TextFileIo.DEFAULT_INLINE_LIMIT_BYTES)
+                    )
+                )
+            } else {
+                input = text
+                showMessage(context.getString(R.string.text_tool_imported, file.displayName))
+            }
+        },
+        onError = { error -> showMessage(textImportErrorMessage(context, error)) }
+    )
+
+    LaunchedEffect(input, tab, caseMode, sortMode, trimLines, removeEmpty, ignoreCase) {
+        isProcessing = true
+        val source = input
+        delay(150)
+        val result = withContext(Dispatchers.Default) {
+            val nextOutput = when (tab) {
+                TextProcessTab.CASE -> TextProcessEngine.transformCase(source, caseMode)
+                TextProcessTab.DEDUPLICATE -> TextProcessEngine.deduplicate(source, options)
+                TextProcessTab.SORT -> TextProcessEngine.sortLines(source, sortMode, options)
+                TextProcessTab.STATISTICS -> ""
+            }
+            val nextStatistics = if (tab == TextProcessTab.STATISTICS) {
+                TextProcessEngine.statistics(source)
+            } else {
+                null
+            }
+            nextOutput to nextStatistics
+        }
+        if (source == input) {
+            output = result.first
+            result.second?.let { statistics = it }
+        }
+        isProcessing = false
+    }
 
     Scaffold(
         modifier = modifier,
@@ -97,6 +148,9 @@ fun TextProcessRoute(
                 titleRes = R.string.tool_text_process_name,
                 onBack = onBack,
                 actions = {
+                    IconButton(onClick = { importLauncher.launch(TEXT_FILE_MIME_TYPES) }) {
+                        Icon(Icons.Rounded.UploadFile, contentDescription = stringResource(R.string.text_tool_import_file))
+                    }
                     IconButton(onClick = { input = readTextFromClipboard(context) }) {
                         Icon(Icons.Rounded.ContentPaste, contentDescription = stringResource(R.string.text_tool_paste))
                     }
@@ -138,6 +192,10 @@ fun TextProcessRoute(
                         minLines = 7,
                         maxLines = 12
                     )
+
+                    if (isProcessing) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
 
                     when (tab) {
                         TextProcessTab.CASE -> CaseControls(

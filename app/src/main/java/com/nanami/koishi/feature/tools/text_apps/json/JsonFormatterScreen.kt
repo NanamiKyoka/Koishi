@@ -1,5 +1,8 @@
 package com.nanami.koishi.feature.tools.text_apps.json
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -16,12 +19,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.FileDownload
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -30,6 +36,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +53,23 @@ import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
 import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
+import com.nanami.koishi.feature.tools.text_apps.common.ImportedTextFile
 import com.nanami.koishi.feature.tools.text_apps.common.TextEditorField
+import com.nanami.koishi.feature.tools.text_apps.common.TextFileIo
+import com.nanami.koishi.feature.tools.text_apps.common.TextImportErrorKind
+import com.nanami.koishi.feature.tools.text_apps.common.TextImportException
+import com.nanami.koishi.feature.tools.text_apps.common.TextToolLargeFileCard
 import com.nanami.koishi.feature.tools.text_apps.common.TextToolTopBar
+import com.nanami.koishi.feature.tools.text_apps.common.TEXT_FILE_MIME_TYPES
 import com.nanami.koishi.feature.tools.text_apps.common.copyTextToClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.formatByteCount
 import com.nanami.koishi.feature.tools.text_apps.common.readTextFromClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.rememberTextFileImportLauncher
+import com.nanami.koishi.feature.tools.text_apps.common.textImportErrorMessage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -58,9 +77,12 @@ fun JsonFormatterRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var input by rememberSaveable { mutableStateOf("") }
-    var output by rememberSaveable { mutableStateOf("") }
-    var errorDetail by rememberSaveable { mutableStateOf<String?>(null) }
+    var input by remember { mutableStateOf("") }
+    var output by remember { mutableStateOf("") }
+    var errorDetail by remember { mutableStateOf<String?>(null) }
+    var importedFile by remember { mutableStateOf<ImportedTextFile?>(null) }
+    var largeOutputFile by remember { mutableStateOf<File?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
     var indentSize by rememberSaveable { mutableIntStateOf(2) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -68,21 +90,170 @@ fun JsonFormatterRoute(
     val invalidJson = stringResource(R.string.text_tool_invalid_json)
     val validJson = stringResource(R.string.text_tool_valid_json)
     val copied = stringResource(R.string.text_tool_copied)
+    val exported = stringResource(R.string.text_tool_exported)
+    val exportFailed = stringResource(R.string.text_tool_export_failed)
+    val processing = stringResource(R.string.text_tool_processing)
+    val largeInput = importedFile?.takeIf { !it.isInline }
 
     fun showMessage(message: String) {
         scope.launch { snackbarHostState.showSnackbar(message) }
     }
 
+    fun clear() {
+        largeOutputFile?.delete()
+        input = ""
+        output = ""
+        errorDetail = null
+        importedFile = null
+        largeOutputFile = null
+    }
+
+    fun acceptImportedFile(file: ImportedTextFile) {
+        largeOutputFile?.delete()
+        importedFile = file
+        input = file.inlineText.orEmpty()
+        output = ""
+        errorDetail = null
+        largeOutputFile = null
+        showMessage(context.getString(R.string.text_tool_imported, file.displayName))
+    }
+
+    val importLauncher = rememberTextFileImportLauncher(
+        onImported = ::acceptImportedFile,
+        onError = { error -> showMessage(textImportErrorMessage(context, error)) }
+    )
+
+    suspend fun importSharedUri(uri: Uri) {
+        try {
+            acceptImportedFile(TextFileIo.importDocument(context, uri))
+        } catch (error: Throwable) {
+            val importError = error as? TextImportException
+                ?: TextImportException(TextImportErrorKind.READ_FAILED, cause = error)
+            showMessage(textImportErrorMessage(context, importError))
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            val uri = JsonShareStore.consume() ?: break
+            importSharedUri(uri)
+        }
+        JsonShareStore.events.collect {
+            val uri = JsonShareStore.consume() ?: return@collect
+            importSharedUri(uri)
+        }
+    }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val result = runCatching {
+                val file = largeOutputFile
+                if (file != null) {
+                    TextFileIo.copyToFile(file, context, uri)
+                } else {
+                    TextFileIo.writeText(context, uri, output)
+                }
+            }
+            showMessage(if (result.isSuccess) exported else exportFailed)
+        }
+    }
+
+    fun exportResult() {
+        if (largeOutputFile == null && output.isEmpty()) return
+        val baseName = importedFile?.displayName
+            ?.substringBeforeLast('.')
+            ?.takeIf { it.isNotBlank() }
+            ?: "formatted"
+        exportLauncher.launch("$baseName.json")
+    }
+
+    fun processLargeJson(mode: JsonFileMode) {
+        val file = largeInput ?: return
+        scope.launch {
+            isProcessing = true
+            largeOutputFile?.delete()
+            val target = if (mode == JsonFileMode.VALIDATE) {
+                null
+            } else {
+                TextFileIo.createCacheFile(context, "koishi-json-", ".json")
+            }
+            val result = JsonFileEngine.process(
+                context = context,
+                inputUri = file.uri,
+                outputFile = target,
+                mode = mode,
+                indentSize = indentSize
+            )
+            isProcessing = false
+            result.onSuccess { processed ->
+                errorDetail = null
+                largeOutputFile = processed
+                if (mode == JsonFileMode.VALIDATE) showMessage(validJson)
+            }.onFailure { error ->
+                largeOutputFile = null
+                errorDetail = error.message
+                if (mode == JsonFileMode.VALIDATE) showMessage(invalidJson)
+            }
+        }
+    }
+
     fun applyFormat(minify: Boolean) {
-        val result = if (minify) JsonFormatterEngine.minify(input) else JsonFormatterEngine.format(input, indentSize)
-        output = result.getOrDefault("")
-        errorDetail = result.exceptionOrNull()?.message
+        if (largeInput != null) {
+            processLargeJson(if (minify) JsonFileMode.MINIFY else JsonFileMode.FORMAT)
+            return
+        }
+
+        val source = input
+        errorDetail = null
+        largeOutputFile?.delete()
+        largeOutputFile = null
+        scope.launch {
+            isProcessing = true
+            val result = withContext(Dispatchers.Default) {
+                if (minify) JsonFormatterEngine.minify(source) else JsonFormatterEngine.format(source, indentSize)
+            }
+            if (input == source) {
+                result.onSuccess { formatted ->
+                    if (formatted.length > TextFileIo.RESULT_INLINE_LIMIT_BYTES) {
+                        val file = withContext(Dispatchers.IO) {
+                            TextFileIo.createCacheFile(context, "koishi-json-", ".json").apply {
+                                writeText(formatted)
+                            }
+                        }
+                        output = ""
+                        largeOutputFile = file
+                    } else {
+                        output = formatted
+                    }
+                    errorDetail = null
+                }.onFailure { error ->
+                    output = ""
+                    errorDetail = error.message
+                }
+            }
+            isProcessing = false
+        }
     }
 
     fun validate() {
-        val result = JsonFormatterEngine.minify(input)
-        errorDetail = result.exceptionOrNull()?.message
-        showMessage(if (result.isSuccess) validJson else invalidJson)
+        if (largeInput != null) {
+            processLargeJson(JsonFileMode.VALIDATE)
+            return
+        }
+
+        val source = input
+        scope.launch {
+            isProcessing = true
+            val result = withContext(Dispatchers.Default) { JsonFormatterEngine.minify(source) }
+            if (input == source) {
+                errorDetail = result.exceptionOrNull()?.message
+                showMessage(if (result.isSuccess) validJson else invalidJson)
+            }
+            isProcessing = false
+        }
     }
 
     Scaffold(
@@ -94,14 +265,19 @@ fun JsonFormatterRoute(
                 titleRes = R.string.tool_json_formatter_name,
                 onBack = onBack,
                 actions = {
-                    IconButton(onClick = { input = readTextFromClipboard(context) }) {
-                        Icon(Icons.Rounded.ContentPaste, contentDescription = stringResource(R.string.text_tool_paste))
+                    IconButton(onClick = { importLauncher.launch(TEXT_FILE_MIME_TYPES) }) {
+                        Icon(Icons.Rounded.UploadFile, contentDescription = stringResource(R.string.text_tool_import_file))
                     }
                     IconButton(onClick = {
-                        input = ""
+                        input = readTextFromClipboard(context)
                         output = ""
                         errorDetail = null
+                        importedFile = null
+                        largeOutputFile = null
                     }) {
+                        Icon(Icons.Rounded.ContentPaste, contentDescription = stringResource(R.string.text_tool_paste))
+                    }
+                    IconButton(onClick = ::clear) {
                         Icon(Icons.Rounded.DeleteSweep, contentDescription = stringResource(R.string.text_tool_clear))
                     }
                 }
@@ -129,27 +305,49 @@ fun JsonFormatterRoute(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Button(onClick = { applyFormat(false) }) {
+                        Button(
+                            enabled = !isProcessing && (input.isNotEmpty() || largeInput != null),
+                            onClick = { applyFormat(false) }
+                        ) {
                             Text(stringResource(R.string.text_tool_format))
                         }
-                        OutlinedButton(onClick = { applyFormat(true) }) {
+                        OutlinedButton(
+                            enabled = !isProcessing && (input.isNotEmpty() || largeInput != null),
+                            onClick = { applyFormat(true) }
+                        ) {
                             Text(stringResource(R.string.text_tool_minify))
                         }
-                        TextButton(onClick = ::validate) {
+                        TextButton(
+                            enabled = !isProcessing && (input.isNotEmpty() || largeInput != null),
+                            onClick = ::validate
+                        ) {
                             Text(stringResource(R.string.text_tool_validate))
+                        }
+                        if (isProcessing) {
+                            Text(
+                                text = processing,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                         Spacer(Modifier.weight(1f))
                         FilterChip(
                             selected = indentSize == 2,
+                            enabled = !isProcessing,
                             onClick = { indentSize = 2 },
                             label = { Text(stringResource(R.string.text_tool_indent_spaces, 2)) }
                         )
                         FilterChip(
                             selected = indentSize == 4,
+                            enabled = !isProcessing,
                             onClick = { indentSize = 4 },
                             label = { Text(stringResource(R.string.text_tool_indent_spaces, 4)) }
                         )
                     }
+                }
+
+                if (isProcessing) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
 
                 if (layoutMode == WindowLayoutMode.EXPANDED) {
@@ -158,39 +356,57 @@ fun JsonFormatterRoute(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        JsonInputField(
-                            value = input,
-                            onValueChange = {
-                                input = it
-                                errorDetail = null
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            if (largeInput != null) {
+                                TextToolLargeFileCard(file = largeInput)
+                            } else {
+                                JsonInputField(
+                                    value = input,
+                                    onValueChange = {
+                                        input = it
+                                        errorDetail = null
+                                        importedFile = null
+                                        largeOutputFile = null
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
                         JsonOutputField(
                             value = output,
+                            largeOutputFile = largeOutputFile,
                             errorDetail = errorDetail,
                             onCopy = {
                                 copyTextToClipboard(context, output)
                                 showMessage(copied)
                             },
+                            onExport = ::exportResult,
                             modifier = Modifier.weight(1f)
                         )
                     }
                 } else {
-                    JsonInputField(
-                        value = input,
-                        onValueChange = {
-                            input = it
-                            errorDetail = null
-                        }
-                    )
+                    if (largeInput != null) {
+                        TextToolLargeFileCard(file = largeInput)
+                    } else {
+                        JsonInputField(
+                            value = input,
+                            onValueChange = {
+                                input = it
+                                errorDetail = null
+                                importedFile = null
+                                largeOutputFile = null
+                            }
+                        )
+                    }
                     JsonOutputField(
                         value = output,
+                        largeOutputFile = largeOutputFile,
                         errorDetail = errorDetail,
                         onCopy = {
                             copyTextToClipboard(context, output)
                             showMessage(copied)
-                        }
+                        },
+                        onExport = ::exportResult
                     )
                 }
 
@@ -220,8 +436,10 @@ private fun JsonInputField(
 @Composable
 private fun JsonOutputField(
     value: String,
+    largeOutputFile: File?,
     errorDetail: String?,
     onCopy: () -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -235,20 +453,29 @@ private fun JsonOutputField(
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            IconButton(onClick = onCopy, enabled = value.isNotEmpty()) {
-                Icon(Icons.Rounded.ContentCopy, contentDescription = stringResource(R.string.text_tool_copy))
+            Row {
+                IconButton(onClick = onExport, enabled = largeOutputFile != null || value.isNotEmpty()) {
+                    Icon(Icons.Rounded.FileDownload, contentDescription = stringResource(R.string.text_tool_export))
+                }
+                IconButton(onClick = onCopy, enabled = value.isNotEmpty()) {
+                    Icon(Icons.Rounded.ContentCopy, contentDescription = stringResource(R.string.text_tool_copy))
+                }
             }
         }
-        TextEditorField(
-            value = value,
-            onValueChange = {},
-            label = stringResource(R.string.text_tool_output),
-            placeholder = stringResource(R.string.text_tool_json_output_placeholder),
-            readOnly = true,
-            isError = errorDetail != null,
-            minLines = 10,
-            maxLines = 16
-        )
+        if (largeOutputFile != null) {
+            LargeOutputCard(file = largeOutputFile, onExport = onExport)
+        } else {
+            TextEditorField(
+                value = value,
+                onValueChange = {},
+                label = stringResource(R.string.text_tool_output),
+                placeholder = stringResource(R.string.text_tool_json_output_placeholder),
+                readOnly = true,
+                isError = errorDetail != null,
+                minLines = 10,
+                maxLines = 16
+            )
+        }
         errorDetail?.let { detail ->
             Text(
                 text = "${stringResource(R.string.text_tool_invalid_json)}: $detail",
@@ -256,6 +483,42 @@ private fun JsonOutputField(
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun LargeOutputCard(file: File, onExport: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.text_tool_large_output),
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Text(
+                    text = stringResource(
+                        R.string.text_tool_file_metadata,
+                        file.name,
+                        formatByteCount(file.length())
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = onExport) {
+                Icon(Icons.Rounded.FileDownload, contentDescription = stringResource(R.string.text_tool_export))
+            }
         }
     }
 }

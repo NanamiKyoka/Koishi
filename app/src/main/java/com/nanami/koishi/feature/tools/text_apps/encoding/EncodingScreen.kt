@@ -14,12 +14,14 @@ import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.SwapVert
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -43,46 +45,85 @@ import androidx.compose.ui.unit.dp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.text_apps.common.TextEditorField
+import com.nanami.koishi.feature.tools.text_apps.common.TextFileIo
 import com.nanami.koishi.feature.tools.text_apps.common.TextToolTopBar
+import com.nanami.koishi.feature.tools.text_apps.common.TEXT_FILE_MIME_TYPES
 import com.nanami.koishi.feature.tools.text_apps.common.copyTextToClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.formatByteCount
 import com.nanami.koishi.feature.tools.text_apps.common.readTextFromClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.rememberTextFileImportLauncher
+import com.nanami.koishi.feature.tools.text_apps.common.textImportErrorMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun EncodingRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var input by rememberSaveable { mutableStateOf("") }
-    var output by rememberSaveable { mutableStateOf("") }
+    var input by remember { mutableStateOf("") }
+    var output by remember { mutableStateOf("") }
     var scheme by rememberSaveable { mutableStateOf(EncodingScheme.BASE64) }
     var direction by rememberSaveable { mutableStateOf(EncodingDirection.ENCODE) }
     var base64UrlSafe by rememberSaveable { mutableStateOf(false) }
     var includePadding by rememberSaveable { mutableStateOf(true) }
     var urlForm by rememberSaveable { mutableStateOf(false) }
-    var hasError by rememberSaveable { mutableStateOf(false) }
+    var hasError by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val copied = stringResource(R.string.text_tool_copied)
 
+    fun showMessage(message: String) {
+        scope.launch { snackbarHostState.showSnackbar(message) }
+    }
+
+    val importLauncher = rememberTextFileImportLauncher(
+        onImported = { file ->
+            val text = file.inlineText
+            if (text == null) {
+                showMessage(
+                    context.getString(
+                        R.string.text_tool_file_too_large,
+                        formatByteCount(TextFileIo.DEFAULT_INLINE_LIMIT_BYTES)
+                    )
+                )
+            } else {
+                input = text
+                showMessage(context.getString(R.string.text_tool_imported, file.displayName))
+            }
+        },
+        onError = { error -> showMessage(textImportErrorMessage(context, error)) }
+    )
+
     LaunchedEffect(input, scheme, direction, base64UrlSafe, includePadding, urlForm) {
-        val result = if (input.isEmpty()) {
+        isProcessing = true
+        val source = input
+        val result = if (source.isEmpty()) {
             Result.success("")
         } else {
-            EncodingEngine.transform(
-                input = input,
-                direction = direction,
-                scheme = scheme,
-                options = EncodingOptions(
-                    base64UrlSafe = base64UrlSafe,
-                    includePadding = includePadding,
-                    urlForm = urlForm
+            delay(150)
+            withContext(Dispatchers.Default) {
+                EncodingEngine.transform(
+                    input = source,
+                    direction = direction,
+                    scheme = scheme,
+                    options = EncodingOptions(
+                        base64UrlSafe = base64UrlSafe,
+                        includePadding = includePadding,
+                        urlForm = urlForm
+                    )
                 )
-            )
+            }
         }
-        output = result.getOrDefault("")
-        hasError = result.isFailure
+        if (source == input) {
+            output = result.getOrDefault("")
+            hasError = result.isFailure
+        }
+        isProcessing = false
     }
 
     Scaffold(
@@ -94,6 +135,9 @@ fun EncodingRoute(
                 titleRes = R.string.tool_text_encoding_name,
                 onBack = onBack,
                 actions = {
+                    IconButton(onClick = { importLauncher.launch(TEXT_FILE_MIME_TYPES) }) {
+                        Icon(Icons.Rounded.UploadFile, contentDescription = stringResource(R.string.text_tool_import_file))
+                    }
                     IconButton(onClick = { input = readTextFromClipboard(context) }) {
                         Icon(Icons.Rounded.ContentPaste, contentDescription = stringResource(R.string.text_tool_paste))
                     }
@@ -198,6 +242,10 @@ fun EncodingRoute(
                     minLines = 8,
                     maxLines = 14
                 )
+
+                if (isProcessing) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
 
                 FilledTonalIconButton(
                     onClick = {

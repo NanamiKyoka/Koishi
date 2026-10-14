@@ -15,11 +15,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -30,6 +32,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,10 +49,18 @@ import androidx.compose.ui.unit.dp
 import com.nanami.koishi.R
 import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.feature.tools.text_apps.common.TextEditorField
+import com.nanami.koishi.feature.tools.text_apps.common.TextFileIo
 import com.nanami.koishi.feature.tools.text_apps.common.TextToolTopBar
+import com.nanami.koishi.feature.tools.text_apps.common.TEXT_FILE_MIME_TYPES
 import com.nanami.koishi.feature.tools.text_apps.common.copyTextToClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.formatByteCount
 import com.nanami.koishi.feature.tools.text_apps.common.readTextFromClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.rememberTextFileImportLauncher
+import com.nanami.koishi.feature.tools.text_apps.common.textImportErrorMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private enum class RegexScreenMode {
     EXTRACT,
@@ -63,7 +74,7 @@ fun RegexRoute(
     modifier: Modifier = Modifier
 ) {
     var mode by rememberSaveable { mutableStateOf(RegexScreenMode.EXTRACT) }
-    var input by rememberSaveable { mutableStateOf("") }
+    var input by remember { mutableStateOf("") }
     var pattern by rememberSaveable { mutableStateOf("") }
     var replacement by rememberSaveable { mutableStateOf("") }
     var ignoreCase by rememberSaveable { mutableStateOf(false) }
@@ -71,6 +82,9 @@ fun RegexRoute(
     var dotAll by rememberSaveable { mutableStateOf(false) }
     var literal by rememberSaveable { mutableStateOf(false) }
     var replaceAll by rememberSaveable { mutableStateOf(true) }
+    var extraction by remember { mutableStateOf<Result<RegexExtractionResult>?>(null) }
+    var replacementResult by remember { mutableStateOf<Result<String>?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -81,19 +95,62 @@ fun RegexRoute(
         dotAll = dotAll,
         literal = literal
     )
-    val extraction = remember(input, pattern, options, mode) {
-        if (mode == RegexScreenMode.EXTRACT && pattern.isNotEmpty()) {
-            RegexEngine.extract(input, pattern, options)
-        } else {
-            null
-        }
+    fun showMessage(message: String) {
+        scope.launch { snackbarHostState.showSnackbar(message) }
     }
-    val replacementResult = remember(input, pattern, replacement, replaceAll, options, mode) {
-        if (mode == RegexScreenMode.REPLACE && pattern.isNotEmpty()) {
-            RegexEngine.replace(input, pattern, replacement, replaceAll, options)
+
+    val importLauncher = rememberTextFileImportLauncher(
+        onImported = { file ->
+            val text = file.inlineText
+            if (text == null) {
+                showMessage(
+                    context.getString(
+                        R.string.text_tool_file_too_large,
+                        formatByteCount(TextFileIo.DEFAULT_INLINE_LIMIT_BYTES)
+                    )
+                )
+            } else {
+                input = text
+                showMessage(context.getString(R.string.text_tool_imported, file.displayName))
+            }
+        },
+        onError = { error -> showMessage(textImportErrorMessage(context, error)) }
+    )
+
+    LaunchedEffect(
+        input,
+        pattern,
+        replacement,
+        replaceAll,
+        ignoreCase,
+        multiline,
+        dotAll,
+        literal,
+        mode
+    ) {
+        isProcessing = true
+        val sourceInput = input
+        val sourcePattern = pattern
+        val sourceReplacement = replacement
+        val sourceOptions = options
+        delay(150)
+        val nextExtraction = if (mode == RegexScreenMode.EXTRACT && sourcePattern.isNotEmpty()) {
+            withContext(Dispatchers.Default) { RegexEngine.extract(sourceInput, sourcePattern, sourceOptions) }
         } else {
             null
         }
+        val nextReplacement = if (mode == RegexScreenMode.REPLACE && sourcePattern.isNotEmpty()) {
+            withContext(Dispatchers.Default) {
+                RegexEngine.replace(sourceInput, sourcePattern, sourceReplacement, replaceAll, sourceOptions)
+            }
+        } else {
+            null
+        }
+        if (sourceInput == input && sourcePattern == pattern && sourceReplacement == replacement) {
+            extraction = nextExtraction
+            replacementResult = nextReplacement
+        }
+        isProcessing = false
     }
     val error = extraction?.exceptionOrNull() ?: replacementResult?.exceptionOrNull()
     val matches = extraction?.getOrNull()?.matches.orEmpty()
@@ -107,6 +164,9 @@ fun RegexRoute(
                 titleRes = R.string.tool_regex_tool_name,
                 onBack = onBack,
                 actions = {
+                    IconButton(onClick = { importLauncher.launch(TEXT_FILE_MIME_TYPES) }) {
+                        Icon(Icons.Rounded.UploadFile, contentDescription = stringResource(R.string.text_tool_import_file))
+                    }
                     IconButton(onClick = { input = readTextFromClipboard(context) }) {
                         Icon(Icons.Rounded.ContentPaste, contentDescription = stringResource(R.string.text_tool_paste))
                     }
@@ -220,6 +280,10 @@ fun RegexRoute(
                     maxLines = 12,
                     isError = error != null
                 )
+
+                if (isProcessing) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
 
                 error?.let {
                     Text(

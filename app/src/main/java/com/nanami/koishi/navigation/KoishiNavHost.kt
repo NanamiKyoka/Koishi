@@ -49,6 +49,7 @@ import com.nanami.koishi.feature.tools.text_apps.regex.RegexRoute
 import com.nanami.koishi.feature.tools.text_apps.text_process.TextProcessRoute
 import com.nanami.koishi.feature.tools.text_apps.diff.DiffRoute
 import com.nanami.koishi.feature.tools.text_apps.json.JsonFormatterRoute
+import com.nanami.koishi.feature.tools.text_apps.json.JsonShareStore
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryRoute
 import com.nanami.koishi.feature.tools.today_in_history.TodayInHistoryViewModel
 import com.nanami.koishi.feature.tools.unit_converter.UnitConverterRoute
@@ -66,6 +67,15 @@ fun KoishiNavHost(
     val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isHomeDestination = currentBackStackEntry?.destination?.hasRoute<HomeRoute>() != false
+
+    LaunchedEffect(Unit) {
+        if (JsonShareStore.hasPending()) {
+            navController.navigate(JsonFormatterRoute) { launchSingleTop = true }
+        }
+        JsonShareStore.events.collect {
+            navController.navigate(JsonFormatterRoute) { launchSingleTop = true }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (LanTransferShareStore.hasPending()) {

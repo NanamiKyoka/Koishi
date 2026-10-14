@@ -24,6 +24,7 @@ import com.nanami.koishi.core.util.LocaleHelper
 import com.nanami.koishi.feature.settings.AppLanguage
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.lan_transfer.LanTransferShareStore
+import com.nanami.koishi.feature.tools.text_apps.json.JsonShareStore
 import com.nanami.koishi.navigation.KoishiNavHost
 import org.koin.androidx.compose.koinViewModel
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,16 @@ class MainActivity : ComponentActivity() {
             else -> emptyList()
         }
         if (uris.isEmpty()) return
+        val jsonUri = uris.firstOrNull { uri ->
+            val mimeType = intent?.type ?: contentResolver.getType(uri)
+            mimeType == "application/json" ||
+                mimeType?.endsWith("+json", ignoreCase = true) == true ||
+                uri.toString().substringBefore('?').endsWith(".json", ignoreCase = true)
+        }
+        if (jsonUri != null) {
+            JsonShareStore.offer(jsonUri)
+            return
+        }
         lifecycleScope.launch(Dispatchers.IO) {
             LanTransferShareStore.offerUris(uris, contentResolver)
         }

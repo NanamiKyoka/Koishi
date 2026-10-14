@@ -15,17 +15,20 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,28 +47,90 @@ import com.nanami.koishi.core.designsystem.adaptive.AdaptiveContentWidth
 import com.nanami.koishi.core.designsystem.adaptive.LocalWindowLayoutMode
 import com.nanami.koishi.core.designsystem.adaptive.WindowLayoutMode
 import com.nanami.koishi.feature.tools.text_apps.common.TextEditorField
+import com.nanami.koishi.feature.tools.text_apps.common.TextFileIo
 import com.nanami.koishi.feature.tools.text_apps.common.TextToolTopBar
+import com.nanami.koishi.feature.tools.text_apps.common.TEXT_FILE_MIME_TYPES
 import com.nanami.koishi.feature.tools.text_apps.common.copyTextToClipboard
+import com.nanami.koishi.feature.tools.text_apps.common.formatByteCount
+import com.nanami.koishi.feature.tools.text_apps.common.rememberTextFileImportLauncher
+import com.nanami.koishi.feature.tools.text_apps.common.textImportErrorMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DiffRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var oldText by rememberSaveable { mutableStateOf("") }
-    var newText by rememberSaveable { mutableStateOf("") }
+    var oldText by remember { mutableStateOf("") }
+    var newText by remember { mutableStateOf("") }
     var ignoreCase by rememberSaveable { mutableStateOf(false) }
     var ignoreWhitespace by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val copied = stringResource(R.string.text_tool_copied)
-    val result = remember(oldText, newText, ignoreCase, ignoreWhitespace) {
-        DiffEngine.diff(oldText, newText, ignoreCase, ignoreWhitespace)
+    var result by remember { mutableStateOf<Result<DiffResult>?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
+
+    fun showMessage(message: String) {
+        scope.launch { snackbarHostState.showSnackbar(message) }
     }
-    val diffResult = result.getOrNull()
-    val error = result.exceptionOrNull()
+
+    val oldImportLauncher = rememberTextFileImportLauncher(
+        onImported = { file ->
+            val text = file.inlineText
+            if (text == null) {
+                showMessage(
+                    context.getString(
+                        R.string.text_tool_file_too_large,
+                        formatByteCount(TextFileIo.DEFAULT_INLINE_LIMIT_BYTES)
+                    )
+                )
+            } else {
+                oldText = text
+                showMessage(context.getString(R.string.text_tool_imported, file.displayName))
+            }
+        },
+        onError = { error -> showMessage(textImportErrorMessage(context, error)) }
+    )
+
+    val newImportLauncher = rememberTextFileImportLauncher(
+        onImported = { file ->
+            val text = file.inlineText
+            if (text == null) {
+                showMessage(
+                    context.getString(
+                        R.string.text_tool_file_too_large,
+                        formatByteCount(TextFileIo.DEFAULT_INLINE_LIMIT_BYTES)
+                    )
+                )
+            } else {
+                newText = text
+                showMessage(context.getString(R.string.text_tool_imported, file.displayName))
+            }
+        },
+        onError = { error -> showMessage(textImportErrorMessage(context, error)) }
+    )
+
+    LaunchedEffect(oldText, newText, ignoreCase, ignoreWhitespace) {
+        isProcessing = true
+        val sourceOld = oldText
+        val sourceNew = newText
+        delay(200)
+        val next = withContext(Dispatchers.Default) {
+            DiffEngine.diff(sourceOld, sourceNew, ignoreCase, ignoreWhitespace)
+        }
+        if (sourceOld == oldText && sourceNew == newText) {
+            result = next
+        }
+        isProcessing = false
+    }
+
+    val diffResult = result?.getOrNull()
+    val error = result?.exceptionOrNull()
     val errorText = when (error) {
         is DiffLimitExceededException -> stringResource(R.string.text_diff_limit)
         null -> null
@@ -135,6 +200,7 @@ fun DiffRoute(
                                 onValueChange = { oldText = it },
                                 label = stringResource(R.string.text_diff_original),
                                 placeholder = stringResource(R.string.text_diff_original_placeholder),
+                                onImport = { oldImportLauncher.launch(TEXT_FILE_MIME_TYPES) },
                                 modifier = Modifier.weight(1f)
                             )
                             DiffInput(
@@ -142,6 +208,7 @@ fun DiffRoute(
                                 onValueChange = { newText = it },
                                 label = stringResource(R.string.text_diff_modified),
                                 placeholder = stringResource(R.string.text_diff_modified_placeholder),
+                                onImport = { newImportLauncher.launch(TEXT_FILE_MIME_TYPES) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -151,15 +218,23 @@ fun DiffRoute(
                                 value = oldText,
                                 onValueChange = { oldText = it },
                                 label = stringResource(R.string.text_diff_original),
-                                placeholder = stringResource(R.string.text_diff_original_placeholder)
+                                placeholder = stringResource(R.string.text_diff_original_placeholder),
+                                onImport = { oldImportLauncher.launch(TEXT_FILE_MIME_TYPES) }
                             )
                             DiffInput(
                                 value = newText,
                                 onValueChange = { newText = it },
                                 label = stringResource(R.string.text_diff_modified),
-                                placeholder = stringResource(R.string.text_diff_modified_placeholder)
+                                placeholder = stringResource(R.string.text_diff_modified_placeholder),
+                                onImport = { newImportLauncher.launch(TEXT_FILE_MIME_TYPES) }
                             )
                         }
+                    }
+                }
+
+                if (isProcessing) {
+                    item(key = "processing") {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
                 }
 
@@ -208,17 +283,27 @@ private fun DiffInput(
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
+    onImport: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TextEditorField(
-        value = value,
-        onValueChange = onValueChange,
-        label = label,
-        placeholder = placeholder,
-        modifier = modifier,
-        minLines = 6,
-        maxLines = 10
-    )
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = onImport) {
+                Icon(Icons.Rounded.UploadFile, contentDescription = stringResource(R.string.text_tool_import_file))
+            }
+        }
+        TextEditorField(
+            value = value,
+            onValueChange = onValueChange,
+            label = label,
+            placeholder = placeholder,
+            minLines = 6,
+            maxLines = 10
+        )
+    }
 }
 
 @Composable
