@@ -19,6 +19,8 @@ import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.compass.CompassRoute
 import com.nanami.koishi.feature.tools.compass.CompassViewModel
+import com.nanami.koishi.feature.tools.spirit_level.SpiritLevelRoute
+import com.nanami.koishi.feature.tools.spirit_level.SpiritLevelViewModel
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerRoute
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
 import com.nanami.koishi.feature.tools.date_time_calculator.DateTimeCalculatorRoute
@@ -151,6 +153,7 @@ fun KoishiNavHost(
                             "text_process" -> navController.navigate(TextProcessRoute)
                             "text_diff" -> navController.navigate(TextDiffRoute)
                             "compass" -> navController.navigate(CompassRoute)
+                            "spirit_level" -> navController.navigate(SpiritLevelRoute)
                             "noise_meter" -> navController.navigate(NoiseMeterRoute)
                         }
                     }
@@ -391,6 +394,14 @@ fun KoishiNavHost(
                 val compassViewModel: CompassViewModel = koinViewModel()
                 CompassRoute(
                     viewModel = compassViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<SpiritLevelRoute> {
+                val spiritLevelViewModel: SpiritLevelViewModel = koinViewModel()
+                SpiritLevelRoute(
+                    viewModel = spiritLevelViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

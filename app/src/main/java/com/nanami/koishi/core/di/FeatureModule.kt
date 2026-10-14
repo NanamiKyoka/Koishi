@@ -25,6 +25,8 @@ import com.nanami.koishi.feature.tools.meme_maker.data.MemeLocalStickerRepositor
 import com.nanami.koishi.feature.tools.meme_maker.engine.MemeAssetRepository
 import com.nanami.koishi.feature.tools.mini_apps.engine.MiniAppStore
 import com.nanami.koishi.feature.tools.noise_meter.engine.NoiseMeterEngine
+import com.nanami.koishi.feature.tools.spirit_level.engine.SpiritLevelEngine
+import com.nanami.koishi.feature.tools.spirit_level.engine.SpiritLevelSettingsRepository
 import com.nanami.koishi.feature.tools.noise_meter.engine.NoiseMeterRepository
 import com.nanami.koishi.feature.tools.postal_code.engine.PostalDatasetRepository
 import com.nanami.koishi.feature.tools.postal_code.engine.PostalRepository
@@ -62,6 +64,8 @@ val featureModule = module {
     single { MiniAppStore(get()) }
 
     single { CompassEngine() }
+    single { SpiritLevelEngine() }
+    single { SpiritLevelSettingsRepository(get()) }
     single { NoiseMeterEngine() }
     single { NoiseMeterRepository(get()) }
 

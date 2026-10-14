@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,10 +45,16 @@ fun CompassRoute(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val view = LocalView.current
 
-    DisposableEffect(viewModel) {
+    DisposableEffect(viewModel, view) {
+        val previousKeepScreenOn = view.keepScreenOn
+        view.keepScreenOn = true
         viewModel.onEvent(CompassUiEvent.OnStart)
-        onDispose { viewModel.onEvent(CompassUiEvent.OnStop) }
+        onDispose {
+            viewModel.onEvent(CompassUiEvent.OnStop)
+            view.keepScreenOn = previousKeepScreenOn
+        }
     }
 
     CompassScreen(

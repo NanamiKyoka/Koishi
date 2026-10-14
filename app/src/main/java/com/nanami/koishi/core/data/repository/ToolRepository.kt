@@ -246,6 +246,15 @@ class InMemoryToolRepository : ToolRepository {
                 hasDot = true
             ),
             ToolItem(
+                id = "spirit_level",
+                nameRes = R.string.tool_spirit_level_name,
+                descriptionRes = R.string.tool_spirit_level_desc,
+                icon = Icons.Rounded.Straighten,
+                category = ToolCategory.DEVICE_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
                 id = "today_in_history",
                 nameRes = R.string.tool_today_in_history_name,
                 descriptionRes = R.string.tool_today_in_history_desc,

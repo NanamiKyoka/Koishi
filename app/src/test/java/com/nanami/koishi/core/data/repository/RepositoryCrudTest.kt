@@ -167,6 +167,7 @@ class RepositoryCrudTest {
             Triple("text_diff", ToolCategory.TEXT_APPS, true),
             Triple("compass", ToolCategory.DEVICE_APPS, true),
             Triple("noise_meter", ToolCategory.DEVICE_APPS, true),
+            Triple("spirit_level", ToolCategory.DEVICE_APPS, true),
             Triple("today_in_history", ToolCategory.LIFE, true),
             Triple("decision_maker", ToolCategory.LIFE, true),
             Triple("ruler", ToolCategory.LIFE, true),

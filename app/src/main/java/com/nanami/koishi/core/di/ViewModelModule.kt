@@ -21,6 +21,7 @@ import com.nanami.koishi.feature.tools.meme_maker.MemeMakerViewModel
 import com.nanami.koishi.feature.tools.mini_apps.MiniAppsViewModel
 import com.nanami.koishi.feature.tools.mirage_tank.MirageTankViewModel
 import com.nanami.koishi.feature.tools.noise_meter.NoiseMeterViewModel
+import com.nanami.koishi.feature.tools.spirit_level.SpiritLevelViewModel
 import com.nanami.koishi.feature.tools.postal_code.PostalCodeViewModel
 import com.nanami.koishi.feature.tools.prism_tank.PrismTankViewModel
 import com.nanami.koishi.feature.tools.qr_tool.QrToolViewModel
@@ -54,6 +55,7 @@ val viewModelModule = module {
     viewModel { MirageTankViewModel(get(), get()) }
     viewModel { PrismTankViewModel(get(), get()) }
     viewModel { CompassViewModel(get(), get()) }
+    viewModel { SpiritLevelViewModel(get(), get(), get()) }
     viewModel { NoiseMeterViewModel(get(), get(), get()) }
     viewModel { PostalCodeViewModel(get(), get(), get(), get()) }
     viewModel { QrToolViewModel(get()) }
