@@ -1642,4 +1642,32 @@
     <string name="noise_meter_desc_very_noisy">Clearly loud, like arterial traffic or a vacuum cleaner</string>
     <string name="noise_meter_desc_dangerous">Prolonged exposure may damage hearing, protective gear is advised</string>
     <string name="noise_meter_desc_extreme">Construction site or concert level, protect your hearing immediately</string>
-</resources>
+    <!-- Compass -->
+    <string name="tool_compass_name">Compass</string>
+    <string name="tool_compass_desc">Show live direction, heading and device tilt using magnetic and orientation sensors</string>
+    <string name="compass_degrees_format">%1$d°</string>
+    <string name="compass_angle_format">%1$d°</string>
+    <string name="compass_direction_north">N</string>
+    <string name="compass_direction_northeast">NE</string>
+    <string name="compass_direction_east">E</string>
+    <string name="compass_direction_southeast">SE</string>
+    <string name="compass_direction_south">S</string>
+    <string name="compass_direction_southwest">SW</string>
+    <string name="compass_direction_west">W</string>
+    <string name="compass_direction_northwest">NW</string>
+    <string name="compass_status_error">Compass unavailable</string>
+    <string name="compass_status_tilted">Keep the phone level</string>
+    <string name="compass_status_tilted_desc">The heading may be less accurate when the device is tilted. Keep it as level as possible.</string>
+    <string name="compass_status_calibrate">Sensor calibration recommended</string>
+    <string name="compass_status_calibrate_desc">Move the phone in a figure-eight and keep it away from magnets, metal surfaces and strong electrical currents.</string>
+    <string name="compass_status_ready">Direction ready</string>
+    <string name="compass_status_ready_desc">Readings use magnetic north and are intended for everyday reference.</string>
+    <string name="compass_hold">Hold reading</string>
+    <string name="compass_unlock">Resume</string>
+    <string name="compass_reading_title">Live readings</string>
+    <string name="compass_heading">Heading</string>
+    <string name="compass_pitch">Pitch</string>
+    <string name="compass_roll">Roll</string>
+    <string name="compass_note">Compass readings can be affected by nearby magnetic objects and the device orientation. Do not use them for professional navigation.</string>
+    <string name="compass_sensor_unavailable">This device does not provide the required orientation sensors.</string>
+    <string name="compass_sensor_error">Failed to start the orientation sensors. Please try again later.</string></resources>

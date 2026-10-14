@@ -17,6 +17,8 @@ import com.nanami.koishi.feature.home.HomeRoute
 import com.nanami.koishi.feature.home.HomeViewModel
 import com.nanami.koishi.feature.home.poetry.PoetryViewModel
 import com.nanami.koishi.feature.settings.SettingsViewModel
+import com.nanami.koishi.feature.tools.compass.CompassRoute
+import com.nanami.koishi.feature.tools.compass.CompassViewModel
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerRoute
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
 import com.nanami.koishi.feature.tools.date_time_calculator.DateTimeCalculatorRoute
@@ -148,6 +150,7 @@ fun KoishiNavHost(
                             "regex_tool" -> navController.navigate(RegexRoute)
                             "text_process" -> navController.navigate(TextProcessRoute)
                             "text_diff" -> navController.navigate(TextDiffRoute)
+                            "compass" -> navController.navigate(CompassRoute)
                             "noise_meter" -> navController.navigate(NoiseMeterRoute)
                         }
                     }
@@ -380,6 +383,14 @@ fun KoishiNavHost(
 
             composable<TextDiffRoute> {
                 DiffRoute(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<CompassRoute> {
+                val compassViewModel: CompassViewModel = koinViewModel()
+                CompassRoute(
+                    viewModel = compassViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

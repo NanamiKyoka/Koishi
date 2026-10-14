@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.DataObject
 import androidx.compose.material.icons.rounded.Difference
 import androidx.compose.material.icons.rounded.EmojiEmotions
+import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.FindReplace
 import androidx.compose.material.icons.rounded.Fingerprint
 import androidx.compose.material.icons.rounded.Flare
@@ -223,6 +224,15 @@ class InMemoryToolRepository : ToolRepository {
                 descriptionRes = R.string.tool_text_diff_desc,
                 icon = Icons.Rounded.Difference,
                 category = ToolCategory.TEXT_APPS,
+                isFavorite = false,
+                hasDot = true
+            ),
+            ToolItem(
+                id = "compass",
+                nameRes = R.string.tool_compass_name,
+                descriptionRes = R.string.tool_compass_desc,
+                icon = Icons.Rounded.Explore,
+                category = ToolCategory.DEVICE_APPS,
                 isFavorite = false,
                 hasDot = true
             ),

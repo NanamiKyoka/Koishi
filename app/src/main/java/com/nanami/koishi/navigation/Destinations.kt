@@ -158,4 +158,10 @@ data object TextDiffRoute
  * 噪音测量独立小工具强类型路由
  */
 @Serializable
+data object CompassRoute
+
+/**
+ * 噪音测量独立小工具强类型路由
+ */
+@Serializable
 data object NoiseMeterRoute

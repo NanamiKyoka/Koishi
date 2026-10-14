@@ -6,6 +6,7 @@ import com.nanami.koishi.feature.settings.SettingsViewModel
 import com.nanami.koishi.feature.tools.bili_cover.BiliCoverViewModel
 import com.nanami.koishi.feature.tools.bmi_calculator.BmiCalculatorViewModel
 import com.nanami.koishi.feature.tools.color_picker.ColorPickerViewModel
+import com.nanami.koishi.feature.tools.compass.CompassViewModel
 import com.nanami.koishi.feature.tools.currency_converter.CurrencyConverterViewModel
 import com.nanami.koishi.feature.tools.date_time_calculator.DateTimeCalculatorViewModel
 import com.nanami.koishi.feature.tools.unit_converter.UnitConverterViewModel
@@ -52,6 +53,7 @@ val viewModelModule = module {
     viewModel { MiniAppsViewModel(get(), get()) }
     viewModel { MirageTankViewModel(get(), get()) }
     viewModel { PrismTankViewModel(get(), get()) }
+    viewModel { CompassViewModel(get(), get()) }
     viewModel { NoiseMeterViewModel(get(), get(), get()) }
     viewModel { PostalCodeViewModel(get(), get(), get(), get()) }
     viewModel { QrToolViewModel(get()) }

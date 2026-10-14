@@ -1643,4 +1643,32 @@
     <string name="noise_meter_desc_very_noisy">明显吵闹，如主干道车流或吸尘器工作声</string>
     <string name="noise_meter_desc_dangerous">长时间暴露可能损伤听力，建议佩戴防护</string>
     <string name="noise_meter_desc_extreme">施工现场或演唱会级别，请立即做好听力防护</string>
-</resources>
+    <!-- Compass -->
+    <string name="tool_compass_name">指南针</string>
+    <string name="tool_compass_desc">基于磁力计与姿态传感器显示实时方向、方位角与设备倾斜状态</string>
+    <string name="compass_degrees_format">%1$d°</string>
+    <string name="compass_angle_format">%1$d°</string>
+    <string name="compass_direction_north">北</string>
+    <string name="compass_direction_northeast">东北</string>
+    <string name="compass_direction_east">东</string>
+    <string name="compass_direction_southeast">东南</string>
+    <string name="compass_direction_south">南</string>
+    <string name="compass_direction_southwest">西南</string>
+    <string name="compass_direction_west">西</string>
+    <string name="compass_direction_northwest">西北</string>
+    <string name="compass_status_error">指南针不可用</string>
+    <string name="compass_status_tilted">请保持手机水平</string>
+    <string name="compass_status_tilted_desc">设备倾斜较大时方位角可能不够准确，请尽量平放手机。</string>
+    <string name="compass_status_calibrate">建议校准传感器</string>
+    <string name="compass_status_calibrate_desc">请手持手机画几次 8 字，并远离磁铁、金属桌面和强电流设备。</string>
+    <string name="compass_status_ready">方向已就绪</string>
+    <string name="compass_status_ready_desc">当前使用磁北作为方向基准，读数仅供日常参考。</string>
+    <string name="compass_hold">锁定读数</string>
+    <string name="compass_unlock">继续测量</string>
+    <string name="compass_reading_title">实时读数</string>
+    <string name="compass_heading">方位角</string>
+    <string name="compass_pitch">俯仰角</string>
+    <string name="compass_roll">横滚角</string>
+    <string name="compass_note">指南针读数会受到附近磁性物体和手机姿态影响，不应用于专业导航。</string>
+    <string name="compass_sensor_unavailable">当前设备缺少可用的方向传感器。</string>
+    <string name="compass_sensor_error">方向传感器启动失败，请稍后重试。</string></resources>

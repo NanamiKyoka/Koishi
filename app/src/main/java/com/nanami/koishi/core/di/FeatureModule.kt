@@ -5,6 +5,7 @@ import com.nanami.koishi.feature.home.poetry.HitokotoRepository
 import com.nanami.koishi.feature.tools.bili_cover.engine.BiliCoverSettingsRepository
 import com.nanami.koishi.feature.tools.bmi_calculator.engine.BmiRepository
 import com.nanami.koishi.feature.tools.color_picker.engine.ColorPickerRepository
+import com.nanami.koishi.feature.tools.compass.engine.CompassEngine
 import com.nanami.koishi.feature.tools.currency_converter.engine.CurrencyConverterRepository
 import com.nanami.koishi.feature.tools.date_time_calculator.engine.DateTimeCalculatorRepository
 import com.nanami.koishi.feature.tools.unit_converter.engine.UnitConverterRepository
@@ -60,6 +61,7 @@ val featureModule = module {
 
     single { MiniAppStore(get()) }
 
+    single { CompassEngine() }
     single { NoiseMeterEngine() }
     single { NoiseMeterRepository(get()) }
 
